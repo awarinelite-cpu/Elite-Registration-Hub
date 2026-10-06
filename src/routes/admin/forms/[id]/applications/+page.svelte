@@ -91,6 +91,20 @@
 		setTimeout(() => copiedId === id && (copiedId = ''), 1200);
 	}
 
+	function appToText(a) {
+		const lines = [
+			`Application No.: ${a.applicationNumber}`,
+			`Status: ${a.status}`,
+			`Submitted: ${new Date(a.submittedAt).toLocaleString()}`
+		];
+		for (const f of form.fields) {
+			const v = a.data?.[f.id];
+			const text = v == null ? '' : Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? v.name || '' : String(v);
+			lines.push(`${f.label}: ${text || '—'}`);
+		}
+		return lines.join('\n');
+	}
+
 	async function openFile(file) {
 		const token = await auth.currentUser.getIdToken();
 		const res = await fetch(`/api/admin/file?path=${encodeURIComponent(file.path)}`, { headers: { authorization: `Bearer ${token}` } });
@@ -140,7 +154,24 @@
 								{#each STATUSES as s}<option value={s}>{s}</option>{/each}
 							</select>
 						</td>
-						<td class="px-4 py-2 text-right"><button class="btn-ghost !py-1" onclick={() => (selected = a)}>View</button></td>
+						<td class="px-4 py-2 text-right">
+							<div class="flex items-center justify-end gap-1">
+								<button
+									type="button"
+									class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
+									aria-label="Copy everything in this row"
+									title="Copy all"
+									onclick={() => copyValue('row-' + a.id, appToText(a))}
+								>
+									{#if copiedId === 'row-' + a.id}
+										<svg class="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+									{:else}
+										<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
+									{/if}
+								</button>
+								<button class="btn-ghost !py-1" onclick={() => (selected = a)}>View</button>
+							</div>
+						</td>
 					</tr>
 				{:else}
 					<tr><td colspan="5" class="px-4 py-4 text-slate-500">No applications found.</td></tr>
@@ -158,7 +189,22 @@
 					<h2 class="font-mono text-lg font-bold">{selected.applicationNumber}</h2>
 					<p class="text-xs text-slate-500">Submitted {new Date(selected.submittedAt).toLocaleString()}</p>
 				</div>
-				<button class="btn-ghost" onclick={() => (selected = null)}>Close</button>
+				<div class="flex items-center gap-1">
+					<button
+						type="button"
+						class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
+						aria-label="Copy everything in this row"
+						title="Copy all"
+						onclick={() => copyValue('modal-' + selected.id, appToText(selected))}
+					>
+						{#if copiedId === 'modal-' + selected.id}
+							<svg class="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+						{:else}
+							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
+						{/if}
+					</button>
+					<button class="btn-ghost" onclick={() => (selected = null)}>Close</button>
+				</div>
 			</div>
 			<dl class="space-y-3">
 				{#each form.fields as f (f.id)}
