@@ -15,13 +15,9 @@
 	onMount(() =>
 		onAuthStateChanged(auth, async (u) => {
 			user = u;
-			if (!u) {
-				try { localStorage.removeItem('elitereg_admin'); } catch {}
-				return (state = 'signedout');
-			}
+			if (!u) return (state = 'signedout');
 			try {
 				state = (await getDoc(doc(firestore, 'admins', u.uid))).exists() ? 'ok' : 'denied';
-				try { state === 'ok' ? localStorage.setItem('elitereg_admin', '1') : localStorage.removeItem('elitereg_admin'); } catch {}
 			} catch {
 				state = 'denied';
 			}
