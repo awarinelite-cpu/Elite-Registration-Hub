@@ -1,4 +1,4 @@
-import { STATES } from '$lib/forms.js';
+import { STATES, MAX_SITTINGS, emptyScratch } from '$lib/forms.js';
 
 /**
  * Parse a pasted block of "Label: value" lines into [{ label, value }].
@@ -104,6 +104,7 @@ export function convertValue(field, value) {
 			return v.replace(/[^\d+]/g, '');
 		case 'file':
 		case 'photo':
+		case 'scratchcards':
 			return '';
 		default:
 			return v;
@@ -115,10 +116,28 @@ export function convertValue(field, value) {
  * Returns { filled: [{ field, value }], unmatched: [pasted labels], missing: [form field labels] }
  */
 export function matchToFields(fields, text) {
-	const entries = parsePasted(text);
 	const used = new Set();
 	const filled = [];
 	const unmatched = [];
+	const partial = [];
+
+	// scratch card info: one grouped field holding up to two sittings
+	const scratchField = fields.find((f) => f.type === 'scratchcards');
+	if (scratchField) {
+		const ex = extractScratch(text);
+		text = ex.rest;
+		if (ex.cards.length > MAX_SITTINGS) unmatched.push(`${ex.cards.length - MAX_SITTINGS} extra scratch card(s) (only ${MAX_SITTINGS} sittings allowed)`);
+		const cards = ex.cards.slice(0, MAX_SITTINGS);
+		if (cards.length) {
+			used.add(scratchField.id);
+			filled.push({ field: scratchField, value: cards });
+			cards.forEach((c, i) => {
+				const gaps = [!c.board && 'result name', !c.pin && 'pin', !c.serial && 'serial number', !c.year && 'exam year'].filter(Boolean);
+				if (gaps.length) partial.push(`Scratch card ${i + 1} ${gaps.join(', ')}`);
+			});
+		}
+	}
+	const entries = parsePasted(text);
 
 	for (const e of entries) {
 		const key = canon(e.label);
@@ -139,6 +158,80 @@ export function matchToFields(fields, text) {
 		filled.push({ field, value });
 	}
 
-	const missing = fields.filter((f) => !used.has(f.id) && f.type !== 'file' && f.type !== 'photo').map((f) => f.label);
+	const missing = [
+		...fields.filter((f) => !used.has(f.id) && f.type !== 'file' && f.type !== 'photo').map((f) => f.label),
+		...partial
+	];
 	return { filled, unmatched, missing };
+}
+
+
+const boardOf = (v) => (/waec/i.test(v) ? 'WAEC' : /neco/i.test(v) ? 'NECO' : '');
+const yearOf = (v) => (String(v).match(/\b(19|20)\d{2}\b/) || [String(v).trim()])[0];
+
+/**
+ * Pull scratch card lines out of pasted text. Understands both
+ *   "WAEC SCRATCH CARD / PIN: x / SERIAL NUMBER: y / EXAM YEAR: z"  and
+ *   "Scratch card result name: WAEC / Scratch card pin: x / Scratch serial number: y / Exam year: z".
+ * A second sitting is any further card (new result name, new header, or a repeated pin/serial/year).
+ * Returns { cards, rest } where `rest` is the text without the scratch lines.
+ */
+export function extractScratch(text) {
+	const cards = [];
+	const rest = [];
+	let cur = null;
+	let inScratch = false;
+	const fresh = (board = '') => {
+		cur = { ...emptyScratch(), board };
+		cards.push(cur);
+	};
+	const put = (attr, val, board = '') => {
+		if (!cur || cur[attr] || (board && cur.board && cur.board !== board)) fresh(board);
+		if (board && !cur.board) cur.board = board;
+		cur[attr] = val;
+	};
+
+	for (const raw of String(text || '').split(/\r?\n/)) {
+		const line = raw.replace(/\u00a0/g, ' ').trim();
+		if (!line) continue;
+		const i = line.indexOf(':');
+		const key = (i === -1 ? line : line.slice(0, i)).trim();
+		const value = i === -1 ? '' : line.slice(i + 1).trim();
+		const kb = boardOf(key);
+
+		if (!value) {
+			if (/scratch|waec|neco|sitting/i.test(key)) {
+				inScratch = true;
+				if (kb) fresh(kb);
+				else cur = null; // "Scratch card info" / "Second sitting": next value starts a new card
+				continue;
+			}
+			rest.push(raw);
+			continue;
+		}
+		if (/result name|exam body|board|exam type/i.test(key) || (/scratch/i.test(key) && !/pin|serial|year/i.test(key) && boardOf(value))) {
+			const b = boardOf(value);
+			if (b) {
+				inScratch = true;
+				if (cur && !cur.board) cur.board = b;
+				else fresh(b);
+				continue;
+			}
+		}
+		const scratchy = inScratch || kb || /scratch/i.test(key);
+		if (/\bpin\b/i.test(key) && (scratchy || /^pin$/i.test(key))) {
+			inScratch = true;
+			put('pin', value, kb);
+		} else if (/serial/i.test(key) && (scratchy || /^serial/i.test(key))) {
+			inScratch = true;
+			put('serial', value, kb);
+		} else if (/(exam )?year( of exam)?/i.test(key) && (scratchy || /year of exam|exam year/i.test(key))) {
+			inScratch = true;
+			put('year', yearOf(value), kb);
+		} else {
+			inScratch = false;
+			rest.push(raw);
+		}
+	}
+	return { cards, rest: rest.join('\n') };
 }

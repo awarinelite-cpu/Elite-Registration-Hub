@@ -14,11 +14,59 @@ export const FIELD_TYPES = [
 	{ value: 'state', label: 'State (Nigeria)' },
 	{ value: 'lga', label: 'LGA' },
 	{ value: 'file', label: 'File upload' },
-	{ value: 'photo', label: 'Passport photograph' }
+	{ value: 'photo', label: 'Passport photograph' },
+	{ value: 'scratchcards', label: 'Scratch card info (WAEC/NECO, up to 2 sittings)' }
 ];
 
 export const OPTION_TYPES = ['select', 'radio', 'checkbox'];
 export const FILE_TYPES = ['file', 'photo'];
+
+export const SCRATCH_BOARDS = ['WAEC', 'NECO'];
+export const MAX_SITTINGS = 2;
+export const emptyScratch = () => ({ board: '', pin: '', serial: '', year: '' });
+
+/** Parse the submitted scratch-card JSON into a clean array (empty cards dropped, max 2). */
+export function parseScratch(raw) {
+	let arr = raw;
+	if (typeof raw === 'string') {
+		try {
+			arr = JSON.parse(raw || '[]');
+		} catch {
+			arr = [];
+		}
+	}
+	if (!Array.isArray(arr)) return [];
+	return arr
+		.slice(0, MAX_SITTINGS)
+		.map((c) => {
+			const t = (k) => String(c?.[k] ?? '').trim().slice(0, 60);
+			return { board: t('board'), pin: t('pin'), serial: t('serial'), year: t('year') };
+		})
+		.filter((c) => c.board || c.pin || c.serial || c.year);
+}
+
+function validateScratch(cards) {
+	const maxYear = new Date().getFullYear() + 1;
+	for (let i = 0; i < cards.length; i++) {
+		const c = cards[i];
+		const n = `Scratch card ${i + 1}`;
+		if (!SCRATCH_BOARDS.includes(c.board)) return `${n}: select WAEC or NECO.`;
+		if (!c.pin) return `${n}: enter the scratch card pin.`;
+		if (!c.serial) return `${n}: enter the scratch serial number.`;
+		if (!/^\d{4}$/.test(c.year) || Number(c.year) < 1980 || Number(c.year) > maxYear) return `${n}: enter a valid 4-digit exam year.`;
+	}
+	return '';
+}
+
+/** One readable line per scratch card, e.g. "WAEC | PIN: 123 | Serial: 456 | Year: 2012". */
+export function scratchLine(c) {
+	return `${c.board || '?'} | PIN: ${c.pin || '-'} | Serial: ${c.serial || '-'} | Year: ${c.year || '-'}`;
+}
+
+/** Join an array value for display/CSV; handles scratch card objects. */
+export function joinArray(v, sep = ', ') {
+	return v.map((x) => (x && typeof x === 'object' ? scratchLine(x) : String(x))).join(sep);
+}
 
 export const STATES = [
 	'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
@@ -82,6 +130,8 @@ export function validateValue(field, value) {
 			return (field.options || []).includes(v) ? '' : 'Select a valid option.';
 		case 'checkbox':
 			return v.every((x) => (field.options || []).includes(x)) ? '' : 'Invalid selection.';
+		case 'scratchcards':
+			return validateScratch(v);
 		default:
 			return String(v).length > 5000 ? 'Too long.' : '';
 	}
@@ -112,7 +162,7 @@ export function appSearchText(form, app) {
 	for (const f of form?.fields || []) {
 		const v = app.data?.[f.id];
 		if (v == null) continue;
-		if (Array.isArray(v)) parts.push(v.join(' '));
+		if (Array.isArray(v)) parts.push(joinArray(v, ' '));
 		else if (typeof v === 'object') parts.push(v.name || '');
 		else parts.push(String(v));
 	}

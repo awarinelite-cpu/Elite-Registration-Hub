@@ -48,6 +48,14 @@
 	function addField() {
 		fields.push({ id: newFieldId(), type: 'text', label: '', required: true, placeholder: '', optionsText: '' });
 	}
+	const legacyScratch = $derived(fields.filter((f) => f.type !== 'scratchcards' && /scratch|ssce\s*year/i.test(f.label || '')));
+	function convertScratch() {
+		const firstIdx = fields.findIndex((f) => legacyScratch.includes(f));
+		const before = fields.slice(0, firstIdx).filter((f) => !legacyScratch.includes(f)).length;
+		const keep = fields.filter((f) => !legacyScratch.includes(f));
+		keep.splice(before, 0, { id: newFieldId(), type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '', optionsText: '' });
+		fields = keep;
+	}
 	function move(i, dir) {
 		const j = i + dir;
 		if (j < 0 || j >= fields.length) return;
@@ -182,7 +190,12 @@
 			</div>
 		{/each}
 	</div>
-	<div class="mt-3"><button class="btn-ghost" onclick={addField}>+ Add field</button></div>
+	<div class="mt-3 flex flex-wrap gap-2">
+		<button class="btn-ghost" onclick={addField}>+ Add field</button>
+		{#if legacyScratch.length}
+			<button class="btn-ghost" onclick={convertScratch}>Replace {legacyScratch.length} scratch card / SSCE year field{legacyScratch.length === 1 ? '' : 's'} with SCRATCH CARD INFO</button>
+		{/if}
+	</div>
 
 	<div class="mt-6 flex gap-2">
 		<button class="btn" onclick={save} disabled={busy}>{busy ? 'Saving…' : isNew ? 'Create form' : 'Save changes'}</button>

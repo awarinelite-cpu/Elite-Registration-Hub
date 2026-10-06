@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
-	import { STATUSES, studentName } from '$lib/forms.js';
+	import { STATUSES, studentName, joinArray } from '$lib/forms.js';
 	import { downloadCsv } from '$lib/csv.js';
 
 	const formId = page.params.id;
@@ -31,7 +31,7 @@
 	const display = (f, a) => {
 		const v = a.data?.[f.id];
 		if (v == null) return '';
-		if (Array.isArray(v)) return v.join('; ');
+		if (Array.isArray(v)) return joinArray(v, '; ');
 		if (typeof v === 'object') return v.name;
 		return v;
 	};
@@ -96,7 +96,7 @@
 		];
 		for (const f of form.fields) {
 			const v = a.data?.[f.id];
-			const text = v == null ? '' : Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? v.name || '' : String(v);
+			const text = v == null ? '' : Array.isArray(v) ? joinArray(v) : typeof v === 'object' ? v.name || '' : String(v);
 			lines.push(`${f.label}: ${text || '—'}`);
 		}
 		return lines.join('\n');
@@ -200,14 +200,14 @@
 			<dl class="grid gap-3 md:grid-cols-2 md:gap-5">
 				{#each form.fields as f (f.id)}
 					{@const v = selected.data?.[f.id]}
-					{@const text = v == null ? '' : Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? '' : String(v)}
+					{@const text = v == null ? '' : Array.isArray(v) ? joinArray(v) : typeof v === 'object' ? '' : String(v)}
 					<div class="flex items-start justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 md:p-5">
 						<div class="min-w-0">
 							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
 							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">
 								{#if v && typeof v === 'object' && !Array.isArray(v)}
 									<button class="text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
-								{:else if Array.isArray(v)}{v.join(', ') || '—'}
+								{:else if Array.isArray(v)}{#each v as x}{#if x && typeof x === 'object'}<div>{x.board} | PIN: {x.pin} | Serial: {x.serial} | Year: {x.year}</div>{:else}{x}{/if}{:else}—{/each}
 								{:else}{v || '—'}{/if}
 							</dd>
 						</div>

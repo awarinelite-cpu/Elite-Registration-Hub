@@ -1,6 +1,7 @@
 <script>
 	import { enhance } from '$app/forms';
 	import FormFields from '$lib/FormFields.svelte';
+	import { joinArray } from '$lib/forms.js';
 	let { data, form } = $props();
 	let busy = $state(false);
 	let upBusy = $state(false);
@@ -53,7 +54,7 @@
 						<dt class="text-xs font-medium text-slate-500">{f.label}</dt>
 						<dd class="text-sm">
 							{#if data.files[f.id]}📎 {data.files[f.id].name}
-							{:else if Array.isArray(data.values[f.id])}{data.values[f.id].join(', ') || '—'}
+							{:else if Array.isArray(data.values[f.id])}{joinArray(data.values[f.id], '; ') || '—'}
 							{:else}{data.values[f.id] || '—'}{/if}
 						</dd>
 					</div>
