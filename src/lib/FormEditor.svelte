@@ -23,6 +23,7 @@
 	let busy = $state(false);
 	let loading = $state(!isNew);
 	let saved = $state(false);
+	let converted = $state(false);
 
 	onMount(async () => {
 		if (isNew) return;
@@ -38,6 +39,11 @@
 		allowEdits = d.allowEdits ?? true;
 		fields = (d.fields || []).map((f) => ({ ...f, optionsText: (f.options || []).join('\n') }));
 		loading = false;
+		// old forms: swap separate scratch card / SSCE year boxes for the grouped SCRATCH CARD INFO field automatically
+		if (legacyScratch.length) {
+			convertScratch();
+			converted = true;
+		}
 	});
 
 	function onTitle() {
@@ -109,6 +115,11 @@
 {#if loading}
 	<p class="text-slate-500">Loading…</p>
 {:else}
+	{#if converted}
+		<div class="mb-4 rounded-lg border border-teal-300 bg-teal-50 p-3 text-sm font-semibold text-teal-900">
+			Scratch card fields were converted to SCRATCH CARD INFO (WAEC/NECO). Scroll down and tap "Save changes" to apply it to the live form.
+		</div>
+	{/if}
 	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
 		<h1 class="text-2xl font-bold">{isNew ? 'Create new form' : 'Manage form'}</h1>
 		{#if !isNew}
