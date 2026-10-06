@@ -172,39 +172,39 @@
 {/if}
 
 {#if selected}
-	<div class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true">
-		<div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
-			<div class="mb-3 flex items-start justify-between">
+	<div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-3 md:p-8" role="dialog" aria-modal="true">
+		<div class="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl md:max-w-5xl md:p-10">
+			<div class="mb-5 flex items-start justify-between gap-3 border-b border-slate-200 pb-4 md:mb-8 md:pb-6">
 				<div>
-					<h2 class="font-mono text-lg font-bold">{selected.applicationNumber}</h2>
-					{#if nameOf(selected)}<p class="text-sm font-semibold">{nameOf(selected)}</p>{/if}
-					<p class="text-xs text-slate-500">Submitted {new Date(selected.submittedAt).toLocaleString()}</p>
+					<h2 class="font-mono text-xl font-bold text-slate-900 md:text-4xl">{selected.applicationNumber}</h2>
+					{#if nameOf(selected)}<p class="mt-1 text-base font-semibold text-slate-800 md:mt-2 md:text-2xl">{nameOf(selected)}</p>{/if}
+					<p class="mt-1 text-sm text-slate-600 md:text-lg">Submitted {new Date(selected.submittedAt).toLocaleString()}</p>
 				</div>
 				<div class="flex items-center gap-1">
 					<button
 						type="button"
-						class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
+						class="shrink-0 rounded-md p-1.5 md:p-2.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
 						aria-label="Copy everything in this row"
 						title="Copy all"
 						onclick={() => copyValue('modal-' + selected.id, appToText(selected))}
 					>
 						{#if copiedId === 'modal-' + selected.id}
-							<svg class="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+							<svg class="h-5 w-5 md:h-7 md:w-7 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
 						{:else}
-							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
+							<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
 						{/if}
 					</button>
-					<button class="btn-ghost" onclick={() => (selected = null)}>Close</button>
+					<button class="btn-3d-ghost btn-3d-lg md:!px-6 md:!py-3 md:!text-lg" onclick={() => (selected = null)}>Close</button>
 				</div>
 			</div>
-			<dl class="space-y-3">
+			<dl class="grid gap-3 md:grid-cols-2 md:gap-5">
 				{#each form.fields as f (f.id)}
 					{@const v = selected.data?.[f.id]}
 					{@const text = v == null ? '' : Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? '' : String(v)}
-					<div class="flex items-start justify-between gap-2">
+					<div class="flex items-start justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 md:p-5">
 						<div class="min-w-0">
-							<dt class="text-xs font-medium text-slate-500">{f.label}</dt>
-							<dd class="text-sm break-words">
+							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
+							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">
 								{#if v && typeof v === 'object' && !Array.isArray(v)}
 									<button class="text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
 								{:else if Array.isArray(v)}{v.join(', ') || '—'}
@@ -214,23 +214,23 @@
 						{#if text}
 							<button
 								type="button"
-								class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
+								class="shrink-0 rounded-md p-1.5 md:p-2.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
 								aria-label="Copy {f.label}"
 								title="Copy"
 								onclick={() => copyValue(f.id, text)}
 							>
 								{#if copiedId === f.id}
-									<svg class="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+									<svg class="h-5 w-5 md:h-7 md:w-7 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
 								{:else}
-									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
+									<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
 								{/if}
 							</button>
 						{/if}
 					</div>
 				{/each}
 			</dl>
-			<div class="mt-5 flex justify-between">
-				<button class="btn-danger" onclick={() => remove(selected)}>Delete</button>
+			<div class="mt-6 flex justify-between md:mt-10">
+				<button class="btn-danger md:!px-6 md:!py-3 md:!text-lg" onclick={() => remove(selected)}>Delete</button>
 			</div>
 		</div>
 	</div>
