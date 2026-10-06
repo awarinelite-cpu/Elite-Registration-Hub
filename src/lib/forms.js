@@ -40,7 +40,9 @@ export function parseScratch(raw) {
 		.slice(0, MAX_SITTINGS)
 		.map((c) => {
 			const t = (k) => String(c?.[k] ?? '').trim().slice(0, 60);
-			return { board: t('board'), pin: t('pin'), serial: t('serial'), year: t('year') };
+			const board = t('board');
+			// NECO has no serial number
+			return { board, pin: t('pin'), serial: board === 'NECO' ? '' : t('serial'), year: t('year') };
 		})
 		.filter((c) => c.board || c.pin || c.serial || c.year);
 }
@@ -52,7 +54,7 @@ function validateScratch(cards) {
 		const n = `Scratch card ${i + 1}`;
 		if (!SCRATCH_BOARDS.includes(c.board)) return `${n}: select WAEC or NECO.`;
 		if (!c.pin) return `${n}: enter the scratch card pin.`;
-		if (!c.serial) return `${n}: enter the scratch serial number.`;
+		if (c.board === 'WAEC' && !c.serial) return `${n}: enter the scratch serial number.`;
 		if (!/^\d{4}$/.test(c.year) || Number(c.year) < 1980 || Number(c.year) > maxYear) return `${n}: enter a valid 4-digit exam year.`;
 	}
 	return '';
@@ -60,7 +62,7 @@ function validateScratch(cards) {
 
 /** One readable line per scratch card, e.g. "WAEC | PIN: 123 | Serial: 456 | Year: 2012". */
 export function scratchLine(c) {
-	return `${c.board || '?'} | PIN: ${c.pin || '-'} | Serial: ${c.serial || '-'} | Year: ${c.year || '-'}`;
+	return `${c.board || '?'} | PIN: ${c.pin || '-'}${c.board === 'NECO' ? '' : ` | Serial: ${c.serial || '-'}`} | Year: ${c.year || '-'}`;
 }
 
 /** Join an array value for display/CSV; handles scratch card objects. */

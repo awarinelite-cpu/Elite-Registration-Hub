@@ -207,7 +207,7 @@
 							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">
 								{#if v && typeof v === 'object' && !Array.isArray(v)}
 									<button class="text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
-								{:else if Array.isArray(v)}{#each v as x}{#if x && typeof x === 'object'}<div>{x.board} | PIN: {x.pin} | Serial: {x.serial} | Year: {x.year}</div>{:else}{x}{/if}{:else}—{/each}
+								{:else if Array.isArray(v)}{#each v as x}{#if x && typeof x === 'object'}<div>{x.board} | PIN: {x.pin}{#if x.board !== 'NECO'} | Serial: {x.serial}{/if} | Year: {x.year}</div>{:else}{x}{/if}{:else}—{/each}
 								{:else}{v || '—'}{/if}
 							</dd>
 						</div>

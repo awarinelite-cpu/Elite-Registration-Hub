@@ -127,12 +127,12 @@ export function matchToFields(fields, text) {
 		const ex = extractScratch(text);
 		text = ex.rest;
 		if (ex.cards.length > MAX_SITTINGS) unmatched.push(`${ex.cards.length - MAX_SITTINGS} extra scratch card(s) (only ${MAX_SITTINGS} sittings allowed)`);
-		const cards = ex.cards.slice(0, MAX_SITTINGS);
+		const cards = ex.cards.slice(0, MAX_SITTINGS).map((c) => (c.board === 'NECO' ? { ...c, serial: '' } : c));
 		if (cards.length) {
 			used.add(scratchField.id);
 			filled.push({ field: scratchField, value: cards });
 			cards.forEach((c, i) => {
-				const gaps = [!c.board && 'result name', !c.pin && 'pin', !c.serial && 'serial number', !c.year && 'exam year'].filter(Boolean);
+				const gaps = [!c.board && 'result name', !c.pin && 'pin', (c.board !== 'NECO' && !c.serial) && 'serial number', !c.year && 'exam year'].filter(Boolean);
 				if (gaps.length) partial.push(`Scratch card ${i + 1} ${gaps.join(', ')}`);
 			});
 		}

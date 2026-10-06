@@ -39,7 +39,7 @@
 			{/if}
 			<div>
 				<label class="label" for={`${id}_b${i}`}>Scratch card result name</label>
-				<select class="input" id={`${id}_b${i}`} bind:value={c.board}>
+				<select class="input" id={`${id}_b${i}`} bind:value={c.board} onchange={() => { if (c.board !== 'WAEC') c.serial = ''; }}>
 					<option value="">Select…</option>
 					{#each SCRATCH_BOARDS as b}<option value={b}>{b}</option>{/each}
 				</select>
@@ -48,10 +48,12 @@
 				<label class="label" for={`${id}_p${i}`}>Scratch card pin</label>
 				<input class="input" id={`${id}_p${i}`} bind:value={c.pin} autocomplete="off" />
 			</div>
-			<div>
-				<label class="label" for={`${id}_s${i}`}>Scratch serial number</label>
-				<input class="input" id={`${id}_s${i}`} bind:value={c.serial} autocomplete="off" />
-			</div>
+			{#if c.board === 'WAEC'}
+				<div>
+					<label class="label" for={`${id}_s${i}`}>Scratch serial number</label>
+					<input class="input" id={`${id}_s${i}`} bind:value={c.serial} autocomplete="off" />
+				</div>
+			{/if}
 			<div>
 				<label class="label" for={`${id}_y${i}`}>Exam year</label>
 				<input class="input" id={`${id}_y${i}`} bind:value={c.year} inputmode="numeric" maxlength="4" placeholder="e.g. 2012" />
@@ -60,7 +62,7 @@
 	{/each}
 
 	{#if cards.length < MAX_SITTINGS}
-		<button type="button" class="btn-ghost !px-2.5 !py-1.5 text-xs" onclick={() => cards.push(emptyScratch())}>ADD SCRATCH CARD FOR TWO SITTINGS</button>
+		<button type="button" class="btn-ghost !px-2 !py-1 text-[11px]" onclick={() => cards.push(emptyScratch())}>+ Add second sitting</button>
 	{/if}
 
 	<input type="hidden" name={id} value={JSON.stringify(cards)} />
