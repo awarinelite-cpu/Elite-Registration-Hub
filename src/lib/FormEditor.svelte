@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
-	import { FIELD_TYPES, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID } from '$lib/forms.js';
+	import { FIELD_TYPES, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
 
 	let { id = null } = $props();
 	const isNew = !id; // eslint-disable-line
@@ -42,6 +42,12 @@
 		// old forms: swap separate scratch card / SSCE year boxes for the grouped SCRATCH CARD INFO field automatically
 		if (legacyScratch.length) {
 			convertScratch();
+			converted = true;
+		}
+		// forms with no passport photograph / softcopy documents upload get them added
+		const withUploads = ensureUploadFields(fields.map(({ optionsText, ...f }) => f));
+		if (withUploads.length !== fields.length) {
+			fields = [...fields, ...withUploads.slice(fields.length).map((f) => ({ ...f, optionsText: '' }))];
 			converted = true;
 		}
 	});
@@ -117,7 +123,7 @@
 {:else}
 	{#if converted}
 		<div class="mb-4 rounded-lg border border-teal-300 bg-teal-50 p-3 text-sm font-semibold text-teal-900">
-			Scratch card fields were converted to SCRATCH CARD INFO (WAEC/NECO). Scroll down and tap "Save changes" to apply it to the live form.
+			This form was updated with SCRATCH CARD INFO (WAEC/NECO) and/or passport photograph and softcopy documents upload fields. Scroll down and tap "Save changes" to apply it to the live form.
 		</div>
 	{/if}
 	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">

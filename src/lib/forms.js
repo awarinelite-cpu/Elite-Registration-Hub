@@ -29,6 +29,24 @@ export const emptyScratch = () => ({ board: '', pin: '', serial: '', year: '' })
 export const SCRATCH_FIELD_ID = 'scratch_card_info';
 export const isLegacyScratch = (f) => f.type !== 'scratchcards' && /scratch|ssce\s*year/i.test(f.label || '');
 
+export const PHOTO_FIELD_ID = 'passport_photo';
+export const DOCS_FIELD_ID = 'other_documents';
+
+/** Make sure a form has a passport photograph and a softcopy documents upload (added at the end if missing). */
+export function ensureUploadFields(fields, { required = true } = {}) {
+	const list = Array.isArray(fields) ? [...fields] : [];
+	if (!list.some((f) => f.type === 'photo')) {
+		list.push({ id: PHOTO_FIELD_ID, type: 'photo', label: 'PASSPORT PHOTOGRAPH', required, placeholder: '' });
+	}
+	if (!list.some((f) => f.type === 'file')) {
+		list.push({ id: DOCS_FIELD_ID, type: 'file', label: 'OTHER DOCUMENTS (SOFTCOPY)', required: false, placeholder: '' });
+	}
+	return list;
+}
+
+/** Everything applied on the fly to forms saved before these fields existed. */
+export const migrateFormFields = (fields, opts = {}) => ensureUploadFields(migrateScratchFields(fields, opts), opts);
+
 /**
  * Old forms stored separate scratch card / SSCE year boxes. Swap them for the grouped SCRATCH CARD INFO field
  * (WAEC/NECO dropdown, pin, serial, year, add second sitting) without needing the admin to re-save the form.
