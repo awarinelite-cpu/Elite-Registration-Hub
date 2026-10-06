@@ -103,6 +103,27 @@
 		return lines.join('\n');
 	}
 
+	let downloading = $state('');
+	// saves the file straight to the device, named with the application number so files from different applicants don't clash
+	async function downloadFile(file, fieldId) {
+		downloading = fieldId;
+		try {
+			const token = await auth.currentUser.getIdToken();
+			const res = await fetch(`/api/admin/file?path=${encodeURIComponent(file.path)}`, { headers: { authorization: `Bearer ${token}` } });
+			if (!res.ok) return alert('Could not download file.');
+			const url = URL.createObjectURL(await res.blob());
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${selected?.applicationNumber || 'application'}_${file.name}`;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			setTimeout(() => URL.revokeObjectURL(url), 10000);
+		} finally {
+			downloading = '';
+		}
+	}
+
 	async function openFile(file) {
 		const token = await auth.currentUser.getIdToken();
 		const res = await fetch(`/api/admin/file?path=${encodeURIComponent(file.path)}`, { headers: { authorization: `Bearer ${token}` } });
@@ -207,7 +228,19 @@
 							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
 							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">
 								{#if v && typeof v === 'object' && !Array.isArray(v)}
-									<button class="text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
+									<span class="flex items-center gap-2">
+										<button class="min-w-0 break-all text-left text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
+										<button
+											type="button"
+											class="shrink-0 rounded-md p-1.5 text-teal-700 hover:bg-teal-50 disabled:opacity-50 md:p-2.5"
+											aria-label="Download {f.label}"
+											title="Download"
+											disabled={downloading === f.id}
+											onclick={() => downloadFile(v, f.id)}
+										>
+											<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" stroke-linecap="round" stroke-linejoin="round" /></svg>
+										</button>
+									</span>
 								{:else if Array.isArray(v)}{#each v as x}{#if x && typeof x === 'object'}<div>{x.board} | PIN: {x.pin}{#if x.board !== 'NECO'} | Serial: {x.serial}{/if} | Year: {x.year}</div>{:else}{x}{/if}{:else}—{/each}
 								{:else}{v || '—'}{/if}
 							</dd>
