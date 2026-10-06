@@ -117,13 +117,13 @@
 {:else}
 	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
 		<div>
-			<a href="/admin" class="text-sm text-teal-700">← Dashboard</a>
+			<a href="/admin" class="btn-3d-ghost btn-3d-lg mb-2 !text-teal-800">← Dashboard</a>
 			<h1 class="text-2xl font-bold">{form.title}</h1>
 			<p class="text-sm text-slate-500">{apps.length} applications</p>
 		</div>
 		<div class="flex gap-2">
-			<a class="btn-ghost" href="/admin/forms/{form.id}">Manage form</a>
-			<button class="btn" onclick={exportCsv} disabled={!filtered.length}>Export CSV ({filtered.length})</button>
+			<a class="btn-3d-ghost btn-3d-lg" href="/admin/forms/{form.id}">Manage form</a>
+			<button class="btn-3d btn-3d-lg disabled:cursor-not-allowed disabled:opacity-50" onclick={exportCsv} disabled={!filtered.length}>Export CSV ({filtered.length})</button>
 		</div>
 	</div>
 

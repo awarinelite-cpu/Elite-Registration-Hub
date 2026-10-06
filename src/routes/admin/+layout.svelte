@@ -57,7 +57,7 @@
 			<h1 class="text-lg font-bold">Not authorised</h1>
 			<p class="text-sm text-slate-600">This account is not an admin. In the Firebase console, create a Firestore document at <code class="rounded bg-slate-100 px-1">admins/{'{uid}'}</code> with this UID:</p>
 			<code class="block break-all rounded bg-slate-100 p-2 text-xs">{user?.uid}</code>
-			<button class="btn-ghost" onclick={() => signOut(auth)}>Sign out</button>
+			<button class="btn-3d-ghost btn-3d-lg" onclick={() => signOut(auth)}>Sign out</button>
 		</div>
 	</main>
 {:else}
@@ -66,7 +66,7 @@
 			<a href="/admin" class="text-lg font-extrabold text-teal-700">EliteReg <span class="text-xs font-medium text-slate-500">Admin</span></a>
 			<div class="flex items-center gap-3 text-sm">
 				<span class="hidden text-slate-500 sm:inline">{user?.email}</span>
-				<button class="btn-ghost" onclick={() => signOut(auth)}>Sign out</button>
+				<button class="btn-3d-ghost btn-3d-lg" onclick={() => signOut(auth)}>Sign out</button>
 			</div>
 		</div>
 	</header>
