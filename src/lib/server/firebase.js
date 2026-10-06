@@ -13,6 +13,6 @@ function app() {
 	});
 }
 
-export const db = () => getFirestore(app());
+export const db = () => getFirestore(app(), process.env.FIRESTORE_DATABASE_ID || 'elitereg');
 export const bucket = () => getStorage(app()).bucket();
 export const adminAuth = () => getAuth(app());

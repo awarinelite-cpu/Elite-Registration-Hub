@@ -15,4 +15,4 @@ const app = getApps()[0] ?? initializeApp({
 });
 
 export const auth = getAuth(app);
-export const firestore = getFirestore(app);
+export const firestore = getFirestore(app, e.VITE_FIRESTORE_DATABASE_ID || 'elitereg');
