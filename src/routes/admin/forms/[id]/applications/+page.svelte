@@ -3,14 +3,14 @@
 	import { page } from '$app/state';
 	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
-	import { STATUSES } from '$lib/forms.js';
+	import { STATUSES, studentName } from '$lib/forms.js';
 	import { downloadCsv } from '$lib/csv.js';
 
 	const formId = page.params.id;
 	let form = $state(null);
 	let apps = $state([]);
 	let loading = $state(true);
-	let search = $state('');
+	let search = $state(page.url.searchParams.get('q') || '');
 	let statusFilter = $state('all');
 	let selected = $state(null);
 	let error = $state('');
@@ -35,10 +35,7 @@
 		if (typeof v === 'object') return v.name;
 		return v;
 	};
-	const nameOf = (a) => {
-		const f = form.fields.find((x) => ['text'].includes(x.type));
-		return f ? display(f, a) : '';
-	};
+	const nameOf = (a) => studentName(form, a);
 
 	const filtered = $derived.by(() => {
 		const q = search.trim().toLowerCase();
@@ -187,6 +184,7 @@
 			<div class="mb-3 flex items-start justify-between">
 				<div>
 					<h2 class="font-mono text-lg font-bold">{selected.applicationNumber}</h2>
+					{#if nameOf(selected)}<p class="text-sm font-semibold">{nameOf(selected)}</p>{/if}
 					<p class="text-xs text-slate-500">Submitted {new Date(selected.submittedAt).toLocaleString()}</p>
 				</div>
 				<div class="flex items-center gap-1">

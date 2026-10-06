@@ -2,13 +2,34 @@
 	import { onMount } from 'svelte';
 	import { collection, deleteDoc, doc, getDocs, limit, orderBy, query, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
-	import { closedReason } from '$lib/forms.js';
+	import { appSearchText, closedReason, studentName } from '$lib/forms.js';
 
 	let forms = $state([]);
 	let recent = $state([]);
 	let loading = $state(true);
 	let copiedId = $state('');
 	let formSearch = $state('');
+	let allApps = $state(null);
+	let loadingApps = $state(false);
+	const formOf = (id) => forms.find((f) => f.id === id);
+	const nameOfApp = (a) => studentName(formOf(a.formId), a);
+
+	$effect(() => {
+		if (formSearch.trim() && allApps === null && !loadingApps) {
+			loadingApps = true;
+			getDocs(query(collection(firestore, 'applications'), orderBy('submittedAt', 'desc')))
+				.then((snap) => (allApps = snap.docs.map((d) => ({ id: d.id, ...d.data() }))))
+				.catch(() => (allApps = []))
+				.finally(() => (loadingApps = false));
+		}
+	});
+
+	const matchedApps = $derived.by(() => {
+		const q = formSearch.trim().toLowerCase();
+		if (!q || !allApps) return [];
+		return allApps.filter((a) => appSearchText(formOf(a.formId), a).includes(q)).slice(0, 30);
+	});
+
 	const shownForms = $derived.by(() => {
 		const q = formSearch.trim().toLowerCase();
 		return q ? forms.filter((f) => (f.title || '').toLowerCase().includes(q) || String(f.id).toLowerCase().includes(q)) : forms;
@@ -71,7 +92,7 @@
 	</div>
 
 	<h2 class="mb-3 text-lg font-semibold">Registration forms</h2>
-	<input class="input mb-3" type="search" placeholder="Search forms…" bind:value={formSearch} />
+	<input class="input mb-3" type="search" placeholder="Search forms or student name…" bind:value={formSearch} />
 	<div class="mb-8 space-y-3">
 		{#each shownForms as f (f.id)}
 			<div class="card flex flex-wrap items-center justify-between gap-3">
@@ -100,26 +121,46 @@
 				</div>
 			</div>
 		{:else}
-			<p class="text-slate-500">{formSearch.trim() ? 'No forms match your search.' : 'No forms yet. Create your first one.'}</p>
+			{#if !formSearch.trim()}<p class="text-slate-500">No forms yet. Create your first one.</p>{/if}
 		{/each}
 	</div>
+
+	{#if formSearch.trim()}
+		<h2 class="mb-3 text-lg font-semibold">Matching applications</h2>
+		<div class="mb-8 space-y-3">
+			{#if loadingApps || allApps === null}
+				<p class="text-slate-500">Searching…</p>
+			{:else}
+				{#each matchedApps as a (a.id)}
+					<a href="/admin/forms/{a.formId}/applications?q={encodeURIComponent(a.applicationNumber)}" class="card block !py-3">
+						<div class="font-semibold">{nameOfApp(a) || '—'}</div>
+						<div class="font-mono text-xs text-slate-500">{a.applicationNumber}</div>
+						<div class="text-sm text-slate-500">{titleOf(a.formId)} · {new Date(a.submittedAt).toLocaleDateString()} · {a.status}</div>
+					</a>
+				{:else}
+					<p class="text-slate-500">No applications match "{formSearch.trim()}".</p>
+				{/each}
+			{/if}
+		</div>
+	{/if}
 
 	<h2 class="mb-3 text-lg font-semibold">Recent applications</h2>
 	<div class="card overflow-x-auto !p-0">
 		<table class="w-full text-left text-sm">
 			<thead class="bg-slate-50 text-xs uppercase text-slate-500">
-				<tr><th class="px-4 py-2">Application No.</th><th class="px-4 py-2">Form</th><th class="px-4 py-2">Date</th><th class="px-4 py-2">Status</th></tr>
+				<tr><th class="px-4 py-2">Application No.</th><th class="px-4 py-2">Name</th><th class="px-4 py-2">Form</th><th class="px-4 py-2">Date</th><th class="px-4 py-2">Status</th></tr>
 			</thead>
 			<tbody>
 				{#each recent as a (a.id)}
 					<tr class="border-t border-slate-100">
 						<td class="px-4 py-2 font-mono">{a.applicationNumber}</td>
+						<td class="px-4 py-2">{nameOfApp(a) || '—'}</td>
 						<td class="px-4 py-2">{titleOf(a.formId)}</td>
 						<td class="px-4 py-2">{new Date(a.submittedAt).toLocaleDateString()}</td>
 						<td class="px-4 py-2">{a.status}</td>
 					</tr>
 				{:else}
-					<tr><td colspan="4" class="px-4 py-4 text-slate-500">No applications yet.</td></tr>
+					<tr><td colspan="5" class="px-4 py-4 text-slate-500">No applications yet.</td></tr>
 				{/each}
 			</tbody>
 		</table>

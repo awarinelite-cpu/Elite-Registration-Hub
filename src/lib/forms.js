@@ -86,3 +86,35 @@ export function validateValue(field, value) {
 			return String(v).length > 5000 ? 'Too long.' : '';
 	}
 }
+
+const NOT_STUDENT = /kin|guardian|referee|sponsor|parent|spouse/i;
+
+/** Best-effort student name from an application: surname + other names, else any name-like field. */
+export function studentName(form, app) {
+	const fields = (form?.fields || []).filter((f) => !NOT_STUDENT.test(f.label || ''));
+	const val = (f) => {
+		const v = f && app?.data?.[f.id];
+		return typeof v === 'string' ? v.trim() : '';
+	};
+	const sur = fields.find((f) => /sur\s*name|last\s*name|family\s*name/i.test(f.label || ''));
+	const other = fields.find((f) => /other\s*name|first\s*name|given|middle/i.test(f.label || ''));
+	const joined = [val(sur), val(other)].filter(Boolean).join(' ');
+	if (joined) return joined;
+	const anyName = fields.find((f) => f.type === 'text' && /name/i.test(f.label || '') && val(f));
+	if (anyName) return val(anyName);
+	const firstText = fields.find((f) => f.type === 'text' && val(f));
+	return firstText ? val(firstText) : '';
+}
+
+/** Flat searchable text of every simple field value of an application. */
+export function appSearchText(form, app) {
+	const parts = [app.applicationNumber || '', studentName(form, app)];
+	for (const f of form?.fields || []) {
+		const v = app.data?.[f.id];
+		if (v == null) continue;
+		if (Array.isArray(v)) parts.push(v.join(' '));
+		else if (typeof v === 'object') parts.push(v.name || '');
+		else parts.push(String(v));
+	}
+	return parts.join(' ').toLowerCase();
+}
