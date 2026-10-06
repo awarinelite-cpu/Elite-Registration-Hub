@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
-	import { FIELD_TYPES, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
+	import { FIELD_TYPES, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
 
 	let { id = null } = $props();
 	const isNew = !id; // eslint-disable-line
@@ -44,6 +44,10 @@
 			convertScratch();
 			converted = true;
 		}
+		if (legacySsce.length) {
+			convertSsce();
+			converted = true;
+		}
 		// forms with no passport photograph / softcopy documents upload get them added
 		const ensured = ensureUploadFields(fields.map(({ optionsText, ...f }) => f));
 		if (ensured.map((f) => f.id).join() !== fields.map((f) => f.id).join()) {
@@ -67,6 +71,13 @@
 		const keep = fields.filter((f) => !legacyScratch.includes(f));
 		keep.splice(before, 0, { id: SCRATCH_FIELD_ID, type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '', optionsText: '' });
 		fields = keep;
+	}
+	const legacySsce = $derived(fields.filter((f) => f.type !== 'ssceexams' && /ssce\s*exam\s*(number|no)/i.test(f.label || '')));
+	function convertSsce() {
+		const idx = fields.findIndex((f) => legacySsce.includes(f));
+		if (idx < 0) return;
+		const old = fields[idx];
+		fields[idx] = { id: SSCE_FIELD_ID, type: 'ssceexams', label: old.label || 'SSCE EXAM NUMBER', required: old.required !== false, placeholder: '', optionsText: '' };
 	}
 	function move(i, dir) {
 		const j = i + dir;
@@ -211,6 +222,9 @@
 		<button class="btn-ghost" onclick={addField}>+ Add field</button>
 		{#if legacyScratch.length}
 			<button class="btn-ghost" onclick={convertScratch}>Replace {legacyScratch.length} scratch card / SSCE year field{legacyScratch.length === 1 ? '' : 's'} with SCRATCH CARD INFO</button>
+		{/if}
+		{#if legacySsce.length}
+			<button class="btn-ghost" onclick={convertSsce}>Replace SSCE exam number box with exam type / number / year</button>
 		{/if}
 	</div>
 

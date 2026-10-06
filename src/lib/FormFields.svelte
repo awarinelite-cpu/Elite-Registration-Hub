@@ -1,6 +1,7 @@
 <script>
 	import { STATES } from '$lib/forms.js';
 	import ScratchCards from '$lib/ScratchCards.svelte';
+	import SsceExams from '$lib/SsceExams.svelte';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
 	let { fields, values = {}, errors = {}, existingFiles = {} } = $props();
 
@@ -13,6 +14,8 @@
 {#each fields as f (f.id)}
 	{#if f.type === 'scratchcards'}
 		<ScratchCards field={f} value={values?.[f.id]} error={errors?.[f.id]} />
+	{:else if f.type === 'ssceexams'}
+		<SsceExams field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else}
 	<div>
 		<label class="label" for={`f_${f.id}`}>

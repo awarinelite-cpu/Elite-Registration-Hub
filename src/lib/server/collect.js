@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { bucket } from './firebase.js';
-import { FILE_TYPES, MAX_FILE_BYTES, MAX_TOTAL_BYTES, parseScratch, validateValue } from '$lib/forms.js';
+import { FILE_TYPES, MAX_FILE_BYTES, MAX_TOTAL_BYTES, parseScratch, parseSsce, validateValue } from '$lib/forms.js';
 
 const SAFE_NAME = (n) => n.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-80);
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -40,6 +40,13 @@ export function collect(fields, fd, existing = {}) {
 			const err = validateValue(f, cards);
 			if (err) errors[f.id] = err;
 			else values[f.id] = cards;
+			continue;
+		}
+		if (f.type === 'ssceexams') {
+			const exams = parseSsce(fd.get(key));
+			const err = validateValue(f, exams);
+			if (err) errors[f.id] = err;
+			else values[f.id] = exams;
 			continue;
 		}
 		const raw = f.type === 'checkbox' ? fd.getAll(key).map(String) : String(fd.get(key) ?? '').trim();

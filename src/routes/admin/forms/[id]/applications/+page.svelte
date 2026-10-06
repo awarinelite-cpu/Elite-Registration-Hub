@@ -241,7 +241,7 @@
 											<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" stroke-linecap="round" stroke-linejoin="round" /></svg>
 										</button>
 									</span>
-								{:else if Array.isArray(v)}{#each v as x}{#if x && typeof x === 'object'}<div>{x.board} | PIN: {x.pin}{#if x.board !== 'NECO'} | Serial: {x.serial}{/if} | Year: {x.year}</div>{:else}{x}{/if}{:else}—{/each}
+								{:else if Array.isArray(v)}{#each v as x}{#if x && typeof x === 'object' && 'number' in x}<div>{x.board} | Exam No: {x.number} | Year: {x.year}</div>{:else if x && typeof x === 'object'}<div>{x.board} | PIN: {x.pin}{#if x.board !== 'NECO'} | Serial: {x.serial}{/if} | Year: {x.year}</div>{:else}{x}{/if}{:else}—{/each}
 								{:else}{v || '—'}{/if}
 							</dd>
 						</div>

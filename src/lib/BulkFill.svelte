@@ -13,6 +13,10 @@
 			document.getElementById(base)?.dispatchEvent(new CustomEvent('scratchfill', { detail: value }));
 			return;
 		}
+		if (field.type === 'ssceexams') {
+			document.getElementById(base)?.dispatchEvent(new CustomEvent('ssceexamfill', { detail: value }));
+			return;
+		}
 		if (field.type === 'radio') {
 			for (const r of document.getElementsByName(base)) r.checked = r.value === value;
 			return;

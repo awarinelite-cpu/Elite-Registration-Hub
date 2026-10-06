@@ -15,7 +15,8 @@ export const FIELD_TYPES = [
 	{ value: 'lga', label: 'LGA' },
 	{ value: 'file', label: 'File upload' },
 	{ value: 'photo', label: 'Passport photograph' },
-	{ value: 'scratchcards', label: 'Scratch card info (WAEC/NECO, up to 2 sittings)' }
+	{ value: 'scratchcards', label: 'Scratch card info (WAEC/NECO, up to 2 sittings)' },
+	{ value: 'ssceexams', label: 'SSCE exam number (WAEC/NECO, up to 2 sittings)' }
 ];
 
 export const OPTION_TYPES = ['select', 'radio', 'checkbox'];
@@ -28,6 +29,11 @@ export const emptyScratch = () => ({ board: '', pin: '', serial: '', year: '' })
 // Stable id so data saved against the on-the-fly converted field matches what the form editor saves later.
 export const SCRATCH_FIELD_ID = 'scratch_card_info';
 export const isLegacyScratch = (f) => f.type !== 'scratchcards' && /scratch|ssce\s*year/i.test(f.label || '');
+
+// SSCE exam number: exam type (WAEC/NECO) + exam number + exam year, up to two sittings.
+export const emptySsce = () => ({ board: '', number: '', year: '' });
+export const SSCE_FIELD_ID = 'ssce_exam_info';
+export const isLegacySsce = (f) => f.type !== 'ssceexams' && /ssce\s*exam\s*(number|no)/i.test(f.label || '');
 
 export const PHOTO_FIELD_ID = 'passport_photo';
 export const DOCS_FIELD_ID = 'other_documents'; // old single documents box, replaced by the three below
@@ -54,7 +60,7 @@ export function ensureUploadFields(fields, { required = true } = {}) {
 }
 
 /** Everything applied on the fly to forms saved before these fields existed. */
-export const migrateFormFields = (fields, opts = {}) => ensureUploadFields(migrateScratchFields(fields, opts), opts);
+export const migrateFormFields = (fields, opts = {}) => ensureUploadFields(migrateSsceFields(migrateScratchFields(fields, opts), opts), opts);
 
 /**
  * Old forms stored separate scratch card / SSCE year boxes. Swap them for the grouped SCRATCH CARD INFO field
@@ -72,6 +78,56 @@ export function migrateScratchFields(fields, { keepLegacy = false } = {}) {
 	const keep = list.filter((f) => !isLegacyScratch(f));
 	keep.splice(before, 0, scratch);
 	return keep;
+}
+
+/** Old forms had a single SSCE EXAM NUMBER text box. Swap it for the grouped field (type dropdown, number, year, add exam). */
+export function migrateSsceFields(fields, { keepLegacy = false } = {}) {
+	const list = Array.isArray(fields) ? fields : [];
+	if (list.some((f) => f.type === 'ssceexams')) return list;
+	const idx = list.findIndex(isLegacySsce);
+	if (idx < 0) return list;
+	const ssce = { id: SSCE_FIELD_ID, type: 'ssceexams', label: list[idx].label || 'SSCE EXAM NUMBER', required: list[idx].required !== false, placeholder: '' };
+	if (keepLegacy) return [...list.slice(0, idx), ssce, ...list.slice(idx)];
+	const keep = [...list];
+	keep.splice(idx, 1, ssce);
+	return keep;
+}
+
+/** Parse the submitted SSCE exam JSON into a clean array (empty sittings dropped, max 2). */
+export function parseSsce(raw) {
+	let arr = raw;
+	if (typeof raw === 'string') {
+		try {
+			arr = JSON.parse(raw || '[]');
+		} catch {
+			arr = [];
+		}
+	}
+	if (!Array.isArray(arr)) return [];
+	return arr
+		.slice(0, MAX_SITTINGS)
+		.map((c) => {
+			const t = (k) => String(c?.[k] ?? '').trim().slice(0, 60);
+			return { board: t('board'), number: t('number'), year: t('year') };
+		})
+		.filter((c) => c.board || c.number || c.year);
+}
+
+function validateSsce(exams) {
+	const maxYear = new Date().getFullYear() + 1;
+	for (let i = 0; i < exams.length; i++) {
+		const c = exams[i];
+		const n = `Exam ${i + 1}`;
+		if (!SCRATCH_BOARDS.includes(c.board)) return `${n}: select WAEC or NECO.`;
+		if (!c.number) return `${n}: enter the exam number.`;
+		if (!/^\d{4}$/.test(c.year) || Number(c.year) < 1980 || Number(c.year) > maxYear) return `${n}: enter a valid 4-digit exam year.`;
+	}
+	return '';
+}
+
+/** One readable line per SSCE exam, e.g. "WAEC | Exam No: 4250101001 | Year: 2012". */
+export function ssceLine(c) {
+	return `${c.board || '?'} | Exam No: ${c.number || '-'} | Year: ${c.year || '-'}`;
 }
 
 /** Parse the submitted scratch-card JSON into a clean array (empty cards dropped, max 2). */
@@ -116,7 +172,7 @@ export function scratchLine(c) {
 
 /** Join an array value for display/CSV; handles scratch card objects. */
 export function joinArray(v, sep = ', ') {
-	return v.map((x) => (x && typeof x === 'object' ? scratchLine(x) : String(x))).join(sep);
+	return v.map((x) => (x && typeof x === 'object' ? ('number' in x ? ssceLine(x) : scratchLine(x)) : String(x))).join(sep);
 }
 
 export const STATES = [
@@ -183,6 +239,8 @@ export function validateValue(field, value) {
 			return v.every((x) => (field.options || []).includes(x)) ? '' : 'Invalid selection.';
 		case 'scratchcards':
 			return validateScratch(v);
+		case 'ssceexams':
+			return validateSsce(v);
 		default:
 			return String(v).length > 5000 ? 'Too long.' : '';
 	}

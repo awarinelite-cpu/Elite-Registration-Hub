@@ -105,6 +105,7 @@ export function convertValue(field, value) {
 		case 'file':
 		case 'photo':
 		case 'scratchcards':
+		case 'ssceexams':
 			return '';
 		default:
 			return v;
@@ -137,7 +138,20 @@ export function matchToFields(fields, text) {
 			});
 		}
 	}
-	const entries = parsePasted(text);
+	let entries = parsePasted(text);
+
+	// SSCE exam number: a pasted "SSCE EXAM NUMBER: ..." line fills the first exam's number
+	const ssceField = fields.find((f) => f.type === 'ssceexams');
+	if (ssceField) {
+		const isSsce = (e) => /ssce\s*exam\s*(number|no)/i.test(e.label);
+		const hit = entries.find(isSsce);
+		entries = entries.filter((e) => !isSsce(e));
+		if (hit && hit.value.trim()) {
+			used.add(ssceField.id);
+			filled.push({ field: ssceField, value: [{ board: '', number: hit.value.trim(), year: '' }] });
+			partial.push('SSCE exam type, exam year');
+		}
+	}
 
 	for (const e of entries) {
 		const key = canon(e.label);
