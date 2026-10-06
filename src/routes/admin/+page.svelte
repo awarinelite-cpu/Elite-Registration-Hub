@@ -33,7 +33,7 @@
 
 <div class="mb-6 flex items-center justify-between">
 	<h1 class="text-2xl font-bold">Dashboard</h1>
-	<a href="/admin/forms/new" class="btn">+ Create new form</a>
+	<div class="flex gap-2"><a href="/admin/forms/import" class="btn-ghost">Paste to create</a><a href="/admin/forms/new" class="btn">+ Create new form</a></div>
 </div>
 
 {#if loading}
