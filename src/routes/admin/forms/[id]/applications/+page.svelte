@@ -73,6 +73,24 @@
 		downloadCsv(`${form.id}-applications.csv`, [head, ...rows]);
 	}
 
+	let copiedId = $state('');
+	async function copyValue(id, text) {
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch {
+			const t = document.createElement('textarea');
+			t.value = text;
+			t.style.position = 'fixed';
+			t.style.opacity = '0';
+			document.body.appendChild(t);
+			t.select();
+			document.execCommand('copy');
+			t.remove();
+		}
+		copiedId = id;
+		setTimeout(() => copiedId === id && (copiedId = ''), 1200);
+	}
+
 	async function openFile(file) {
 		const token = await auth.currentUser.getIdToken();
 		const res = await fetch(`/api/admin/file?path=${encodeURIComponent(file.path)}`, { headers: { authorization: `Bearer ${token}` } });
@@ -145,14 +163,32 @@
 			<dl class="space-y-3">
 				{#each form.fields as f (f.id)}
 					{@const v = selected.data?.[f.id]}
-					<div>
-						<dt class="text-xs font-medium text-slate-500">{f.label}</dt>
-						<dd class="text-sm break-words">
-							{#if v && typeof v === 'object' && !Array.isArray(v)}
-								<button class="text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
-							{:else if Array.isArray(v)}{v.join(', ') || '—'}
-							{:else}{v || '—'}{/if}
-						</dd>
+					{@const text = v == null ? '' : Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? '' : String(v)}
+					<div class="flex items-start justify-between gap-2">
+						<div class="min-w-0">
+							<dt class="text-xs font-medium text-slate-500">{f.label}</dt>
+							<dd class="text-sm break-words">
+								{#if v && typeof v === 'object' && !Array.isArray(v)}
+									<button class="text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
+								{:else if Array.isArray(v)}{v.join(', ') || '—'}
+								{:else}{v || '—'}{/if}
+							</dd>
+						</div>
+						{#if text}
+							<button
+								type="button"
+								class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
+								aria-label="Copy {f.label}"
+								title="Copy"
+								onclick={() => copyValue(f.id, text)}
+							>
+								{#if copiedId === f.id}
+									<svg class="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+								{:else}
+									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
+								{/if}
+							</button>
+						{/if}
 					</div>
 				{/each}
 			</dl>
