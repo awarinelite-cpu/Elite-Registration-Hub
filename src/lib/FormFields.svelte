@@ -8,11 +8,16 @@
 	function inputType(t) {
 		return { number: 'number', phone: 'tel', email: 'email', date: 'date' }[t] || 'text';
 	}
+	// second SSCE picture stays hidden until "Add SSCE" is tapped (or one was already uploaded)
+	let showSecond = $state(!!existingFiles?.doc_ssce_2);
+	const hasSecond = $derived(fields.some((x) => x.id === 'doc_ssce_2'));
 	const val = (f) => values?.[f.id] ?? (f.type === 'checkbox' ? [] : '');
 </script>
 
 {#each fields as f (f.id)}
-	{#if f.type === 'scratchcards'}
+	{#if f.id === 'doc_ssce_2' && !showSecond}
+		<!-- hidden until Add SSCE -->
+	{:else if f.type === 'scratchcards'}
 		<ScratchCards field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else if f.type === 'ssceexams'}
 		<SsceExams field={f} value={values?.[f.id]} error={errors?.[f.id]} />
@@ -61,6 +66,11 @@
 				{f.type === 'photo' ? 'JPG/PNG/WebP' : 'JPG/PNG/WebP/PDF'}, max 1.5 MB.
 				{#if existingFiles[f.id]}Current file: <strong>{existingFiles[f.id].name}</strong> (upload a new one to replace).{/if}
 			</p>
+			{#if f.id === 'doc_ssce' && hasSecond && !showSecond}
+				<button type="button" class="btn-ghost mt-2 !px-2 !py-1 text-[11px]" onclick={() => (showSecond = true)}>+ Add SSCE</button>
+			{:else if f.id === 'doc_ssce_2' && !existingFiles[f.id]}
+				<button type="button" class="mt-1 text-xs font-medium text-red-600 hover:underline" onclick={() => (showSecond = false)}>Remove</button>
+			{/if}
 		{:else}
 			<input
 				class="input"
