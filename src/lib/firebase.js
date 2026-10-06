@@ -6,12 +6,12 @@ import { getFirestore } from 'firebase/firestore';
 // Environment variables override these defaults.
 const e = import.meta.env;
 const app = getApps()[0] ?? initializeApp({
-	apiKey: e.VITE_FIREBASE_API_KEY || 'AIzaSyBiR5sJJ-CkPAuP6pzsus61ygZ6yRuwI5Y',
-	authDomain: e.VITE_FIREBASE_AUTH_DOMAIN || 'wavify-faa2c.firebaseapp.com',
-	projectId: e.VITE_FIREBASE_PROJECT_ID || 'wavify-faa2c',
-	storageBucket: e.VITE_FIREBASE_STORAGE_BUCKET || 'wavify-faa2c.firebasestorage.app',
-	messagingSenderId: e.VITE_FIREBASE_MESSAGING_SENDER_ID || '172346596147',
-	appId: e.VITE_FIREBASE_APP_ID || '1:172346596147:web:f02dd765925bf54cb73c46'
+	apiKey: e.VITE_FIREBASE_API_KEY || 'AIzaSyAB8yCfmdvOTWRpj50Hhc7AWuabWLDvy6k',
+	authDomain: e.VITE_FIREBASE_AUTH_DOMAIN || 'nacon-post-utme-past-question.firebaseapp.com',
+	projectId: e.VITE_FIREBASE_PROJECT_ID || 'nacon-post-utme-past-question',
+	storageBucket: e.VITE_FIREBASE_STORAGE_BUCKET || 'nacon-post-utme-past-question.firebasestorage.app',
+	messagingSenderId: e.VITE_FIREBASE_MESSAGING_SENDER_ID || '1090299637128',
+	appId: e.VITE_FIREBASE_APP_ID || '1:1090299637128:web:e01e6f4e0946dbcb9fde3d'
 });
 
 export const auth = getAuth(app);
