@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
 import { readSession, SESSION_COOKIE } from '$lib/server/security.js';
-import { closedReason, FILE_TYPES } from '$lib/forms.js';
+import { closedReason, FILE_TYPES, SCRATCH_FIELD_ID, migrateScratchFields } from '$lib/forms.js';
 
 async function current(cookies) {
 	const number = readSession(cookies.get(SESSION_COOKIE));
@@ -12,7 +12,10 @@ async function current(cookies) {
 	if (!appSnap.exists) redirect(303, '/login');
 	const app = appSnap.data();
 	const formSnap = await db().collection('forms').doc(app.formId).get();
-	return { appRef, app, form: formSnap.data() };
+	const form = formSnap.data();
+	// applications submitted with the converted scratch card field keep seeing it; older ones keep their old fields
+	if (app.data?.[SCRATCH_FIELD_ID]) form.fields = migrateScratchFields(form.fields);
+	return { appRef, app, form };
 }
 
 export async function load({ cookies }) {

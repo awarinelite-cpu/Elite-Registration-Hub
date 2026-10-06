@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
-	import { FIELD_TYPES, OPTION_TYPES, newFieldId, slugify } from '$lib/forms.js';
+	import { FIELD_TYPES, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID } from '$lib/forms.js';
 
 	let { id = null } = $props();
 	const isNew = !id; // eslint-disable-line
@@ -59,7 +59,7 @@
 		const firstIdx = fields.findIndex((f) => legacyScratch.includes(f));
 		const before = fields.slice(0, firstIdx).filter((f) => !legacyScratch.includes(f)).length;
 		const keep = fields.filter((f) => !legacyScratch.includes(f));
-		keep.splice(before, 0, { id: newFieldId(), type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '', optionsText: '' });
+		keep.splice(before, 0, { id: SCRATCH_FIELD_ID, type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '', optionsText: '' });
 		fields = keep;
 	}
 	function move(i, dir) {

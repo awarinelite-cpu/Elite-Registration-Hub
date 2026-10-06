@@ -4,7 +4,7 @@
 	import { enhance } from '$app/forms';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
-	import { closedReason } from '$lib/forms.js';
+	import { closedReason, migrateScratchFields } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import BulkFill from '$lib/BulkFill.svelte';
 
@@ -22,7 +22,10 @@
 		try {
 			const s = await getDoc(doc(firestore, 'forms', formId));
 			if (!s.exists()) loadError = 'Form not found.';
-			else form = { id: s.id, ...s.data() };
+			else {
+				const d = s.data();
+				form = { id: s.id, ...d, fields: migrateScratchFields(d.fields) };
+			}
 		} catch (e) {
 			loadError = 'Could not load form: ' + (e?.message || e);
 		}

@@ -2,13 +2,13 @@ import { error, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
 import { hashPin, newPin } from '$lib/server/security.js';
-import { closedReason } from '$lib/forms.js';
+import { closedReason, migrateScratchFields } from '$lib/forms.js';
 
 async function getForm(slug) {
 	const snap = await db().collection('forms').doc(slug).get();
 	if (!snap.exists) error(404, 'Form not found');
 	const { title, description, status, startDate, closingDate, fields, prefix, counter } = snap.data();
-	return { id: slug, title, description, status, startDate, closingDate, fields, prefix, counter };
+	return { id: slug, title, description, status, startDate, closingDate, fields: migrateScratchFields(fields), prefix, counter };
 }
 
 export async function load({ params }) {

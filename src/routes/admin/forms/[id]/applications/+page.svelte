@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
-	import { STATUSES, studentName, joinArray } from '$lib/forms.js';
+	import { STATUSES, studentName, joinArray, migrateScratchFields } from '$lib/forms.js';
 	import { downloadCsv } from '$lib/csv.js';
 
 	const formId = page.params.id;
@@ -22,7 +22,8 @@
 			loading = false;
 			return;
 		}
-		form = { id: fs.id, ...fs.data() };
+		const d = fs.data();
+		form = { id: fs.id, ...d, fields: migrateScratchFields(d.fields, { keepLegacy: true }) };
 		const snap = await getDocs(query(collection(firestore, 'applications'), where('formId', '==', formId)));
 		apps = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => b.submittedAt - a.submittedAt);
 		loading = false;

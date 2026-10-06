@@ -25,6 +25,28 @@ export const SCRATCH_BOARDS = ['WAEC', 'NECO'];
 export const MAX_SITTINGS = 2;
 export const emptyScratch = () => ({ board: '', pin: '', serial: '', year: '' });
 
+// Stable id so data saved against the on-the-fly converted field matches what the form editor saves later.
+export const SCRATCH_FIELD_ID = 'scratch_card_info';
+export const isLegacyScratch = (f) => f.type !== 'scratchcards' && /scratch|ssce\s*year/i.test(f.label || '');
+
+/**
+ * Old forms stored separate scratch card / SSCE year boxes. Swap them for the grouped SCRATCH CARD INFO field
+ * (WAEC/NECO dropdown, pin, serial, year, add second sitting) without needing the admin to re-save the form.
+ * keepLegacy: leave the old fields in place too (admin tables), so older applications still show their data.
+ */
+export function migrateScratchFields(fields, { keepLegacy = false } = {}) {
+	const list = Array.isArray(fields) ? fields : [];
+	if (list.some((f) => f.type === 'scratchcards')) return list;
+	const firstIdx = list.findIndex(isLegacyScratch);
+	if (firstIdx < 0) return list;
+	const scratch = { id: SCRATCH_FIELD_ID, type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '' };
+	if (keepLegacy) return [...list.slice(0, firstIdx), scratch, ...list.slice(firstIdx)];
+	const before = list.slice(0, firstIdx).filter((f) => !isLegacyScratch(f)).length;
+	const keep = list.filter((f) => !isLegacyScratch(f));
+	keep.splice(before, 0, scratch);
+	return keep;
+}
+
 /** Parse the submitted scratch-card JSON into a clean array (empty cards dropped, max 2). */
 export function parseScratch(raw) {
 	let arr = raw;
