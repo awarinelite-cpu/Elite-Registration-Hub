@@ -1,6 +1,7 @@
 <script>
 	import { enhance } from '$app/forms';
 	import FormFields from '$lib/FormFields.svelte';
+	import BulkFill from '$lib/BulkFill.svelte';
 	let { data, form } = $props();
 	let busy = $state(false);
 	let copied = $state(false);
@@ -51,6 +52,7 @@
 		{#if data.closed}
 			<div class="card border-amber-300 bg-amber-50 text-amber-900">{data.closed}</div>
 		{:else}
+			<BulkFill fields={data.form.fields} />
 			<form
 				method="POST"
 				enctype="multipart/form-data"
