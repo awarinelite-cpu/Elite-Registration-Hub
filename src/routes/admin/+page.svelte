@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+	import { collection, deleteDoc, doc, getDocs, limit, orderBy, query, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { closedReason } from '$lib/forms.js';
 
@@ -28,6 +28,26 @@
 		copiedId = id;
 		setTimeout(() => (copiedId = ''), 1500);
 	}
+	async function removeForm(f) {
+		const n = f.counter || 0;
+		const msg = n
+			? `Delete "${f.title}" and its ${n} application(s)? This cannot be undone.`
+			: `Delete "${f.title}"? This cannot be undone.`;
+		if (!confirm(msg)) return;
+		try {
+			const snap = await getDocs(query(collection(firestore, 'applications'), where('formId', '==', f.id)));
+			for (let i = 0; i < snap.docs.length; i += 400) {
+				const batch = writeBatch(firestore);
+				snap.docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
+				await batch.commit();
+			}
+			await deleteDoc(doc(firestore, 'forms', f.id));
+			forms = forms.filter((x) => x.id !== f.id);
+			recent = recent.filter((a) => a.formId !== f.id);
+		} catch (e) {
+			alert('Could not delete form: ' + (e?.message || e));
+		}
+	}
 	const label = (f) => closedReason(f) ? (f.status === 'active' ? 'Closed' : f.status === 'draft' ? 'Draft' : 'Closed') : 'Active';
 </script>
 
@@ -49,12 +69,23 @@
 	<div class="mb-8 space-y-3">
 		{#each forms as f (f.id)}
 			<div class="card flex flex-wrap items-center justify-between gap-3">
-				<div>
+				<div class="flex w-full items-start justify-between gap-2">
+					<div class="min-w-0">
 					<div class="font-semibold">{f.title}</div>
 					<div class="text-sm text-slate-500">
 						{(f.counter || 0).toLocaleString()} applications ·
 						<span class={label(f) === 'Active' ? 'text-green-700' : 'text-slate-500'}>{label(f)}</span>
 					</div>
+					</div>
+					<button
+						type="button"
+						class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+						aria-label="Delete form {f.title}"
+						title="Delete form"
+						onclick={() => removeForm(f)}
+					>
+						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 5v6m4-6v6" /></svg>
+					</button>
 				</div>
 				<div class="flex flex-wrap gap-2">
 					<a class="btn-ghost" href="/admin/forms/{f.id}">Manage</a>
