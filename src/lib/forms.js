@@ -30,16 +30,25 @@ export const SCRATCH_FIELD_ID = 'scratch_card_info';
 export const isLegacyScratch = (f) => f.type !== 'scratchcards' && /scratch|ssce\s*year/i.test(f.label || '');
 
 export const PHOTO_FIELD_ID = 'passport_photo';
-export const DOCS_FIELD_ID = 'other_documents';
+export const DOCS_FIELD_ID = 'other_documents'; // old single documents box, replaced by the three below
+export const DOC_FIELDS = [
+	{ id: 'doc_ssce', label: 'SSCE' },
+	{ id: 'doc_birth_cert', label: 'BIRTH CERTIFICATE/AGE DECLARATION' },
+	{ id: 'doc_testimonial', label: 'SECONDARY TESTIMONIAL' }
+];
 
-/** Make sure a form has a passport photograph and a softcopy documents upload (added at the end if missing). */
+/** Make sure a form has a passport photograph and the three softcopy document uploads (added at the end if missing). */
 export function ensureUploadFields(fields, { required = true } = {}) {
-	const list = Array.isArray(fields) ? [...fields] : [];
+	const list = (Array.isArray(fields) ? fields : []).filter((f) => f.id !== DOCS_FIELD_ID);
 	if (!list.some((f) => f.type === 'photo')) {
 		list.push({ id: PHOTO_FIELD_ID, type: 'photo', label: 'PASSPORT PHOTOGRAPH', required, placeholder: '' });
 	}
-	if (!list.some((f) => f.type === 'file')) {
-		list.push({ id: DOCS_FIELD_ID, type: 'file', label: 'OTHER DOCUMENTS (SOFTCOPY)', required: false, placeholder: '' });
+	const ours = DOC_FIELDS.map((d) => d.id);
+	// forms that already have their own document upload fields are left alone
+	if (!list.some((f) => f.type === 'file' && !ours.includes(f.id))) {
+		for (const d of DOC_FIELDS) {
+			if (!list.some((f) => f.id === d.id)) list.push({ id: d.id, type: 'file', label: d.label, required: false, placeholder: '' });
+		}
 	}
 	return list;
 }

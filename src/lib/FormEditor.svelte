@@ -45,9 +45,9 @@
 			converted = true;
 		}
 		// forms with no passport photograph / softcopy documents upload get them added
-		const withUploads = ensureUploadFields(fields.map(({ optionsText, ...f }) => f));
-		if (withUploads.length !== fields.length) {
-			fields = [...fields, ...withUploads.slice(fields.length).map((f) => ({ ...f, optionsText: '' }))];
+		const ensured = ensureUploadFields(fields.map(({ optionsText, ...f }) => f));
+		if (ensured.map((f) => f.id).join() !== fields.map((f) => f.id).join()) {
+			fields = ensured.map((f) => ({ ...f, optionsText: (f.options || []).join('\n') }));
 			converted = true;
 		}
 	});
@@ -123,7 +123,7 @@
 {:else}
 	{#if converted}
 		<div class="mb-4 rounded-lg border border-teal-300 bg-teal-50 p-3 text-sm font-semibold text-teal-900">
-			This form was updated with SCRATCH CARD INFO (WAEC/NECO) and/or passport photograph and softcopy documents upload fields. Scroll down and tap "Save changes" to apply it to the live form.
+			This form was updated with SCRATCH CARD INFO (WAEC/NECO) and/or passport photograph and softcopy document (SSCE, birth certificate/age declaration, secondary testimonial) upload fields. Scroll down and tap "Save changes" to apply it to the live form.
 		</div>
 	{/if}
 	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
