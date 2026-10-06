@@ -1,0 +1,164 @@
+<script>
+	import { onMount } from 'svelte';
+	import { page } from '$app/state';
+	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+	import { auth, firestore } from '$lib/firebase.js';
+	import { STATUSES } from '$lib/forms.js';
+	import { downloadCsv } from '$lib/csv.js';
+
+	const formId = page.params.id;
+	let form = $state(null);
+	let apps = $state([]);
+	let loading = $state(true);
+	let search = $state('');
+	let statusFilter = $state('all');
+	let selected = $state(null);
+	let error = $state('');
+
+	onMount(async () => {
+		const fs = await getDoc(doc(firestore, 'forms', formId));
+		if (!fs.exists()) {
+			error = 'Form not found.';
+			loading = false;
+			return;
+		}
+		form = { id: fs.id, ...fs.data() };
+		const snap = await getDocs(query(collection(firestore, 'applications'), where('formId', '==', formId)));
+		apps = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => b.submittedAt - a.submittedAt);
+		loading = false;
+	});
+
+	const display = (f, a) => {
+		const v = a.data?.[f.id];
+		if (v == null) return '';
+		if (Array.isArray(v)) return v.join('; ');
+		if (typeof v === 'object') return v.name;
+		return v;
+	};
+	const nameOf = (a) => {
+		const f = form.fields.find((x) => ['text'].includes(x.type));
+		return f ? display(f, a) : '';
+	};
+
+	const filtered = $derived.by(() => {
+		const q = search.trim().toLowerCase();
+		return apps.filter((a) => {
+			if (statusFilter !== 'all' && a.status !== statusFilter) return false;
+			if (!q) return true;
+			return a.applicationNumber.toLowerCase().includes(q) || form.fields.some((f) => String(display(f, a)).toLowerCase().includes(q));
+		});
+	});
+
+	async function setStatus(a, status) {
+		await updateDoc(doc(firestore, 'applications', a.id), { status });
+		a.status = status;
+	}
+
+	async function remove(a) {
+		if (!confirm(`Delete ${a.applicationNumber}? This cannot be undone.`)) return;
+		await deleteDoc(doc(firestore, 'applications', a.id));
+		apps = apps.filter((x) => x.id !== a.id);
+		selected = null;
+	}
+
+	function exportCsv() {
+		const head = ['Application No.', 'Status', 'Submitted', 'Last updated', ...form.fields.map((f) => f.label)];
+		const rows = filtered.map((a) => [
+			a.applicationNumber,
+			a.status,
+			new Date(a.submittedAt).toISOString(),
+			new Date(a.updatedAt || a.submittedAt).toISOString(),
+			...form.fields.map((f) => display(f, a))
+		]);
+		downloadCsv(`${form.id}-applications.csv`, [head, ...rows]);
+	}
+
+	async function openFile(file) {
+		const token = await auth.currentUser.getIdToken();
+		const res = await fetch(`/api/admin/file?path=${encodeURIComponent(file.path)}`, { headers: { authorization: `Bearer ${token}` } });
+		if (!res.ok) return alert('Could not load file.');
+		window.open(URL.createObjectURL(await res.blob()), '_blank');
+	}
+</script>
+
+{#if error}
+	<p class="text-red-600">{error}</p>
+{:else if loading}
+	<p class="text-slate-500">Loading…</p>
+{:else}
+	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+		<div>
+			<a href="/admin" class="text-sm text-teal-700">← Dashboard</a>
+			<h1 class="text-2xl font-bold">{form.title}</h1>
+			<p class="text-sm text-slate-500">{apps.length} applications</p>
+		</div>
+		<div class="flex gap-2">
+			<a class="btn-ghost" href="/admin/forms/{form.id}">Manage form</a>
+			<button class="btn" onclick={exportCsv} disabled={!filtered.length}>Export CSV ({filtered.length})</button>
+		</div>
+	</div>
+
+	<div class="mb-3 flex flex-wrap gap-2">
+		<input class="input max-w-xs" placeholder="Search number or any field…" bind:value={search} />
+		<select class="input max-w-[10rem]" bind:value={statusFilter}>
+			<option value="all">All statuses</option>
+			{#each STATUSES as s}<option value={s}>{s}</option>{/each}
+		</select>
+	</div>
+
+	<div class="card overflow-x-auto !p-0">
+		<table class="w-full text-left text-sm">
+			<thead class="bg-slate-50 text-xs uppercase text-slate-500">
+				<tr><th class="px-4 py-2">Application No.</th><th class="px-4 py-2">Name</th><th class="px-4 py-2">Date</th><th class="px-4 py-2">Status</th><th></th></tr>
+			</thead>
+			<tbody>
+				{#each filtered as a (a.id)}
+					<tr class="border-t border-slate-100">
+						<td class="px-4 py-2 font-mono">{a.applicationNumber}</td>
+						<td class="px-4 py-2">{nameOf(a)}</td>
+						<td class="px-4 py-2">{new Date(a.submittedAt).toLocaleDateString()}</td>
+						<td class="px-4 py-2">
+							<select class="input !w-auto !py-1" value={a.status} onchange={(e) => setStatus(a, e.currentTarget.value)}>
+								{#each STATUSES as s}<option value={s}>{s}</option>{/each}
+							</select>
+						</td>
+						<td class="px-4 py-2 text-right"><button class="btn-ghost !py-1" onclick={() => (selected = a)}>View</button></td>
+					</tr>
+				{:else}
+					<tr><td colspan="5" class="px-4 py-4 text-slate-500">No applications found.</td></tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
+{/if}
+
+{#if selected}
+	<div class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true">
+		<div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
+			<div class="mb-3 flex items-start justify-between">
+				<div>
+					<h2 class="font-mono text-lg font-bold">{selected.applicationNumber}</h2>
+					<p class="text-xs text-slate-500">Submitted {new Date(selected.submittedAt).toLocaleString()}</p>
+				</div>
+				<button class="btn-ghost" onclick={() => (selected = null)}>Close</button>
+			</div>
+			<dl class="space-y-3">
+				{#each form.fields as f (f.id)}
+					{@const v = selected.data?.[f.id]}
+					<div>
+						<dt class="text-xs font-medium text-slate-500">{f.label}</dt>
+						<dd class="text-sm break-words">
+							{#if v && typeof v === 'object' && !Array.isArray(v)}
+								<button class="text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
+							{:else if Array.isArray(v)}{v.join(', ') || '—'}
+							{:else}{v || '—'}{/if}
+						</dd>
+					</div>
+				{/each}
+			</dl>
+			<div class="mt-5 flex justify-between">
+				<button class="btn-danger" onclick={() => remove(selected)}>Delete</button>
+			</div>
+		</div>
+	</div>
+{/if}
