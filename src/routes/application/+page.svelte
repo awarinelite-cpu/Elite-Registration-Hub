@@ -3,6 +3,8 @@
 	import FormFields from '$lib/FormFields.svelte';
 	let { data, form } = $props();
 	let busy = $state(false);
+	let upBusy = $state(false);
+	const fileFields = $derived(data.fields.filter((f) => f.type === 'file' || f.type === 'photo'));
 	const colors = { submitted: 'bg-blue-100 text-blue-800', reviewed: 'bg-amber-100 text-amber-800', approved: 'bg-green-100 text-green-800', rejected: 'bg-red-100 text-red-800' };
 </script>
 
@@ -22,6 +24,7 @@
 		<span class="text-slate-500">Submitted {new Date(data.submittedAt).toLocaleString()}</span>
 	</div>
 
+	{#if form?.uploaded}<div class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">Documents uploaded.</div>{/if}
 	{#if form?.saved}<div class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">Changes saved.</div>{/if}
 	{#if form?.message}<div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{form.message}</div>{/if}
 
@@ -58,5 +61,26 @@
 			</dl>
 			<p class="mt-4 text-xs text-slate-500">This application can no longer be edited.</p>
 		</div>
+	{/if}
+
+	{#if data.canUpload && !data.canEdit}
+		<form
+			method="POST"
+			action="?/uploadDocs"
+			enctype="multipart/form-data"
+			class="card mt-4 space-y-4"
+			use:enhance={() => {
+				upBusy = true;
+				return async ({ update }) => {
+					await update({ reset: true });
+					upBusy = false;
+				};
+			}}
+		>
+			<h2 class="font-bold">Upload passport photograph &amp; documents</h2>
+			<p class="text-xs text-slate-500">Add or replace your softcopy documents. Other details stay as they are.</p>
+			<FormFields fields={fileFields} errors={form?.errors} existingFiles={data.files} />
+			<button class="btn w-full" disabled={upBusy}>{upBusy ? 'Uploading…' : 'Upload documents'}</button>
+		</form>
 	{/if}
 </main>
