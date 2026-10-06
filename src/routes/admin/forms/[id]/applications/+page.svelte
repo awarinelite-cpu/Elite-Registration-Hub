@@ -135,46 +135,39 @@
 		</select>
 	</div>
 
-	<div class="card overflow-x-auto !p-0">
-		<table class="w-full text-left text-sm">
-			<thead class="bg-slate-50 text-xs uppercase text-slate-500">
-				<tr><th class="px-4 py-2">Application No.</th><th class="px-4 py-2">Name</th><th class="px-4 py-2">Date</th><th class="px-4 py-2">Status</th><th></th></tr>
-			</thead>
-			<tbody>
-				{#each filtered as a (a.id)}
-					<tr class="border-t border-slate-100">
-						<td class="px-4 py-2 font-mono">{a.applicationNumber}</td>
-						<td class="px-4 py-2">{nameOf(a)}</td>
-						<td class="px-4 py-2">{new Date(a.submittedAt).toLocaleDateString()}</td>
-						<td class="px-4 py-2">
-							<select class="input !w-auto !py-1" value={a.status} onchange={(e) => setStatus(a, e.currentTarget.value)}>
-								{#each STATUSES as s}<option value={s}>{s}</option>{/each}
-							</select>
-						</td>
-						<td class="px-4 py-2 text-right">
-							<div class="flex items-center justify-end gap-1">
-								<button
-									type="button"
-									class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
-									aria-label="Copy everything in this row"
-									title="Copy all"
-									onclick={() => copyValue('row-' + a.id, appToText(a))}
-								>
-									{#if copiedId === 'row-' + a.id}
-										<svg class="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
-									{:else}
-										<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
-									{/if}
-								</button>
-								<button class="btn-ghost !py-1" onclick={() => (selected = a)}>View</button>
-							</div>
-						</td>
-					</tr>
-				{:else}
-					<tr><td colspan="5" class="px-4 py-4 text-slate-500">No applications found.</td></tr>
-				{/each}
-			</tbody>
-		</table>
+	<div class="space-y-4">
+		{#each filtered as a (a.id)}
+			<div class="card space-y-3">
+				<div class="flex items-start justify-between gap-2">
+					<div class="min-w-0">
+						<p class="break-all font-mono text-sm font-semibold">{a.applicationNumber}</p>
+						<p class="mt-1 text-base font-bold">{nameOf(a) || '—'}</p>
+						<p class="text-xs text-slate-500">{new Date(a.submittedAt).toLocaleDateString()}</p>
+					</div>
+					<button
+						type="button"
+						class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
+						aria-label="Copy everything in this application"
+						title="Copy all"
+						onclick={() => copyValue('row-' + a.id, appToText(a))}
+					>
+						{#if copiedId === 'row-' + a.id}
+							<svg class="h-4 w-4 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+						{:else}
+							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
+						{/if}
+					</button>
+				</div>
+				<div class="flex items-center justify-between gap-2">
+					<select class="input !w-auto !py-1" value={a.status} onchange={(e) => setStatus(a, e.currentTarget.value)}>
+						{#each STATUSES as s}<option value={s}>{s}</option>{/each}
+					</select>
+					<button class="btn-3d-ghost btn-3d-lg" onclick={() => (selected = a)}>View</button>
+				</div>
+			</div>
+		{:else}
+			<p class="text-slate-500">No applications found.</p>
+		{/each}
 	</div>
 {/if}
 
