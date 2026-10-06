@@ -8,6 +8,11 @@
 	let recent = $state([]);
 	let loading = $state(true);
 	let copiedId = $state('');
+	let formSearch = $state('');
+	const shownForms = $derived.by(() => {
+		const q = formSearch.trim().toLowerCase();
+		return q ? forms.filter((f) => (f.title || '').toLowerCase().includes(q) || String(f.id).toLowerCase().includes(q)) : forms;
+	});
 
 	const total = $derived(forms.reduce((n, f) => n + (f.counter || 0), 0));
 	const activeCount = $derived(forms.filter((f) => !closedReason(f)).length);
@@ -66,8 +71,9 @@
 	</div>
 
 	<h2 class="mb-3 text-lg font-semibold">Registration forms</h2>
+	<input class="input mb-3" type="search" placeholder="Search forms…" bind:value={formSearch} />
 	<div class="mb-8 space-y-3">
-		{#each forms as f (f.id)}
+		{#each shownForms as f (f.id)}
 			<div class="card flex flex-wrap items-center justify-between gap-3">
 				<div class="flex w-full items-start justify-between gap-2">
 					<div class="min-w-0">
@@ -94,7 +100,7 @@
 				</div>
 			</div>
 		{:else}
-			<p class="text-slate-500">No forms yet. Create your first one.</p>
+			<p class="text-slate-500">{formSearch.trim() ? 'No forms match your search.' : 'No forms yet. Create your first one.'}</p>
 		{/each}
 	</div>
 
