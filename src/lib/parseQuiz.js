@@ -199,6 +199,7 @@ export function parseQuizCsv(text, title = '') {
 	const ei = col('explanation', 'rationale', 'reason', 'solution', 'feedback');
 	const ti = col('topic', 'category', 'subject', 'section');
 	const mi = col('marks', 'points', 'mark', 'score');
+	const ii = col('image', 'imagelink', 'imageurl', 'img', 'imglink', 'picture', 'photo', 'link');
 	if (qi < 0 || optCols.length < 2) return { title, slug: slugify(title || 'quiz') || 'quiz', prefix: 'QUIZ', fields: [], dropped: rows.length, error: 'CSV needs a "question" column and at least two option columns (option_a, option_b, …).' };
 
 	const fields = [];
@@ -232,6 +233,7 @@ export function parseQuizCsv(text, title = '') {
 			points: Math.max(1, Number(get(mi)) || 1)
 		};
 		if (get(ei)) f.explanation = get(ei);
+		if (/^https?:\/\//i.test(get(ii))) f.image = get(ii);
 		const topic = [get(ti), ''].filter(Boolean)[0];
 		if (topic) f.topic = topic;
 		fields.push(f);

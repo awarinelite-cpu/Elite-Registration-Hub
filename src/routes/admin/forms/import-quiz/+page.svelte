@@ -112,7 +112,7 @@
 		<div class="rounded-lg border border-dashed border-teal-300 bg-teal-50/60 p-3">
 			<label class="label" for="qcsv">Or upload a CSV file</label>
 			<input class="input file:mr-3 file:rounded file:border-0 file:bg-teal-100 file:px-3 file:py-1 file:text-teal-800" id="qcsv" type="file" accept=".csv,.txt,text/csv" onchange={onFile} />
-			<p class="mt-1 text-xs text-slate-600">Columns: <code>question, option_a, option_b, option_c, option_d, answer</code> (letter such as B, or A,C for several), plus optional <code>explanation, topic, marks</code>. Extra columns like year are ignored.</p>
+			<p class="mt-1 text-xs text-slate-600">Columns: <code>question, option_a, option_b, option_c, option_d, answer</code> (letter such as B, or A,C for several), plus optional <code>explanation, topic, marks, image</code> (image = Imgur/ImgChest link). Extra columns like year are ignored.</p>
 		</div>
 		<div class="flex flex-wrap gap-2">
 			<button class="btn" onclick={parse} disabled={!text.trim()}>Preview quiz</button>
@@ -175,6 +175,7 @@
 					<button class="btn-danger !px-2 !py-1" onclick={() => parsed.fields.splice(i, 1)} aria-label="Remove">✕</button>
 				</div>
 				{#if f.topic}<div class="text-xs font-medium text-teal-700">{f.topic}</div>{/if}
+				<input class="input" type="url" placeholder="Image link (optional)" aria-label="Image link" bind:value={f.image} />
 				<div class="flex flex-wrap gap-2">
 					{#each f.options as o}
 						<button type="button" class="rounded-lg border px-3 py-1.5 text-left text-sm {isCorrect(f, o) ? 'border-green-600 bg-green-600 font-semibold text-white' : 'border-slate-300 bg-white'}" onclick={() => toggle(f, o)}>

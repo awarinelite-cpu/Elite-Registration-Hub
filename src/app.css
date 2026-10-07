@@ -134,3 +134,11 @@ html.dark .btn-3d-ghost {
 @media print {
 	html.dark { color-scheme: light; }
 }
+
+/* Larger, justified text for quiz (MCQ) and survey questions */
+.qbig .label.qtext { font-size: 1.2rem; line-height: 1.55; font-weight: 600; text-align: justify; hyphens: auto; }
+.qbig label.flex, .qbig .opt { font-size: 1.05rem !important; line-height: 1.45; text-align: justify; }
+.qbig .input { font-size: 1.05rem; }
+.qbig .text-xs { font-size: 0.85rem; }
+.qreview li { text-align: justify; font-size: 1.05rem; line-height: 1.5; }
+.qreview li .text-xs { font-size: 0.9rem; }

@@ -130,16 +130,16 @@
 					<div class="text-3xl font-bold">{form.result.score} / {form.result.total}</div>
 					<div class="text-sm text-slate-700">
 						{form.result.pct}%{#if form.result.passed === true} — Passed ✅{:else if form.result.passed === false} — Not passed{/if}
-					{#if form.result.questions && form.result.answered < form.result.questions}<div class="mt-1 text-sm font-medium text-amber-800">⚠ {form.result.questions - form.result.answered} of {form.result.questions} questions not answered</div>{/if}
+					{#if form.result.questions && form.result.answered < form.result.questions}<div class="mt-1 text-sm font-medium text-slate-700">{form.result.questions - form.result.answered} of {form.result.questions} questions not answered</div>{/if}
 </div>
 				</div>
 			{/if}
 			{#if form.review}
-				<ul class="mt-3 space-y-2 text-left text-sm">
+				<ul class="qreview mt-3 space-y-2 text-left text-sm">
 					{#each form.review as r, i}
-						<li class="rounded-lg border p-3 {r.unanswered ? 'border-amber-300 bg-amber-50' : r.ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
-							<div class="font-semibold">{r.unanswered ? '⚠' : r.ok ? '✓' : '✗'} {i + 1}. {r.label}</div>
-							{#if r.unanswered}<div class="font-medium text-amber-800">Not answered</div>{:else}<div class="text-slate-700">Your answer: {r.given}</div>{/if}
+						<li class="rounded-lg border p-3 {r.unanswered ? 'border-slate-200' : r.ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+							<div class="font-semibold">{r.unanswered ? '–' : r.ok ? '✓' : '✗'} {i + 1}. {r.label}</div>
+							{#if r.unanswered}<div class="text-slate-600">Not answered</div>{:else}<div class="text-slate-700">Your answer: {r.given}</div>{/if}
 							{#if !r.ok}<div class="text-slate-700">Correct answer: {r.answer}</div>{/if}
 							{#if r.explanation}<div class="mt-1 text-xs text-slate-600">{r.explanation}</div>{/if}
 						</li>
@@ -216,7 +216,7 @@
 				<input type="hidden" name="_mode" value={mode} />
 				{#if isQuiz}
 					<div class={started && !preError ? 'hidden' : 'space-y-4'}>
-						<FormFields fields={pre} values={form?.values} errors={form?.errors} />
+						<FormFields big={!isReg} fields={pre} values={form?.values} errors={form?.errors} />
 					</div>
 					{#if !started}
 						<div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -245,11 +245,11 @@
 							<button type="button" class="btn w-full" onclick={start} disabled={loadingAnswers}>{loadingAnswers ? 'Loading…' : 'CONTINUE'}</button>
 						</div>
 					{:else}
-						<FormFields fields={qs} values={form?.values} errors={form?.errors} reading={mode === 'reading'} {answers} />
+						<FormFields big fields={qs} values={form?.values} errors={form?.errors} reading={mode === 'reading'} {answers} />
 						<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 					{/if}
 				{:else}
-					<FormFields fields={data.form.fields} values={form?.values} errors={form?.errors} />
+					<FormFields big={!isReg} fields={data.form.fields} values={form?.values} errors={form?.errors} />
 					<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 				{/if}
 			</form>

@@ -25,6 +25,13 @@ export const FORM_KINDS = [
 	{ value: 'quiz', label: 'Quiz / exam (scored MCQ)' },
 	{ value: 'survey', label: 'Questionnaire / survey' }
 ];
+/** Turn a pasted image link into something an <img> can show (imgur page links -> direct links). Returns '' if not http(s). */
+export function imageSrc(url) {
+	const u = String(url || '').trim();
+	if (!/^https?:\/\//i.test(u)) return '';
+	const m = u.match(/^https?:\/\/(?:www\.|m\.)?imgur\.com\/(?!a\/|gallery\/)([A-Za-z0-9]{5,8})\/?(?:[?#].*)?$/i);
+	return m ? `https://i.imgur.com/${m[1]}.jpg` : u;
+}
 export const isRegistration = (form) => !form?.kind || form.kind === 'registration';
 /** Fields safe to send to the public: answer keys removed. */
 export const publicFields = (fields) => (fields || []).map(({ correct, explanation, ...f }) => (Array.isArray(correct) ? correct.length : correct) ? { ...f, scored: true } : f);

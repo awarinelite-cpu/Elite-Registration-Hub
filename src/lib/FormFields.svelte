@@ -1,11 +1,11 @@
 <script>
-	import { STATES, pairedStateField } from '$lib/forms.js';
+	import { STATES, pairedStateField, imageSrc } from '$lib/forms.js';
 	import { lgasFor } from '$lib/lgas.js';
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
 	import ScratchCards from '$lib/ScratchCards.svelte';
 	import SsceExams from '$lib/SsceExams.svelte';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
-	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null } = $props();
+	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false } = $props();
 	const qNo = (f) => fields.filter((x) => x.scored).findIndex((x) => x.id === f.id) + 1;
 
 	function inputType(t) {
@@ -31,16 +31,17 @@
 	{#if f.id === 'doc_ssce_2' && !showSecond}
 		<!-- hidden until Add SSCE -->
 	{:else if f.scored && reading && answers}
-		<ReadingQuestion field={f} number={qNo(f)} answer={answers[f.id]} value={values?.[f.id]} error={errors?.[f.id]} />
+		<ReadingQuestion {big} field={f} number={qNo(f)} answer={answers[f.id]} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else if f.type === 'scratchcards'}
 		<ScratchCards field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else if f.type === 'ssceexams'}
 		<SsceExams field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else}
-	<div>
-		<label class="label" for={`f_${f.id}`}>
+	<div class={big ? 'qbig' : ''}>
+		<label class="label {big ? 'qtext' : ''}" for={`f_${f.id}`}>
 			{#if f.scored}{qNo(f)}. {/if}{f.label}{#if f.required}<span class="text-red-600"> *</span>{/if}
 		</label>
+		{#if imageSrc(f.image)}<img src={imageSrc(f.image)} alt="" loading="lazy" referrerpolicy="no-referrer" class="mb-2 max-h-96 w-full rounded-lg border border-slate-200 bg-white object-contain" />{/if}
 
 		{#if f.type === 'textarea'}
 			<textarea class="input" rows="4" id={`f_${f.id}`} name={`f_${f.id}`} placeholder={f.placeholder} value={val(f)}></textarea>

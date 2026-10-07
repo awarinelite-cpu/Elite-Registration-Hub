@@ -1,6 +1,7 @@
 <script>
+	import { imageSrc } from '$lib/forms.js';
 	// Reading mode: the answer (and explanation) appears as soon as the option is chosen.
-	let { field, number, answer, value = '', error = '' } = $props();
+	let { field, number, answer, value = '', error = '', big = false } = $props();
 	const multi = field.type === 'checkbox';
 	let pick = $state(multi ? (Array.isArray(value) ? [...value] : []) : value || '');
 	let revealed = $state(false);
@@ -17,11 +18,12 @@
 	const tone = (o) => (!revealed ? 'border-slate-200' : right.includes(o) ? 'border-green-500 bg-green-50' : chosen.includes(o) ? 'border-red-400 bg-red-50' : 'border-slate-200 opacity-70');
 </script>
 
-<div>
-	<div class="label">{number}. {field.label}{#if multi}<span class="ml-1 text-xs font-normal text-slate-500">(select all that apply)</span>{/if}</div>
+<div class={big ? 'qbig' : ''}>
+	<div class="label {big ? 'qtext' : ''}">{number}. {field.label}{#if multi}<span class="ml-1 text-xs font-normal text-slate-500">(select all that apply)</span>{/if}</div>
+	{#if imageSrc(field.image)}<img src={imageSrc(field.image)} alt="" loading="lazy" referrerpolicy="no-referrer" class="mb-2 max-h-96 w-full rounded-lg border border-slate-200 bg-white object-contain" />{/if}
 	<div class="space-y-1.5" id={`f_${field.id}`}>
 		{#each field.options || [] as o}
-			<label class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm {tone(o)}">
+			<label class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm {big ? 'opt' : ''} {tone(o)}">
 				{#if multi}
 					<input type="checkbox" name={`f_${field.id}`} value={o} bind:group={pick} onclick={lock} class="accent-teal-700" />
 				{:else}

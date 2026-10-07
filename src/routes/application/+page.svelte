@@ -99,16 +99,16 @@
 					<div class="text-3xl font-bold">{data.result.score} / {data.result.total}</div>
 					<div class="text-sm text-slate-700">
 						{data.result.pct}%{#if data.result.passed === true} — Passed ✅{:else if data.result.passed === false} — Not passed{/if}
-					{#if data.result.questions && data.result.answered < data.result.questions}<div class="mt-1 text-sm font-medium text-amber-800">⚠ {data.result.questions - data.result.answered} of {data.result.questions} questions not answered</div>{/if}
+					{#if data.result.questions && data.result.answered < data.result.questions}<div class="mt-1 text-sm font-medium text-slate-700">{data.result.questions - data.result.answered} of {data.result.questions} questions not answered</div>{/if}
 </div>
 				</div>
 			{/if}
 			{#if data.review}
-				<ul class="mb-4 space-y-2 text-sm">
+				<ul class="qreview mb-4 space-y-2 text-sm">
 					{#each data.review as r, i}
-						<li class="rounded-lg border p-3 {r.unanswered ? 'border-amber-300 bg-amber-50' : r.ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
-							<div class="font-semibold">{r.unanswered ? '⚠' : r.ok ? '✓' : '✗'} {i + 1}. {r.label}</div>
-							{#if r.unanswered}<div class="font-medium text-amber-800">Not answered</div>{:else}<div class="text-slate-700">Your answer: {r.given}</div>{/if}
+						<li class="rounded-lg border p-3 {r.unanswered ? 'border-slate-200' : r.ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+							<div class="font-semibold">{r.unanswered ? '–' : r.ok ? '✓' : '✗'} {i + 1}. {r.label}</div>
+							{#if r.unanswered}<div class="text-slate-600">Not answered</div>{:else}<div class="text-slate-700">Your answer: {r.given}</div>{/if}
 							{#if !r.ok}<div class="text-slate-700">Correct answer: {r.answer}</div>{/if}
 							{#if r.explanation}<div class="mt-1 text-xs text-slate-600">{r.explanation}</div>{/if}
 						</li>

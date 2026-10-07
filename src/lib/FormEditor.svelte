@@ -109,6 +109,10 @@
 		for (const f of fields) {
 			if (!f.label.trim()) return (error = 'Every field needs a label.');
 			const o = { id: f.id, type: f.type, label: f.label.trim(), required: !!f.required, placeholder: (f.placeholder || '').trim() };
+			if (kind !== 'registration' && (f.image || '').trim()) {
+				if (!/^https?:\/\//i.test(f.image.trim())) return (error = `Image link for "${o.label}" must start with http:// or https://`);
+				o.image = f.image.trim();
+			}
 			if (OPTION_TYPES.includes(f.type)) {
 				o.options = [...new Set((f.optionsText || '').split('\n').map((s) => s.trim()).filter(Boolean))];
 				if (o.options.length < 1) return (error = `"${o.label}" needs at least one option.`);
@@ -265,6 +269,12 @@
 					<button class="btn-ghost" onclick={() => move(i, 1)} disabled={i === fields.length - 1} aria-label="Move down">↓</button>
 					<button class="btn-danger" onclick={() => fields.splice(i, 1)} aria-label="Remove field">✕</button>
 				</div>
+				{#if kind !== 'registration'}
+					<div class="sm:col-span-3">
+						<label class="label" for="im{f.id}">Image link (optional — Imgur / ImgChest direct link)</label>
+						<input class="input" id="im{f.id}" type="url" placeholder="https://i.imgur.com/abc123.jpg" bind:value={f.image} />
+					</div>
+				{/if}
 				{#if OPTION_TYPES.includes(f.type)}
 					<div class="sm:col-span-3">
 						<label class="label" for="o{f.id}">Options (one per line)</label>
