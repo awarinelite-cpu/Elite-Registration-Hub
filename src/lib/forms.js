@@ -190,7 +190,7 @@ export const STATES = [
 	'Taraba', 'Yobe', 'Zamfara'
 ];
 
-export const STATUSES = ['submitted', 'reviewed', 'approved', 'rejected'];
+export const STATUSES = ['submitted', 'reviewed', 'approved', 'rejected', 'done'];
 
 export const MAX_FILE_BYTES = 1.5 * 1024 * 1024;
 export const MAX_TOTAL_BYTES = 4 * 1024 * 1024;

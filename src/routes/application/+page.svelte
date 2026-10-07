@@ -6,7 +6,7 @@
 	let busy = $state(false);
 	let upBusy = $state(false);
 	const fileFields = $derived(data.fields.filter((f) => f.type === 'file' || f.type === 'photo'));
-	const colors = { submitted: 'bg-blue-100 text-blue-800', reviewed: 'bg-amber-100 text-amber-800', approved: 'bg-green-100 text-green-800', rejected: 'bg-red-100 text-red-800' };
+	const colors = { submitted: 'bg-blue-100 text-blue-800', reviewed: 'bg-amber-100 text-amber-800', approved: 'bg-green-100 text-green-800', rejected: 'bg-red-100 text-red-800', done: 'bg-slate-200 text-slate-700' };
 </script>
 
 <svelte:head><title>My application — EliteReg</title></svelte:head>

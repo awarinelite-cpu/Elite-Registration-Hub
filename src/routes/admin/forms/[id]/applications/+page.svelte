@@ -190,11 +190,11 @@
 
 	<div class="space-y-4">
 		{#each filtered as a (a.id)}
-			<div class="card space-y-3">
+			<div class="card space-y-3 {a.status === 'done' ? '!bg-slate-200 opacity-60' : ''}">
 				<div class="flex items-start justify-between gap-2">
 					<div class="min-w-0">
 						<p class="break-all font-mono text-sm font-semibold">{a.applicationNumber}</p>
-						<p class="mt-1 text-base font-bold">{nameOf(a) || '—'}</p>
+						<p class="mt-1 text-base font-bold">{nameOf(a) || '—'}{#if a.status === 'done'} ✅✅{/if}</p>
 						<p class="text-xs text-slate-500">{new Date(a.submittedAt).toLocaleDateString()}</p>
 					</div>
 					<button
