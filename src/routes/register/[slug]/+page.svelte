@@ -228,7 +228,7 @@
 						<div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
 							<p class="text-sm text-slate-700">
 								<strong>{qs.length}</strong> question{qs.length === 1 ? '' : 's'}.
-								You can submit at any time, even if you haven't answered everything.
+								Do not leave any question unanswered. Ensure you tick an option even if you don't know the answer, you may unknowingly pick the right one.
 							</p>
 							{#if modes === 'both'}
 								<div class="text-sm font-semibold">Choose a mode</div>
