@@ -94,7 +94,8 @@
 							else if (result.type === 'failure') {
 								fail = result.data;
 								window.scrollTo({ top: 0, behavior: 'smooth' });
-							} else fail = { message: 'Something went wrong. Please try again.' };
+							} else fail = { message: result.type === 'error' && result.error?.message ? `Server error: ${result.error.message}` : 'Something went wrong. Please try again.' };
+							if (result.type !== 'success' && result.type !== 'failure') window.scrollTo({ top: 0, behavior: 'smooth' });
 						};
 					}}
 				>
