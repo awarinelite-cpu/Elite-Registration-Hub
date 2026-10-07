@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
-	import { FIELD_TYPES, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
+	import { FIELD_TYPES, FORM_KINDS, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
 
 	let { id = null } = $props();
 	const isNew = !id; // eslint-disable-line
@@ -18,6 +18,14 @@
 	let startDate = $state('');
 	let closingDate = $state('');
 	let allowEdits = $state(true);
+	let kind = $state('registration'); // registration | quiz | survey
+	let quiz = $state({ showResult: 'score', passMark: '', timeLimit: '' });
+	const toEditor = (f) => ({ ...f, optionsText: (f.options || []).join('\n'), correctList: Array.isArray(f.correct) ? [...f.correct] : f.correct ? [f.correct] : [], points: f.points ?? 1 });
+	const optionLines = (f) => [...new Set((f.optionsText || '').split('\n').map((s) => s.trim()).filter(Boolean))];
+	function toggleCorrect(f, o) {
+		const l = f.correctList || [];
+		f.correctList = f.type === 'checkbox' ? (l.includes(o) ? l.filter((x) => x !== o) : [...l, o]) : [o];
+	}
 	let fields = $state([]);
 	let error = $state('');
 	let busy = $state(false);
@@ -37,7 +45,9 @@
 		({ title, description = '', status, startDate = '', closingDate = '', prefix } = d);
 		slug = id;
 		allowEdits = d.allowEdits ?? true;
-		fields = (d.fields || []).map((f) => ({ ...f, optionsText: (f.options || []).join('\n') }));
+		kind = d.kind || 'registration';
+		quiz = { showResult: d.quiz?.showResult || 'score', passMark: d.quiz?.passMark || '', timeLimit: d.quiz?.timeLimit || '' };
+		fields = (d.fields || []).map(toEditor);
 		loading = false;
 		// old forms: swap separate scratch card / SSCE year boxes for the grouped SCRATCH CARD INFO field automatically
 		if (legacyScratch.length) {
@@ -49,9 +59,9 @@
 			converted = true;
 		}
 		// forms with no passport photograph / softcopy documents upload get them added
-		const ensured = ensureUploadFields(fields.map(({ optionsText, ...f }) => f));
+		const ensured = ensureUploadFields(fields.map(({ optionsText, correctList, ...f }) => f), { uploads: kind === 'registration' });
 		if (ensured.map((f) => f.id).join() !== fields.map((f) => f.id).join()) {
-			fields = ensured.map((f) => ({ ...f, optionsText: (f.options || []).join('\n') }));
+			fields = ensured.map(toEditor);
 			converted = true;
 		}
 	});
@@ -62,7 +72,7 @@
 	}
 
 	function addField() {
-		fields.push({ id: newFieldId(), type: 'text', label: '', required: true, placeholder: '', optionsText: '' });
+		fields.push({ id: newFieldId(), type: kind === 'quiz' ? 'radio' : 'text', label: '', required: true, placeholder: '', optionsText: '', correctList: [], points: 1 });
 	}
 	const legacyScratch = $derived(fields.filter((f) => f.type !== 'scratchcards' && /scratch|ssce\s*year/i.test(f.label || '')));
 	function convertScratch() {
@@ -102,6 +112,12 @@
 			if (OPTION_TYPES.includes(f.type)) {
 				o.options = [...new Set((f.optionsText || '').split('\n').map((s) => s.trim()).filter(Boolean))];
 				if (o.options.length < 1) return (error = `"${o.label}" needs at least one option.`);
+				if (kind === 'quiz') {
+					const corr = (f.correctList || []).filter((x) => o.options.includes(x));
+					if (!corr.length) return (error = `"${o.label}" needs a correct answer — tap one of its options below.`);
+					o.correct = f.type === 'checkbox' ? corr : corr[0];
+					o.points = Math.max(1, Number(f.points) || 1);
+				}
 			}
 			out.push(o);
 		}
@@ -112,7 +128,7 @@
 			const clash = await getDocs(query(collection(firestore, 'forms'), where('prefix', '==', cleanPrefix)));
 			if (clash.docs.some((d) => d.id !== id)) throw new Error('Another form already uses that prefix.');
 
-			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits, fields: out, updatedAt: Date.now() };
+			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, quiz: kind === 'quiz' ? { showResult: quiz.showResult, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
 			if (isNew) {
 				const ref = doc(firestore, 'forms', slug);
 				if ((await getDoc(ref)).exists()) throw new Error('That link slug is already taken.');
@@ -182,9 +198,41 @@
 				<option value="closed">Closed</option>
 			</select>
 		</div>
-		<label class="flex items-center gap-2 self-end pb-2 text-sm">
-			<input type="checkbox" bind:checked={allowEdits} class="accent-teal-700" /> Let applicants edit after submitting
-		</label>
+		<div class="sm:col-span-2">
+			<label class="label" for="k">Form type</label>
+			<select class="input" id="k" bind:value={kind}>
+				{#each FORM_KINDS as k}<option value={k.value}>{k.label}</option>{/each}
+			</select>
+			{#if kind !== 'registration'}
+				<p class="mt-1 text-xs text-slate-500">No passport photo or document uploads are added, and people can't change answers after submitting.</p>
+			{/if}
+		</div>
+		{#if kind === 'registration'}
+			<label class="flex items-center gap-2 self-end pb-2 text-sm">
+				<input type="checkbox" bind:checked={allowEdits} class="accent-teal-700" /> Let applicants edit after submitting
+			</label>
+		{/if}
+		{#if kind === 'quiz'}
+			<div>
+				<label class="label" for="sr">After submitting, show</label>
+				<select class="input" id="sr" bind:value={quiz.showResult}>
+					<option value="score">Score only</option>
+					<option value="answers">Score + correct answers</option>
+					<option value="none">Nothing (admin sees results)</option>
+				</select>
+			</div>
+			<div class="grid grid-cols-2 gap-3">
+				<div>
+					<label class="label" for="pm">Pass mark (%)</label>
+					<input class="input" id="pm" type="number" min="0" max="100" bind:value={quiz.passMark} placeholder="optional" />
+				</div>
+				<div>
+					<label class="label" for="tl">Time limit (min)</label>
+					<input class="input" id="tl" type="number" min="0" bind:value={quiz.timeLimit} placeholder="none" />
+				</div>
+			</div>
+			<p class="text-xs text-slate-500 sm:col-span-2">Add a "Short text" Name field so you can tell who took it. In each multiple-choice question, tap the correct option(s). Answers are never sent to the quiz page.</p>
+		{/if}
 	</div>
 
 	<h2 class="mb-3 text-lg font-semibold">Fields</h2>
@@ -211,6 +259,21 @@
 						<label class="label" for="o{f.id}">Options (one per line)</label>
 						<textarea class="input" id="o{f.id}" rows="3" bind:value={f.optionsText}></textarea>
 					</div>
+					{#if kind === 'quiz'}
+						<div class="sm:col-span-3">
+							<div class="label">{f.type === 'checkbox' ? 'Correct answers (tap all that apply)' : 'Correct answer (tap one)'}</div>
+							<div class="flex flex-wrap gap-2">
+								{#each optionLines(f) as o}
+									<button type="button" class="rounded-lg border px-3 py-1.5 text-sm {(f.correctList || []).includes(o) ? 'border-green-600 bg-green-600 font-semibold text-white' : 'border-slate-300 bg-white'}" onclick={() => toggleCorrect(f, o)}>
+										{(f.correctList || []).includes(o) ? '✓ ' : ''}{o}
+									</button>
+								{:else}
+									<span class="text-xs text-slate-500">Type the options above first.</span>
+								{/each}
+							</div>
+							<label class="mt-2 flex items-center gap-2 text-sm">Marks <input class="input !w-20 !py-1" type="number" min="1" bind:value={f.points} /></label>
+						</div>
+					{/if}
 				{/if}
 				<label class="flex items-center gap-2 text-sm sm:col-span-3">
 					<input type="checkbox" bind:checked={f.required} class="accent-teal-700" /> Required

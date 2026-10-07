@@ -4,7 +4,7 @@
 	import { enhance } from '$app/forms';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
-	import { closedReason, migrateFormFields } from '$lib/forms.js';
+	import { closedReason, migrateFormFields, isRegistration } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import BulkFill from '$lib/BulkFill.svelte';
 
@@ -24,7 +24,7 @@
 			if (!s.exists()) loadError = 'Form not found.';
 			else {
 				const d = s.data();
-				form = { id: s.id, ...d, fields: migrateFormFields(d.fields) };
+				form = { id: s.id, ...d, fields: migrateFormFields(d.fields, { uploads: isRegistration(d) }) };
 			}
 		} catch (e) {
 			loadError = 'Could not load form: ' + (e?.message || e);

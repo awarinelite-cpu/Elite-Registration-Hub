@@ -13,11 +13,42 @@ export const FIELD_TYPES = [
 	{ value: 'nin', label: 'NIN (11 digits)' },
 	{ value: 'state', label: 'State (Nigeria)' },
 	{ value: 'lga', label: 'LGA' },
+	{ value: 'rating', label: 'Rating (1–5)' },
 	{ value: 'file', label: 'File upload' },
 	{ value: 'photo', label: 'Passport photograph' },
 	{ value: 'scratchcards', label: 'Scratch card info (WAEC/NECO, up to 2 sittings)' },
 	{ value: 'ssceexams', label: 'SSCE exam number (WAEC/NECO, up to 2 sittings)' }
 ];
+
+export const FORM_KINDS = [
+	{ value: 'registration', label: 'Registration form' },
+	{ value: 'quiz', label: 'Quiz / exam (scored MCQ)' },
+	{ value: 'survey', label: 'Questionnaire / survey' }
+];
+export const isRegistration = (form) => !form?.kind || form.kind === 'registration';
+/** Fields safe to send to the public: answer keys removed. */
+export const publicFields = (fields) => (fields || []).map(({ correct, ...f }) => f);
+
+const listOf = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+/** Score a quiz submission. Only fields with a correct answer count; checkbox questions need the exact set. */
+export function scoreForm(fields, values, quiz = {}) {
+	const items = [];
+	let score = 0;
+	let total = 0;
+	for (const f of fields || []) {
+		const want = listOf(f.correct);
+		if (!want.length) continue;
+		const pts = Number(f.points) > 0 ? Number(f.points) : 1;
+		const got = listOf(values?.[f.id]);
+		const ok = got.length === want.length && want.every((x) => got.includes(x));
+		total += pts;
+		if (ok) score += pts;
+		items.push({ id: f.id, label: f.label, given: got.join(', '), answer: want.join(', '), ok, points: pts });
+	}
+	const pct = total ? Math.round((score / total) * 1000) / 10 : 0;
+	const passMark = Number(quiz?.passMark) || 0;
+	return { score, total, pct, passed: passMark ? pct >= passMark : null, items };
+}
 
 export const OPTION_TYPES = ['select', 'radio', 'checkbox'];
 export const FILE_TYPES = ['file', 'photo'];
@@ -46,7 +77,8 @@ export const DOC_FIELDS = [
 ];
 
 /** Make sure a form has a passport photograph and the three softcopy document uploads (added at the end if missing). */
-export function ensureUploadFields(fields, { required = true } = {}) {
+export function ensureUploadFields(fields, { required = true, uploads = true } = {}) {
+	if (!uploads) return Array.isArray(fields) ? fields : []; // quizzes / questionnaires have no passport photo or documents
 	const list = (Array.isArray(fields) ? fields : []).filter((f) => f.id !== DOCS_FIELD_ID);
 	if (!list.some((f) => f.type === 'photo')) {
 		list.push({ id: PHOTO_FIELD_ID, type: 'photo', label: 'PASSPORT PHOTOGRAPH', required, placeholder: '' });
@@ -67,7 +99,7 @@ export function ensureUploadFields(fields, { required = true } = {}) {
 }
 
 /** Everything applied on the fly to forms saved before these fields existed. */
-export const migrateFormFields = (fields, opts = {}) => ensureUploadFields(migrateSsceFields(migrateScratchFields(fields, opts), opts), opts);
+export const migrateFormFields = (fields, opts = {}) => opts.uploads === false ? (Array.isArray(fields) ? fields : []) : ensureUploadFields(migrateSsceFields(migrateScratchFields(fields, opts), opts), opts);
 
 /**
  * Old forms stored separate scratch card / SSCE year boxes. Swap them for the grouped SCRATCH CARD INFO field
@@ -246,6 +278,8 @@ export function validateValue(field, value) {
 			return /^\d{4}-\d{2}-\d{2}$/.test(v) ? '' : 'Enter a valid date.';
 		case 'state':
 			return STATES.includes(v) ? '' : 'Select a valid state.';
+		case 'rating':
+			return /^[1-5]$/.test(v) ? '' : 'Choose a rating from 1 to 5.';
 		case 'select':
 		case 'radio':
 			return (field.options || []).includes(v) ? '' : 'Select a valid option.';

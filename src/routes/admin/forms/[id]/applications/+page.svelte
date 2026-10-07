@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
-	import { STATUSES, studentName, joinArray, migrateFormFields, buildDetailItems } from '$lib/forms.js';
+	import { STATUSES, studentName, joinArray, migrateFormFields, buildDetailItems, isRegistration, scoreForm } from '$lib/forms.js';
 	import ApplicationView from '$lib/ApplicationView.svelte';
 	import { downloadCsv } from '$lib/csv.js';
 
@@ -25,7 +25,7 @@
 			return;
 		}
 		const d = fs.data();
-		form = { id: fs.id, ...d, fields: migrateFormFields(d.fields, { keepLegacy: true }) };
+		form = { id: fs.id, ...d, fields: migrateFormFields(d.fields, { keepLegacy: true, uploads: isRegistration(d) }) };
 		const snap = await getDocs(query(collection(firestore, 'applications'), where('formId', '==', formId)));
 		apps = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => b.submittedAt - a.submittedAt);
 		loading = false;
@@ -62,12 +62,13 @@
 	}
 
 	function exportCsv() {
-		const head = ['Application No.', 'Status', 'Submitted', 'Last updated', ...form.fields.map((f) => f.label)];
+		const head = ['Application No.', 'Status', 'Submitted', 'Last updated', ...(form.kind === 'quiz' ? ['Score', 'Out of', 'Percent'] : []), ...form.fields.map((f) => f.label)];
 		const rows = filtered.map((a) => [
 			a.applicationNumber,
 			a.status,
 			new Date(a.submittedAt).toISOString(),
 			new Date(a.updatedAt || a.submittedAt).toISOString(),
+			...(form.kind === 'quiz' ? [a.result?.score ?? '', a.result?.total ?? '', a.result?.pct ?? ''] : []),
 			...form.fields.map((f) => display(f, a))
 		]);
 		downloadCsv(`${form.id}-applications.csv`, [head, ...rows]);
@@ -75,7 +76,17 @@
 
 	let copiedId = $state('');
 
-	const detailItems = $derived(selected && form ? buildDetailItems(form.fields, selected.data) : []);
+	const detailItems = $derived.by(() => {
+		if (!selected || !form) return [];
+		const items = buildDetailItems(form.fields, selected.data);
+		if (form.kind !== 'quiz') return items;
+		// mark each question right/wrong and put the score first
+		const s = scoreForm(form.fields, selected.data, form.quiz);
+		const byId = Object.fromEntries(s.items.map((x) => [x.id, x]));
+		const marked = items.map((it) => (byId[it.id] ? { ...it, label: it.label + (byId[it.id].ok ? ' ✓' : ` ✗ (correct: ${byId[it.id].answer})`) } : it));
+		const head = `${s.score} / ${s.total} (${s.pct}%)${s.passed === true ? ' — Passed' : s.passed === false ? ' — Not passed' : ''}`;
+		return [{ id: '_score', label: 'SCORE', v: head, text: head }, ...marked];
+	});
 
 	async function copyValue(id, text) {
 		try {
@@ -174,7 +185,7 @@
 				<div class="flex items-start justify-between gap-2">
 					<div class="min-w-0">
 						<p class="break-all font-mono text-sm font-semibold">{a.applicationNumber}</p>
-						<p class="mt-1 text-base font-bold">{nameOf(a) || '—'}{#if a.status === 'done'} ✅✅{/if}</p>
+						<p class="mt-1 text-base font-bold">{nameOf(a) || '—'}{#if a.status === 'done'} ✅✅{/if}{#if a.result} <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-sm text-teal-800">{a.result.score}/{a.result.total}</span>{/if}</p>
 						<p class="text-xs text-slate-500">{new Date(a.submittedAt).toLocaleDateString()}</p>
 					</div>
 					<button

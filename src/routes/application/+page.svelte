@@ -92,6 +92,27 @@
 	{:else}
 		{#if data.canEdit}
 			<button class="btn mb-4 w-full" onclick={() => (editing = true)}>✏️ Edit application</button>
+		{:else if data.kind !== 'registration'}
+			{#if data.result}
+				<div class="mb-4 rounded-xl border p-4 {data.result.passed === false ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}">
+					<div class="text-xs font-semibold uppercase tracking-wide text-slate-600">Your score</div>
+					<div class="text-3xl font-bold">{data.result.score} / {data.result.total}</div>
+					<div class="text-sm text-slate-700">
+						{data.result.pct}%{#if data.result.passed === true} — Passed ✅{:else if data.result.passed === false} — Not passed{/if}
+					</div>
+				</div>
+			{/if}
+			{#if data.review}
+				<ul class="mb-4 space-y-2 text-sm">
+					{#each data.review as r}
+						<li class="rounded-lg border p-3 {r.ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+							<div class="font-semibold">{r.ok ? '✓' : '✗'} {r.label}</div>
+							<div class="text-slate-700">Your answer: {r.given || '—'}</div>
+							{#if !r.ok}<div class="text-slate-700">Correct answer: {r.answer}</div>{/if}
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		{:else}
 			<p class="mb-4 rounded-lg bg-slate-100 p-3 text-sm text-slate-700">
 				This application has been marked <strong>done</strong>, so it is locked and can't be edited. Contact the admin if you need a change.

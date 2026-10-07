@@ -61,6 +61,16 @@
 					<option value={o}>{o}</option>
 				{/each}
 			</select>
+		{:else if f.type === 'rating'}
+			<div class="flex flex-wrap gap-2" id={`f_${f.id}`}>
+				{#each ['1', '2', '3', '4', '5'] as o}
+					<label class="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-slate-300 text-sm font-semibold has-[:checked]:border-teal-700 has-[:checked]:bg-teal-700 has-[:checked]:text-white">
+						<input type="radio" name={`f_${f.id}`} value={o} checked={val(f) === o} class="sr-only" />
+						{o}
+					</label>
+				{/each}
+			</div>
+			<p class="mt-1 text-xs text-slate-500">1 = lowest, 5 = highest</p>
 		{:else if f.type === 'radio'}
 			<div class="space-y-1.5" id={`f_${f.id}`}>
 				{#each f.options || [] as o}

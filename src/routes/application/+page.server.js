@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
 import { readSession, SESSION_COOKIE } from '$lib/server/security.js';
-import { diffData, studentName, SCRATCH_FIELD_ID, SSCE_FIELD_ID, migrateScratchFields, migrateSsceFields, ensureUploadFields } from '$lib/forms.js';
+import { diffData, studentName, SCRATCH_FIELD_ID, SSCE_FIELD_ID, migrateScratchFields, migrateSsceFields, ensureUploadFields, isRegistration, publicFields, scoreForm } from '$lib/forms.js';
 
 async function current(cookies) {
 	const number = readSession(cookies.get(SESSION_COOKIE));
@@ -17,7 +17,7 @@ async function current(cookies) {
 	if (app.data?.[SCRATCH_FIELD_ID]) form.fields = migrateScratchFields(form.fields);
 	if (app.data?.[SSCE_FIELD_ID]) form.fields = migrateSsceFields(form.fields);
 	// every applicant can add a passport photograph / softcopy documents after submitting (optional here, so old applications can still be edited)
-	form.fields = ensureUploadFields(form.fields, { required: false });
+	if (isRegistration(form)) form.fields = ensureUploadFields(form.fields, { required: false });
 	return { appRef, app, form };
 }
 
@@ -30,11 +30,16 @@ export async function load({ cookies }) {
 		if (v && typeof v === 'object' && !Array.isArray(v)) files[f.id] = { name: v.name };
 		else if (v !== undefined) values[f.id] = v;
 	}
+	const show = form.quiz?.showResult || 'score';
+	const scored = form.kind === 'quiz' && show === 'answers' ? scoreForm(form.fields, app.data, form.quiz) : null;
 	return {
+		kind: form.kind || 'registration',
+		result: form.kind === 'quiz' && show !== 'none' ? app.result || null : null,
+		review: scored ? scored.items.map(({ label, given, answer, ok }) => ({ label, given, answer, ok })) : null,
 		title: form.title,
 		formId: app.formId,
 		name: studentName(form, app),
-		fields: form.fields,
+		fields: publicFields(form.fields),
 		data: app.data,
 		values,
 		files,
@@ -42,13 +47,14 @@ export async function load({ cookies }) {
 		status: app.status,
 		submittedAt: app.submittedAt,
 		// editable until the admin marks it "done" (admin can untick Done to unlock it again)
-		canEdit: app.status !== 'done'
+		canEdit: isRegistration(form) && app.status !== 'done'
 	};
 }
 
 export const actions = {
 	update: async ({ request, cookies }) => {
 		const { appRef, app, form } = await current(cookies);
+		if (!isRegistration(form)) return fail(403, { message: 'Answers cannot be changed after submitting.' });
 		if (app.status === 'done') {
 			return fail(403, { message: 'This application is marked done and is locked. Contact the admin if you need a change.' });
 		}
