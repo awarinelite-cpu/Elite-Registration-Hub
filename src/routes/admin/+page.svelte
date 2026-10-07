@@ -1,11 +1,11 @@
 <script>
 	import { onMount } from 'svelte';
-	import { collection, deleteDoc, doc, getDocs, limit, orderBy, query, where, writeBatch } from 'firebase/firestore';
+	import { goto } from '$app/navigation';
+	import { collection, deleteDoc, doc, getDocs, orderBy, query, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { appSearchText, closedReason, studentName } from '$lib/forms.js';
 
 	let forms = $state([]);
-	let recent = $state([]);
 	let loading = $state(true);
 	let copiedId = $state('');
 	let formSearch = $state('');
@@ -40,12 +40,8 @@
 	const titleOf = (id) => forms.find((f) => f.id === id)?.title ?? id;
 
 	onMount(async () => {
-		const [fs, rs] = await Promise.all([
-			getDocs(collection(firestore, 'forms')),
-			getDocs(query(collection(firestore, 'applications'), orderBy('submittedAt', 'desc'), limit(8)))
-		]);
+		const fs = await getDocs(collection(firestore, 'forms'));
 		forms = fs.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-		recent = rs.docs.map((d) => ({ id: d.id, ...d.data() }));
 		loading = false;
 	});
 
@@ -69,11 +65,15 @@
 			}
 			await deleteDoc(doc(firestore, 'forms', f.id));
 			forms = forms.filter((x) => x.id !== f.id);
-			recent = recent.filter((a) => a.formId !== f.id);
 		} catch (e) {
 			alert('Could not delete form: ' + (e?.message || e));
 		}
 	}
+	// tapping anywhere on a form card (except its own buttons/links) opens that form's applications
+	const openApps = (e, f) => {
+		if (e.target.closest('a,button')) return;
+		goto(`/admin/forms/${f.id}/applications`);
+	};
 	const label = (f) => closedReason(f) ? (f.status === 'active' ? 'Closed' : f.status === 'draft' ? 'Draft' : 'Closed') : 'Active';
 </script>
 
@@ -95,7 +95,13 @@
 	<input class="input mb-3" type="search" placeholder="Search forms or student name…" bind:value={formSearch} />
 	<div class="mb-8 space-y-3">
 		{#each shownForms as f (f.id)}
-			<div class="card flex flex-wrap items-center justify-between gap-3">
+			<div
+				class="card flex cursor-pointer flex-wrap items-center justify-between gap-3"
+				role="link"
+				tabindex="0"
+				onclick={(e) => openApps(e, f)}
+				onkeydown={(e) => e.key === 'Enter' && openApps(e, f)}
+			>
 				<div class="flex w-full items-start justify-between gap-2">
 					<div class="min-w-0">
 					<div class="font-semibold">{f.title}</div>
@@ -144,26 +150,4 @@
 			{/if}
 		</div>
 	{/if}
-
-	<h2 class="mb-3 text-lg font-semibold">Recent applications</h2>
-	<div class="card overflow-x-auto !p-0">
-		<table class="w-full text-left text-sm">
-			<thead class="bg-slate-50 text-xs uppercase text-slate-500">
-				<tr><th class="px-4 py-2">Application No.</th><th class="px-4 py-2">Name</th><th class="px-4 py-2">Form</th><th class="px-4 py-2">Date</th><th class="px-4 py-2">Status</th></tr>
-			</thead>
-			<tbody>
-				{#each recent as a (a.id)}
-					<tr class="border-t border-slate-100">
-						<td class="px-4 py-2 font-mono">{a.applicationNumber}</td>
-						<td class="px-4 py-2">{nameOfApp(a) || '—'}</td>
-						<td class="px-4 py-2">{titleOf(a.formId)}</td>
-						<td class="px-4 py-2">{new Date(a.submittedAt).toLocaleDateString()}</td>
-						<td class="px-4 py-2">{a.status}</td>
-					</tr>
-				{:else}
-					<tr><td colspan="5" class="px-4 py-4 text-slate-500">No applications yet.</td></tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
 {/if}
