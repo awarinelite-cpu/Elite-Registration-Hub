@@ -102,61 +102,20 @@
 		<div class="card"><div class="text-sm text-slate-500">Active forms</div><div class="text-3xl font-bold">{activeCount}</div></div>
 	</div>
 
-	<input class="input mb-4" type="search" placeholder="Search forms or student name…" bind:value={formSearch} />
-	<div class="mb-8 space-y-4">
-		{#each FOLDERS as fo (fo.kind)}
-			{@const list = inFolder(fo.kind)}
-			{#if !formSearch.trim() || list.length}
-				<section>
-					<button type="button" class="mb-2 flex w-full items-center justify-between gap-2 text-left" onclick={() => (openFolders[fo.kind] = !openFolders[fo.kind])} aria-expanded={openFolders[fo.kind]}>
-						<h2 class="text-lg font-semibold">{fo.icon} {fo.title} <span class="text-sm font-normal text-slate-500">({formSearch.trim() ? list.length : allIn(fo.kind)})</span></h2>
-						<span class="text-slate-500">{openFolders[fo.kind] ? '▾' : '▸'}</span>
-					</button>
-					{#if openFolders[fo.kind] || formSearch.trim()}
-						<div class="space-y-3">
-					{#each inFolder(fo.kind) as f (f.id)}
-						<div
-							class="card flex cursor-pointer flex-wrap items-center justify-between gap-3"
-							role="link"
-							tabindex="0"
-							onclick={(e) => openApps(e, f)}
-							onkeydown={(e) => e.key === 'Enter' && openApps(e, f)}
-						>
-							<div class="flex w-full items-start justify-between gap-2">
-								<div class="min-w-0">
-								<div class="font-semibold">{f.title}</div>
-								<div class="text-sm text-slate-500">
-									{(f.counter || 0).toLocaleString()} applications ·
-									<span class={label(f) === 'Active' ? 'text-green-700' : 'text-slate-500'}>{label(f)}</span>
-								</div>
-								</div>
-								<button
-									type="button"
-									class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-									aria-label="Delete form {f.title}"
-									title="Delete form"
-									onclick={() => removeForm(f)}
-								>
-									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 5v6m4-6v6" /></svg>
-								</button>
-							</div>
-							<div class="flex flex-wrap gap-2">
-								<a class="btn" href="/admin/forms/{f.id}/fill">Fill form</a>
-								<a class="btn-ghost" href="/admin/forms/{f.id}">Manage</a>
-								<a class="btn-ghost" href="/admin/forms/{f.id}/applications">View applications</a>
-								<button class="btn-ghost" onclick={() => copyLink(f.id)}>{copiedId === f.id ? 'Copied ✓' : 'Copy link'}</button>
-							</div>
-						</div>
-							{:else}
-								<p class="text-sm text-slate-500">No forms in this folder yet.</p>
-							{/each}
-						</div>
-					{/if}
-				</section>
-			{/if}
-		{/each}
-		{#if !forms.length && !formSearch.trim()}<p class="text-slate-500">No forms yet. Create your first one.</p>{/if}
-	</div>
+	<input class="input mb-4" type="search" placeholder="Search student name or application number…" bind:value={formSearch} />
+	{#if !formSearch.trim()}
+		<div class="mb-8 space-y-3">
+			{#each FOLDERS as fo (fo.kind)}
+				<a href="/admin/folder/{fo.kind}" class="card flex items-center justify-between gap-3">
+					<div>
+						<div class="text-lg font-semibold">{fo.icon} {fo.title}</div>
+						<div class="text-sm text-slate-500">{allIn(fo.kind)} form{allIn(fo.kind) === 1 ? '' : 's'}</div>
+					</div>
+					<span class="text-2xl text-slate-400">›</span>
+				</a>
+			{/each}
+		</div>
+	{/if}
 
 	{#if formSearch.trim()}
 		<h2 class="mb-3 text-lg font-semibold">Matching applications</h2>
