@@ -7,7 +7,7 @@
 <svelte:head><title>Check application — EliteReg</title></svelte:head>
 
 <main class="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-	<a href="/" class="mb-4 text-center text-xl font-extrabold text-teal-700">EliteReg</a>
+	<div class="mb-4 text-center text-xl font-extrabold text-teal-700">EliteReg</div>
 	<form
 		method="POST"
 		class="card space-y-4"
