@@ -28,10 +28,10 @@
 	</h3>
 
 	{#each cards as c, i}
-		<div class="space-y-3 rounded-xl border border-slate-200 bg-white/70 p-3">
+		<div class="space-y-3 rounded-xl border p-3 {i === 0 ? 'border-slate-200 bg-white/70' : 'border-amber-300 bg-amber-50'}">
 			{#if cards.length > 1}
 				<div class="flex items-center justify-between">
-					<p class="text-sm font-semibold text-teal-800">{i === 0 ? 'First sitting' : 'Second sitting'}</p>
+					<p class="text-sm font-semibold {i === 0 ? 'text-teal-800' : 'text-amber-800'}">{i === 0 ? 'First sitting' : 'Second sitting'}</p>
 					{#if i > 0}
 						<button type="button" class="text-xs font-medium text-red-600 hover:underline" onclick={() => cards.splice(i, 1)}>Remove</button>
 					{/if}
