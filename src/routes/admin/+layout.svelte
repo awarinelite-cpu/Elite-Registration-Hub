@@ -3,6 +3,7 @@
 	import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
+	import ThemeToggle from '$lib/ThemeToggle.svelte';
 
 	let { children } = $props();
 	let state = $state('loading'); // loading | signedout | denied | ok
@@ -66,6 +67,7 @@
 			<a href="/admin" class="text-lg font-extrabold text-teal-700">EliteReg <span class="text-xs font-medium text-slate-500">Admin</span></a>
 			<div class="flex items-center gap-3 text-sm">
 				<span class="hidden text-slate-500 sm:inline">{user?.email}</span>
+				<ThemeToggle inline />
 				<button class="btn-3d-ghost btn-3d-lg" onclick={() => signOut(auth)}>Sign out</button>
 			</div>
 		</div>
