@@ -3,7 +3,9 @@
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
 	import { doc, getDoc } from 'firebase/firestore';
+	import { goto } from '$app/navigation';
 	import { firestore } from '$lib/firebase.js';
+	import { session } from '$lib/adminSession.svelte.js';
 	import { closedReason, migrateFormFields, isRegistration } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import BulkFill from '$lib/BulkFill.svelte';
@@ -19,6 +21,7 @@
 	let copied = $state(false);
 
 	onMount(async () => {
+		if (session.role === 'sub') return goto('/admin', { replaceState: true }); // sub-admins can't fill forms
 		try {
 			const s = await getDoc(doc(firestore, 'forms', formId));
 			if (!s.exists()) loadError = 'Form not found.';

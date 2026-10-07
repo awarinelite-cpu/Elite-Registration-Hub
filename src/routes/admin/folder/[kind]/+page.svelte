@@ -5,7 +5,7 @@
 	import { collection, deleteDoc, doc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { closedReason } from '$lib/forms.js';
-	import { loadForms } from '$lib/adminSession.svelte.js';
+	import { loadForms, session } from '$lib/adminSession.svelte.js';
 
 	const META = {
 		quiz: { title: 'MCQ / Quiz forms', icon: '📝' },
@@ -99,7 +99,7 @@
 					</button>
 				</div>
 				<div class="flex flex-wrap gap-2">
-					<a class="btn" href="/admin/forms/{f.id}/fill">Fill form</a>
+					{#if session.role !== 'sub'}<a class="btn" href="/admin/forms/{f.id}/fill">Fill form</a>{/if}
 					<a class="btn-ghost" href="/register/{f.id}?new=1" target="_blank" rel="noreferrer">👁 View {kindOf(f) === 'quiz' ? 'quiz' : kindOf(f) === 'survey' ? 'survey' : 'form'}</a>
 					<a class="btn-ghost" href="/admin/forms/{f.id}">Manage</a>
 					<a class="btn-ghost" href="/admin/forms/{f.id}/applications">View applications</a>
