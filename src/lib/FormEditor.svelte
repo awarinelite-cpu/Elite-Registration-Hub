@@ -275,6 +275,11 @@
 			<p class="text-xs text-slate-500 sm:col-span-2">Add a "Short text" Name field so you can tell who took it. In each multiple-choice question, tap the correct option(s). Answers are never sent to the quiz page.</p>
 		{/if}
 	</div>
+	<div class="mb-6 -mt-3 flex flex-wrap items-center gap-3">
+		<button class="btn" onclick={save} disabled={busy}>{busy ? 'Saving…' : isNew ? 'Create form' : '💾 Save settings'}</button>
+		{#if saved}<span class="text-sm font-medium text-green-700">✓ Saved</span>{/if}
+		{#if error}<span class="text-sm text-red-600">{error}</span>{/if}
+	</div>
 
 	<h2 class="mb-3 text-lg font-semibold">Fields</h2>
 	<div class="space-y-3">
