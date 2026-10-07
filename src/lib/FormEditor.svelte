@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
-	import { firestore } from '$lib/firebase.js';
+	import { auth, firestore } from '$lib/firebase.js';
+	import { adminFetch } from '$lib/adminSession.svelte.js';
 	import { FIELD_TYPES, FORM_KINDS, OPTION_TYPES, newFieldId, slugify, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
 
 	let { id = null } = $props();
@@ -132,14 +133,14 @@
 		busy = true;
 		try {
 			// prefix must be unique across forms (application numbers are global)
-			const clash = await getDocs(query(collection(firestore, 'forms'), where('prefix', '==', cleanPrefix)));
-			if (clash.docs.some((d) => d.id !== id)) throw new Error('Another form already uses that prefix.');
+			const chk = await adminFetch(`/api/admin/check?prefix=${encodeURIComponent(cleanPrefix)}&exceptId=${encodeURIComponent(id || '')}${isNew ? `&slug=${encodeURIComponent(slug)}` : ''}`);
+			if (chk.prefixTaken) throw new Error('Another form already uses that prefix.');
+			if (isNew && chk.slugTaken) throw new Error('That link slug is already taken.');
 
 			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, quiz: kind === 'quiz' ? { showResult: quiz.showResult, modes: quiz.modes, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
 			if (isNew) {
 				const ref = doc(firestore, 'forms', slug);
-				if ((await getDoc(ref)).exists()) throw new Error('That link slug is already taken.');
-				await setDoc(ref, { ...payload, counter: 0, createdAt: Date.now() });
+				await setDoc(ref, { ...payload, ownerId: auth.currentUser.uid, counter: 0, createdAt: Date.now() });
 				await goto(`/admin/forms/${slug}`);
 			} else {
 				await updateDoc(doc(firestore, 'forms', id), payload); // never touches counter

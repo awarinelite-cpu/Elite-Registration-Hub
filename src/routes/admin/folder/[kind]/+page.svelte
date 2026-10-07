@@ -5,6 +5,7 @@
 	import { collection, deleteDoc, doc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { closedReason } from '$lib/forms.js';
+	import { loadForms } from '$lib/adminSession.svelte.js';
 
 	const META = {
 		quiz: { title: 'MCQ / Quiz forms', icon: '📝' },
@@ -25,8 +26,7 @@
 	});
 
 	onMount(async () => {
-		const fs = await getDocs(collection(firestore, 'forms'));
-		forms = fs.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+		forms = await loadForms();
 		loading = false;
 	});
 

@@ -4,6 +4,7 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
+	import { session } from '$lib/adminSession.svelte.js';
 
 	let { children } = $props();
 	let state = $state('loading'); // loading | signedout | denied | ok
@@ -18,7 +19,12 @@
 			user = u;
 			if (!u) return (state = 'signedout');
 			try {
-				state = (await getDoc(doc(firestore, 'admins', u.uid))).exists() ? 'ok' : 'denied';
+				const snap = await getDoc(doc(firestore, 'admins', u.uid));
+				if (snap.exists()) {
+					session.uid = u.uid;
+					session.role = snap.data()?.role === 'sub' ? 'sub' : 'owner';
+				}
+				state = snap.exists() ? 'ok' : 'denied';
 			} catch {
 				state = 'denied';
 			}
@@ -67,8 +73,9 @@
 {:else}
 	<header class="border-b border-slate-200 bg-white">
 		<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-			<a href="/admin" class="text-lg font-extrabold text-teal-700">EliteReg <span class="text-xs font-medium text-slate-500">Admin</span></a>
+			<a href="/admin" class="text-lg font-extrabold text-teal-700">EliteReg <span class="text-xs font-medium text-slate-500">{session.role === 'sub' ? 'Sub-admin' : 'Admin'}</span></a>
 			<div class="flex items-center gap-3 text-sm">
+				{#if session.role === 'owner'}<a href="/admin/team" class="font-medium text-teal-700 hover:underline">Team</a>{/if}
 				<span class="hidden text-slate-500 sm:inline">{user?.email}</span>
 				<ThemeToggle />
 				<button class="btn-3d-ghost btn-3d-lg" onclick={() => signOut(auth)}>Sign out</button>

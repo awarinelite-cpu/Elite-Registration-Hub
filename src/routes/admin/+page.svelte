@@ -4,6 +4,7 @@
 	import { collection, deleteDoc, doc, getDocs, orderBy, query, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { appSearchText, closedReason, studentName } from '$lib/forms.js';
+	import { loadForms, loadAllApplications } from '$lib/adminSession.svelte.js';
 
 	let forms = $state([]);
 	let loading = $state(true);
@@ -17,8 +18,8 @@
 	$effect(() => {
 		if (formSearch.trim() && allApps === null && !loadingApps) {
 			loadingApps = true;
-			getDocs(query(collection(firestore, 'applications'), orderBy('submittedAt', 'desc')))
-				.then((snap) => (allApps = snap.docs.map((d) => ({ id: d.id, ...d.data() }))))
+			loadAllApplications(forms)
+				.then((list) => (allApps = list))
 				.catch(() => (allApps = []))
 				.finally(() => (loadingApps = false));
 		}
@@ -51,8 +52,7 @@
 	const titleOf = (id) => forms.find((f) => f.id === id)?.title ?? id;
 
 	onMount(async () => {
-		const fs = await getDocs(collection(firestore, 'forms'));
-		forms = fs.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+		forms = await loadForms();
 		loading = false;
 	});
 

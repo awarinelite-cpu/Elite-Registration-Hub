@@ -1,12 +1,22 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAdmin() {
+    function adminDoc() {
+      return get(/databases/$(database)/documents/admins/$(request.auth.uid)).data;
+    }
+    function isAdminUser() {
       return request.auth != null
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
+    // main admin = an admins/{uid} doc without role "sub"
+    function isOwner() {
+      return isAdminUser() && adminDoc().get('role', 'owner') != 'sub';
+    }
+    function isSub() {
+      return isAdminUser() && adminDoc().get('role', 'owner') == 'sub';
+    }
 
-    // Admins can only check their own record; create entries from the console.
+    // Everyone can read only their own record; accounts are created by the server (firebase-admin).
     match /admins/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;
@@ -14,11 +24,17 @@ service cloud.firestore {
 
     // Students never touch Firestore directly: public form reads, submissions,
     // PIN login and edits all go through server routes (firebase-admin).
+    // Main admin sees everything; a sub-admin only forms with ownerId == their uid.
     match /forms/{id} {
-      allow read, write: if isAdmin();
+      allow read, delete: if isOwner() || (isSub() && resource.data.get('ownerId', '') == request.auth.uid);
+      allow create: if isOwner() || (isSub() && request.resource.data.ownerId == request.auth.uid);
+      allow update: if isOwner()
+        || (isSub() && resource.data.get('ownerId', '') == request.auth.uid
+            && request.resource.data.ownerId == request.auth.uid);
     }
     match /applications/{id} {
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if isOwner()
+        || (isSub() && get(/databases/$(database)/documents/forms/$(resource.data.formId)).data.get('ownerId', '') == request.auth.uid);
       allow create: if false;
     }
   }

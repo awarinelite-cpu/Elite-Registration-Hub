@@ -24,6 +24,9 @@ Students never talk to Firestore/Storage directly. Submissions, PIN login, edits
 ## Deploy on Vercel
 Import the repo, add the same variables in Project Settings → Environment Variables, deploy. Uploads pass through Vercel functions, so they are capped at 1.5 MB per file / 4 MB per submission.
 
+## Sub-admins
+The main admin (an `admins/<uid>` doc with no `role: "sub"`) opens **Team** in the header to create sub-admin accounts. A sub-admin signs in at `/admin`, can create and manage only their own forms (`ownerId` = their uid) and see only those forms' applications. They cannot open Team, create accounts, or see other users' forms. Existing forms have no `ownerId`, so only the main admin sees them. **Re-deploy `firestore.rules` after updating** (`firebase deploy --only firestore:rules`).
+
 ## Notes
 - LGA is a free-text field for now (full state→LGA dataset can be added later).
 - Application numbers use the form's prefix; prefixes must be unique across forms.
