@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import BackButton from '$lib/BackButton.svelte';
 	import { page } from '$app/state';
 	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
@@ -155,7 +156,7 @@
 {:else}
 	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
 		<div>
-			<a href="/admin" class="btn-3d-ghost btn-3d-lg mb-2 !text-teal-800">← Dashboard</a>
+			<BackButton class="mb-2" />
 			<h1 class="text-2xl font-bold">{form.title}</h1>
 			<p class="text-sm text-slate-500">{apps.length} applications</p>
 		</div>

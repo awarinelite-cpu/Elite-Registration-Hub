@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import BackButton from '$lib/BackButton.svelte';
 	import { goto } from '$app/navigation';
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
@@ -178,7 +179,10 @@
 		</div>
 	{/if}
 	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-		<h1 class="text-2xl font-bold">{isNew ? 'Create new form' : 'Manage form'}</h1>
+		<div class="flex items-center gap-3">
+			<BackButton />
+			<h1 class="text-2xl font-bold">{isNew ? 'Create new form' : 'Manage form'}</h1>
+		</div>
 		{#if !isNew}
 			<a class="btn" href="/register/{id}?new=1" target="_blank" rel="noreferrer">👁 View {kind === 'quiz' ? 'quiz' : kind === 'survey' ? 'survey' : 'form'}</a>
 			<a class="btn-ghost" href="/admin/forms/{id}/applications">View applications</a>
