@@ -1,5 +1,6 @@
 <script>
-	import { STATES } from '$lib/forms.js';
+	import { STATES, pairedStateField } from '$lib/forms.js';
+	import { lgasFor } from '$lib/lgas.js';
 	import ScratchCards from '$lib/ScratchCards.svelte';
 	import SsceExams from '$lib/SsceExams.svelte';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
@@ -11,6 +12,16 @@
 	// second SSCE picture stays hidden until "Add SSCE" is tapped (or one was already uploaded)
 	let showSecond = $state(!!existingFiles?.doc_ssce_2);
 	const hasSecond = $derived(fields.some((x) => x.id === 'doc_ssce_2'));
+	// live state / LGA choices so the LGA list follows the selected state
+	let stateVals = $state(Object.fromEntries(fields.filter((x) => x.type === 'state').map((x) => [x.id, values?.[x.id] ?? ''])));
+	let lgaVals = $state(Object.fromEntries(fields.filter((x) => x.type === 'lga').map((x) => [x.id, values?.[x.id] ?? ''])));
+	const stateOf = (f) => pairedStateField(fields, f);
+	const lgaOptions = (f) => lgasFor(stateVals[stateOf(f)?.id]);
+	function stateChanged(sid) {
+		for (const x of fields) {
+			if (x.type === 'lga' && stateOf(x)?.id === sid && !lgasFor(stateVals[sid]).includes(lgaVals[x.id])) lgaVals[x.id] = '';
+		}
+	}
 	const val = (f) => values?.[f.id] ?? (f.type === 'checkbox' ? [] : '');
 </script>
 
@@ -29,10 +40,24 @@
 
 		{#if f.type === 'textarea'}
 			<textarea class="input" rows="4" id={`f_${f.id}`} name={`f_${f.id}`} placeholder={f.placeholder} value={val(f)}></textarea>
-		{:else if f.type === 'select' || f.type === 'state'}
+		{:else if f.type === 'state'}
+			<select class="input" id={`f_${f.id}`} name={`f_${f.id}`} bind:value={stateVals[f.id]} onchange={() => stateChanged(f.id)}>
+				<option value="">Select…</option>
+				{#each STATES as o}
+					<option value={o}>{o}</option>
+				{/each}
+			</select>
+		{:else if f.type === 'lga' && stateOf(f)}
+			<select class="input" id={`f_${f.id}`} name={`f_${f.id}`} bind:value={lgaVals[f.id]} disabled={!stateVals[stateOf(f).id]}>
+				<option value="">{stateVals[stateOf(f).id] ? 'Select LGA…' : `Select ${stateOf(f).label || 'state'} first…`}</option>
+				{#each lgaOptions(f) as o}
+					<option value={o}>{o}</option>
+				{/each}
+			</select>
+		{:else if f.type === 'select'}
 			<select class="input" id={`f_${f.id}`} name={`f_${f.id}`} value={val(f)}>
 				<option value="">Select…</option>
-				{#each f.type === 'state' ? STATES : f.options || [] as o}
+				{#each f.options || [] as o}
 					<option value={o}>{o}</option>
 				{/each}
 			</select>

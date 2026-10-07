@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { bucket } from './firebase.js';
-import { FILE_TYPES, MAX_FILE_BYTES, MAX_TOTAL_BYTES, parseScratch, parseSsce, validateValue } from '$lib/forms.js';
+import { lgasFor } from '$lib/lgas.js';
+import { FILE_TYPES, MAX_FILE_BYTES, MAX_TOTAL_BYTES, parseScratch, parseSsce, validateValue, pairedStateField } from '$lib/forms.js';
 
 const SAFE_NAME = (n) => n.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-80);
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -53,6 +54,17 @@ export function collect(fields, fd, existing = {}) {
 		const err = validateValue(f, raw);
 		if (err) errors[f.id] = err;
 		else values[f.id] = raw;
+	}
+	// an LGA must belong to the selected state (only when the form has a state field)
+	for (const f of fields) {
+		if (f.type !== 'lga' || !values[f.id]) continue;
+		const sf = pairedStateField(fields, f);
+		if (!sf) continue;
+		if (!values[sf.id]) errors[f.id] = 'Select a state first, then its LGA.';
+		else if (!lgasFor(values[sf.id]).includes(values[f.id])) {
+			errors[f.id] = 'Select a valid LGA for the chosen state.';
+			delete values[f.id];
+		}
 	}
 	if (total > MAX_TOTAL_BYTES) errors._form = 'Total upload size is too large (max 4 MB).';
 	return { values, errors, uploads };

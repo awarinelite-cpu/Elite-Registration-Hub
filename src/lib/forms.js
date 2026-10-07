@@ -190,6 +190,13 @@ export const STATES = [
 	'Taraba', 'Yobe', 'Zamfara'
 ];
 
+/** The state field an LGA field depends on: nearest one above it, else the first in the form (null if none). */
+export function pairedStateField(fields, lgaField) {
+	const i = fields.findIndex((x) => x.id === lgaField.id);
+	for (let j = i - 1; j >= 0; j--) if (fields[j].type === 'state') return fields[j];
+	return fields.find((x) => x.type === 'state') || null;
+}
+
 export const STATUSES = ['submitted', 'reviewed', 'approved', 'rejected', 'done'];
 
 export const MAX_FILE_BYTES = 1.5 * 1024 * 1024;

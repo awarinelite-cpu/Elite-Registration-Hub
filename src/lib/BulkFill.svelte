@@ -1,5 +1,8 @@
 <script>
+	import { tick } from 'svelte';
 	import { matchToFields } from '$lib/parseStudent.js';
+	import { pairedStateField } from '$lib/forms.js';
+	import { lgasFor } from '$lib/lgas.js';
 
 	// fields: the form's field defs. Auto-fills the form fields (by id `f_<id>`) as text is pasted/typed.
 	let { fields } = $props();
@@ -28,10 +31,23 @@
 		el.dispatchEvent(new Event('change', { bubbles: true }));
 	}
 
-	function fill() {
+	const nrm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+	/** Match a pasted LGA to the list of the state currently selected in the form ('' if none fits). */
+	function matchLga(field, value) {
+		const sf = pairedStateField(fields, field);
+		if (!sf) return value; // no state field: LGA stays free text
+		const list = lgasFor(document.getElementById(`f_${sf.id}`)?.value);
+		const n = nrm(value).replace(/ (local government|lga|l g a)$/, '');
+		return list.find((o) => nrm(o) === n) || list.find((o) => nrm(o).startsWith(n) || n.startsWith(nrm(o))) || '';
+	}
+
+	async function fill() {
 		if (!text.trim()) return (result = null);
 		const r = matchToFields(fields, text);
-		for (const { field, value } of r.filled) setValue(field, value);
+		for (const { field, value } of r.filled) if (field.type !== 'lga') setValue(field, value);
+		await tick(); // let the LGA list rebuild for the newly selected state
+		for (const { field, value } of r.filled) if (field.type === 'lga') setValue(field, matchLga(field, value));
 		result = { count: r.filled.length, unmatched: r.unmatched, missing: r.missing };
 	}
 
