@@ -2,6 +2,7 @@
 	import { parseQuizText, parseQuizCsv, looksLikeQuizCsv } from '$lib/parseQuiz.js';
 	import { createForm } from '$lib/createForm.js';
 	import { newFieldId, slugify, matricField } from '$lib/forms.js';
+	import { downloadCsv } from '$lib/csv.js';
 
 	let text = $state('');
 	let fileTitle = $state('');
@@ -72,6 +73,14 @@
 		busy = false;
 	}
 
+	function downloadTemplate() {
+		downloadCsv('quiz-template.csv', [
+			['question', 'option_a', 'option_b', 'option_c', 'option_d', 'answer', 'explanation', 'topic', 'marks', 'image'],
+			['Which organ produces insulin?', 'Liver', 'Pancreas', 'Kidney', 'Spleen', 'B', 'Beta cells of the pancreas make insulin.', 'Physiology', '1', ''],
+			['Which of these are vitamins? (select all that apply)', 'Vitamin C', 'Iron', 'Vitamin D', 'Calcium', 'A,C', 'Iron and calcium are minerals.', 'Nutrition', '2', ''],
+			['Identify the structure shown in the picture.', 'Femur', 'Humerus', 'Tibia', 'Radius', 'A', '', 'Anatomy', '1', 'https://i.imgur.com/abc123.jpg']
+		]);
+	}
 	async function copy() {
 		await navigator.clipboard.writeText(created.link);
 		copied = true;
@@ -115,6 +124,7 @@
 			<label class="label" for="qcsv">Or upload a CSV file</label>
 			<input class="input file:mr-3 file:rounded file:border-0 file:bg-teal-100 file:px-3 file:py-1 file:text-teal-800" id="qcsv" type="file" accept=".csv,.txt,text/csv" onchange={onFile} />
 			<p class="mt-1 text-xs text-slate-600">Columns: <code>question, option_a, option_b, option_c, option_d, answer</code> (letter such as B, or A,C for several), plus optional <code>explanation, topic, marks, image</code> (image = Imgur/ImgChest link). Extra columns like year are ignored.</p>
+			<button type="button" class="btn-ghost mt-2 !px-3 !py-1 text-sm" onclick={downloadTemplate}>⬇ Download CSV template</button>
 		</div>
 		<div class="flex flex-wrap gap-2">
 			<button class="btn" onclick={parse} disabled={!text.trim()}>Preview quiz</button>
