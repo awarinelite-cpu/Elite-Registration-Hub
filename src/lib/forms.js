@@ -319,3 +319,29 @@ export function buildDetailItems(fields, data) {
 	}
 	return out;
 }
+
+
+const isEmptyVal = (v) => v == null || v === '' || (Array.isArray(v) && !v.length);
+const sameVal = (a, b) => {
+	if (isEmptyVal(a) && isEmptyVal(b)) return true;
+	const norm = (v) => (v && typeof v === 'object' && !Array.isArray(v) && v.path ? `file:${v.path}` : JSON.stringify(v));
+	return norm(a) === norm(b);
+};
+const showVal = (v) => {
+	if (isEmptyVal(v)) return '(empty)';
+	if (Array.isArray(v)) return joinArray(v, '; ').slice(0, 300);
+	if (typeof v === 'object') return `File: ${v.name || 'uploaded file'}`;
+	return String(v).slice(0, 300);
+};
+
+/** What changed between the stored data and the edited data: [{ label, from, to }] (empty when nothing changed). */
+export function diffData(fields, before, after) {
+	const out = [];
+	for (const f of fields || []) {
+		const a = before?.[f.id];
+		const b = after?.[f.id];
+		if (sameVal(a, b)) continue;
+		out.push({ label: f.label, from: showVal(a), to: showVal(b) });
+	}
+	return out;
+}

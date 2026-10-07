@@ -14,6 +14,7 @@
 	let search = $state(page.url.searchParams.get('q') || '');
 	let statusFilter = $state('all');
 	let selected = $state(null);
+	let showEdits = $state(false);
 	let error = $state('');
 
 	onMount(async () => {
@@ -205,6 +206,13 @@
 					<h2 class="font-mono text-xl font-bold text-slate-900 md:text-4xl">{selected.applicationNumber}</h2>
 					{#if nameOf(selected)}<p class="mt-1 text-base font-semibold text-slate-800 md:mt-2 md:text-2xl">{nameOf(selected)}</p>{/if}
 					<p class="mt-1 text-sm text-slate-600 md:text-lg">Submitted {new Date(selected.submittedAt).toLocaleString()}</p>
+					{#if selected.edits?.length}
+						<button class="mt-1 text-left text-sm font-medium text-teal-700 underline md:text-lg" onclick={() => (showEdits = true)}>
+							Re-edited {selected.edits.length} time{selected.edits.length > 1 ? 's' : ''} · last {new Date(selected.edits[selected.edits.length - 1].at).toLocaleString()}
+						</button>
+					{:else}
+						<p class="mt-1 text-sm text-slate-400 md:text-lg">Not re-edited</p>
+					{/if}
 				</div>
 				<div class="flex items-center gap-1">
 					<button
@@ -220,12 +228,39 @@
 							<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
 						{/if}
 					</button>
-					<button class="btn-3d-ghost btn-3d-lg md:!px-6 md:!py-3 md:!text-lg" onclick={() => (selected = null)}>Close</button>
+					<button class="btn-3d-ghost btn-3d-lg md:!px-6 md:!py-3 md:!text-lg" onclick={() => { selected = null; showEdits = false; }}>Close</button>
 				</div>
 			</div>
 			<ApplicationView items={detailItems} {openFile} {downloadFile} {downloading} />
 			<div class="mt-6 flex justify-between md:mt-10">
 				<button class="btn-danger md:!px-6 md:!py-3 md:!text-lg" onclick={() => remove(selected)}>Delete</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if selected && showEdits}
+	<div class="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true">
+		<div class="max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl md:max-w-xl md:p-6">
+			<div class="mb-3 flex items-center justify-between gap-2">
+				<h3 class="font-bold md:text-xl">Edit history</h3>
+				<button class="btn-3d-ghost" onclick={() => (showEdits = false)}>Close</button>
+			</div>
+			<div class="space-y-4">
+				{#each [...selected.edits].reverse() as e}
+					<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+						<p class="text-sm font-semibold text-teal-800 md:text-base">{new Date(e.at).toLocaleString()}</p>
+						<ul class="mt-2 space-y-2 text-sm md:text-base">
+							{#each e.changes as c}
+								<li>
+									<div class="font-semibold uppercase text-slate-600">{c.label}</div>
+									<div class="break-words text-red-700 line-through">{c.from}</div>
+									<div class="break-words text-green-800">{c.to}</div>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/each}
 			</div>
 		</div>
 	</div>

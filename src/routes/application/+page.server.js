@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
 import { readSession, SESSION_COOKIE } from '$lib/server/security.js';
-import { studentName, SCRATCH_FIELD_ID, SSCE_FIELD_ID, migrateScratchFields, migrateSsceFields, ensureUploadFields } from '$lib/forms.js';
+import { diffData, studentName, SCRATCH_FIELD_ID, SSCE_FIELD_ID, migrateScratchFields, migrateSsceFields, ensureUploadFields } from '$lib/forms.js';
 
 async function current(cookies) {
 	const number = readSession(cookies.get(SESSION_COOKIE));
@@ -56,7 +56,13 @@ export const actions = {
 		const { values, errors, uploads } = collect(form.fields, fd, app.data);
 		if (Object.keys(errors).length) return fail(400, { message: errors._form || 'Please correct the highlighted fields.', errors, values });
 		const files = await storeUploads(app.formId, uploads);
-		await appRef.update({ data: { ...values, ...files }, updatedAt: Date.now() });
+		const next = { ...values, ...files };
+		const now = Date.now();
+		const patch = { data: next, updatedAt: now };
+		// re-edit history (admin only): what changed and when. Nothing is logged if nothing actually changed.
+		const changes = diffData(form.fields, app.data, next);
+		if (changes.length) patch.edits = [...(app.edits || []), { at: now, changes }].slice(-50);
+		await appRef.update(patch);
 		return { saved: true };
 	},
 	logout: async ({ cookies }) => {
