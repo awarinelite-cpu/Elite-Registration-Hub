@@ -7,7 +7,8 @@
 	let fileTitle = $state('');
 	let parsed = $state(null);
 	let addName = $state(true);
-	let showResult = $state('score');
+	let showResult = $state('answers');
+	let modes = $state('both');
 	let passMark = $state('');
 	let timeLimit = $state('');
 	let busy = $state(false);
@@ -54,11 +55,11 @@
 		error = '';
 		if (!parsed.title.trim()) return (error = 'Quiz name is required.');
 		if (missing) return (error = `${missing} question${missing === 1 ? ' has' : 's have'} no correct answer yet — tap the right option(s) on the amber cards.`);
-		const fields = parsed.fields.map((f) => ({ ...f, points: Math.max(1, Number(f.points) || 1) }));
+		const fields = parsed.fields.map((f) => ({ ...f, required: false, points: Math.max(1, Number(f.points) || 1) }));
 		if (addName) fields.unshift({ id: newFieldId(), type: 'text', label: 'Full name', required: true, placeholder: '' });
 		const slug = slugify(parsed.slug) || 'quiz';
 		const prefix = parsed.prefix.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '') || 'QUIZ';
-		const quiz = { showResult, passMark: Math.min(100, Math.max(0, Number(passMark) || 0)), timeLimit: Math.max(0, Number(timeLimit) || 0) };
+		const quiz = { showResult, modes, passMark: Math.min(100, Math.max(0, Number(passMark) || 0)), timeLimit: Math.max(0, Number(timeLimit) || 0) };
 		busy = true;
 		try {
 			const res = await createForm({ title: parsed.title.trim(), slug, prefix, fields, kind: 'quiz', quiz });
@@ -133,6 +134,14 @@
 			<input class="input uppercase" id="qp" bind:value={parsed.prefix} />
 		</div>
 		<div class="self-end pb-2 text-xs text-slate-500">If taken, a number is added automatically.</div>
+		<div class="sm:col-span-3">
+			<label class="label" for="qmd">Takers can use</label>
+			<select class="input" id="qmd" bind:value={modes}>
+				<option value="both">Both: they choose Exam or Reading mode</option>
+				<option value="exam">Exam mode only</option>
+				<option value="reading">Reading mode only</option>
+			</select>
+		</div>
 		<div>
 			<label class="label" for="qsr">After submitting, show</label>
 			<select class="input" id="qsr" bind:value={showResult}>

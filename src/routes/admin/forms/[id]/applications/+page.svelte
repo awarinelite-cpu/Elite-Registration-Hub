@@ -62,13 +62,13 @@
 	}
 
 	function exportCsv() {
-		const head = ['Application No.', 'Status', 'Submitted', 'Last updated', ...(form.kind === 'quiz' ? ['Score', 'Out of', 'Percent'] : []), ...form.fields.map((f) => f.label)];
+		const head = ['Application No.', 'Status', 'Submitted', 'Last updated', ...(form.kind === 'quiz' ? ['Score', 'Out of', 'Percent', 'Answered', 'Mode'] : []), ...form.fields.map((f) => f.label)];
 		const rows = filtered.map((a) => [
 			a.applicationNumber,
 			a.status,
 			new Date(a.submittedAt).toISOString(),
 			new Date(a.updatedAt || a.submittedAt).toISOString(),
-			...(form.kind === 'quiz' ? [a.result?.score ?? '', a.result?.total ?? '', a.result?.pct ?? ''] : []),
+			...(form.kind === 'quiz' ? [a.result?.score ?? '', a.result?.total ?? '', a.result?.pct ?? '', a.result ? `${a.result.answered ?? ''}/${a.result.questions ?? ''}` : '', a.mode ?? ''] : []),
 			...form.fields.map((f) => display(f, a))
 		]);
 		downloadCsv(`${form.id}-applications.csv`, [head, ...rows]);
@@ -83,7 +83,7 @@
 		// mark each question right/wrong and put the score first
 		const s = scoreForm(form.fields, selected.data, form.quiz);
 		const byId = Object.fromEntries(s.items.map((x) => [x.id, x]));
-		const marked = items.map((it) => (byId[it.id] ? { ...it, label: it.label + (byId[it.id].ok ? ' ✓' : ` ✗ (correct: ${byId[it.id].answer})`) } : it));
+		const marked = items.map((it) => (byId[it.id] ? { ...it, label: it.label + (byId[it.id].ok ? ' ✓' : byId[it.id].unanswered ? ` ⚠ not answered (correct: ${byId[it.id].answer})` : ` ✗ (correct: ${byId[it.id].answer})`) } : it));
 		const head = `${s.score} / ${s.total} (${s.pct}%)${s.passed === true ? ' — Passed' : s.passed === false ? ' — Not passed' : ''}`;
 		return [{ id: '_score', label: 'SCORE', v: head, text: head }, ...marked];
 	});

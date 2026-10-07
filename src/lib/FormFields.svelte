@@ -1,10 +1,12 @@
 <script>
 	import { STATES, pairedStateField } from '$lib/forms.js';
 	import { lgasFor } from '$lib/lgas.js';
+	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
 	import ScratchCards from '$lib/ScratchCards.svelte';
 	import SsceExams from '$lib/SsceExams.svelte';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
-	let { fields, values = {}, errors = {}, existingFiles = {} } = $props();
+	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null } = $props();
+	const qNo = (f) => fields.filter((x) => x.scored).findIndex((x) => x.id === f.id) + 1;
 
 	function inputType(t) {
 		return { number: 'number', phone: 'tel', email: 'email', date: 'date' }[t] || 'text';
@@ -28,6 +30,8 @@
 {#each fields as f (f.id)}
 	{#if f.id === 'doc_ssce_2' && !showSecond}
 		<!-- hidden until Add SSCE -->
+	{:else if f.scored && reading && answers}
+		<ReadingQuestion field={f} number={qNo(f)} answer={answers[f.id]} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else if f.type === 'scratchcards'}
 		<ScratchCards field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else if f.type === 'ssceexams'}
@@ -35,7 +39,7 @@
 	{:else}
 	<div>
 		<label class="label" for={`f_${f.id}`}>
-			{f.label}{#if f.required}<span class="text-red-600"> *</span>{/if}
+			{#if f.scored}{qNo(f)}. {/if}{f.label}{#if f.required}<span class="text-red-600"> *</span>{/if}
 		</label>
 
 		{#if f.type === 'textarea'}

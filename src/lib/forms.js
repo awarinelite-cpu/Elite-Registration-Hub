@@ -27,7 +27,7 @@ export const FORM_KINDS = [
 ];
 export const isRegistration = (form) => !form?.kind || form.kind === 'registration';
 /** Fields safe to send to the public: answer keys removed. */
-export const publicFields = (fields) => (fields || []).map(({ correct, explanation, ...f }) => f);
+export const publicFields = (fields) => (fields || []).map(({ correct, explanation, ...f }) => (Array.isArray(correct) ? correct.length : correct) ? { ...f, scored: true } : f);
 
 const listOf = (v) => (Array.isArray(v) ? v : v ? [v] : []);
 /** Score a quiz submission. Only fields with a correct answer count; checkbox questions need the exact set. */
@@ -35,6 +35,7 @@ export function scoreForm(fields, values, quiz = {}) {
 	const items = [];
 	let score = 0;
 	let total = 0;
+	let answered = 0;
 	for (const f of fields || []) {
 		const want = listOf(f.correct);
 		if (!want.length) continue;
@@ -43,11 +44,12 @@ export function scoreForm(fields, values, quiz = {}) {
 		const ok = got.length === want.length && want.every((x) => got.includes(x));
 		total += pts;
 		if (ok) score += pts;
-		items.push({ id: f.id, label: f.label, given: got.join(', '), answer: want.join(', '), ok, points: pts, explanation: f.explanation || '' });
+		if (got.length) answered++;
+		items.push({ id: f.id, label: f.label, given: got.join(', '), answer: want.join(', '), ok, unanswered: !got.length, points: pts, explanation: f.explanation || '' });
 	}
 	const pct = total ? Math.round((score / total) * 1000) / 10 : 0;
 	const passMark = Number(quiz?.passMark) || 0;
-	return { score, total, pct, passed: passMark ? pct >= passMark : null, items };
+	return { score, total, pct, passed: passMark ? pct >= passMark : null, answered, questions: items.length, items };
 }
 
 export const OPTION_TYPES = ['select', 'radio', 'checkbox'];

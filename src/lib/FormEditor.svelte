@@ -19,7 +19,7 @@
 	let closingDate = $state('');
 	let allowEdits = $state(true);
 	let kind = $state('registration'); // registration | quiz | survey
-	let quiz = $state({ showResult: 'score', passMark: '', timeLimit: '' });
+	let quiz = $state({ showResult: 'answers', modes: 'both', passMark: '', timeLimit: '' });
 	const toEditor = (f) => ({ ...f, optionsText: (f.options || []).join('\n'), correctList: Array.isArray(f.correct) ? [...f.correct] : f.correct ? [f.correct] : [], points: f.points ?? 1 });
 	const optionLines = (f) => [...new Set((f.optionsText || '').split('\n').map((s) => s.trim()).filter(Boolean))];
 	function toggleCorrect(f, o) {
@@ -46,7 +46,7 @@
 		slug = id;
 		allowEdits = d.allowEdits ?? true;
 		kind = d.kind || 'registration';
-		quiz = { showResult: d.quiz?.showResult || 'score', passMark: d.quiz?.passMark || '', timeLimit: d.quiz?.timeLimit || '' };
+		quiz = { showResult: d.quiz?.showResult || 'answers', modes: d.quiz?.modes || 'both', passMark: d.quiz?.passMark || '', timeLimit: d.quiz?.timeLimit || '' };
 		fields = (d.fields || []).map(toEditor);
 		loading = false;
 		// old forms: swap separate scratch card / SSCE year boxes for the grouped SCRATCH CARD INFO field automatically
@@ -116,6 +116,7 @@
 					const corr = (f.correctList || []).filter((x) => o.options.includes(x));
 					if (!corr.length) return (error = `"${o.label}" needs a correct answer — tap one of its options below.`);
 					o.correct = f.type === 'checkbox' ? corr : corr[0];
+					o.required = false; // takers can submit an unfinished quiz
 					o.points = Math.max(1, Number(f.points) || 1);
 					if ((f.explanation || '').trim()) o.explanation = f.explanation.trim();
 					if ((f.topic || '').trim()) o.topic = f.topic.trim();
@@ -130,7 +131,7 @@
 			const clash = await getDocs(query(collection(firestore, 'forms'), where('prefix', '==', cleanPrefix)));
 			if (clash.docs.some((d) => d.id !== id)) throw new Error('Another form already uses that prefix.');
 
-			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, quiz: kind === 'quiz' ? { showResult: quiz.showResult, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
+			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, quiz: kind === 'quiz' ? { showResult: quiz.showResult, modes: quiz.modes, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
 			if (isNew) {
 				const ref = doc(firestore, 'forms', slug);
 				if ((await getDoc(ref)).exists()) throw new Error('That link slug is already taken.');
@@ -215,6 +216,14 @@
 			</label>
 		{/if}
 		{#if kind === 'quiz'}
+			<div class="sm:col-span-2">
+				<label class="label" for="qm">Takers can use</label>
+				<select class="input" id="qm" bind:value={quiz.modes}>
+					<option value="both">Both: they choose Exam or Reading mode</option>
+					<option value="exam">Exam mode only (answers after submit)</option>
+					<option value="reading">Reading mode only (answer shown as they choose)</option>
+				</select>
+			</div>
 			<div>
 				<label class="label" for="sr">After submitting, show</label>
 				<select class="input" id="sr" bind:value={quiz.showResult}>

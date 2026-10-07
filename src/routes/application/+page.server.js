@@ -30,12 +30,12 @@ export async function load({ cookies }) {
 		if (v && typeof v === 'object' && !Array.isArray(v)) files[f.id] = { name: v.name };
 		else if (v !== undefined) values[f.id] = v;
 	}
-	const show = form.quiz?.showResult || 'score';
-	const scored = form.kind === 'quiz' && show === 'answers' ? scoreForm(form.fields, app.data, form.quiz) : null;
+	const show = form.quiz?.showResult || 'answers';
+	const scored = form.kind === 'quiz' && (show === 'answers' || app.mode === 'reading') ? scoreForm(form.fields, app.data, form.quiz) : null;
 	return {
 		kind: form.kind || 'registration',
 		result: form.kind === 'quiz' && show !== 'none' ? app.result || null : null,
-		review: scored ? scored.items.map(({ label, given, answer, ok, explanation }) => ({ label, given, answer, ok, explanation })) : null,
+		review: scored ? scored.items.map(({ label, given, answer, ok, unanswered, explanation }) => ({ label, given, answer, ok, unanswered, explanation })) : null,
 		title: form.title,
 		formId: app.formId,
 		name: studentName(form, app),
