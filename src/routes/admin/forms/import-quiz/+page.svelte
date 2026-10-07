@@ -56,7 +56,7 @@
 		if (!parsed.title.trim()) return (error = 'Quiz name is required.');
 		if (missing) return (error = `${missing} question${missing === 1 ? ' has' : 's have'} no correct answer yet — tap the right option(s) on the amber cards.`);
 		const fields = parsed.fields.map((f) => ({ ...f, required: false, points: Math.max(1, Number(f.points) || 1) }));
-		if (addName) fields.unshift({ id: newFieldId(), type: 'text', label: 'Full name (optional)', required: false, placeholder: '' });
+		if (addName) fields.unshift({ id: newFieldId(), type: 'text', label: 'Full name (optional)', required: false, placeholder: '' }, { id: newFieldId(), type: 'text', label: 'Matric number (optional)', required: false, placeholder: '' });
 		const slug = slugify(parsed.slug) || 'quiz';
 		const prefix = parsed.prefix.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '') || 'QUIZ';
 		const quiz = { showResult, modes, passMark: Math.min(100, Math.max(0, Number(passMark) || 0)), timeLimit: Math.max(0, Number(timeLimit) || 0) };
@@ -158,7 +158,7 @@
 			<label class="label" for="qtl">Time limit (min)</label>
 			<input class="input" id="qtl" type="number" min="0" bind:value={timeLimit} placeholder="none" />
 		</div>
-		<label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" bind:checked={addName} class="accent-teal-700" /> Ask for the taker's name first (optional to fill)</label>
+		<label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" bind:checked={addName} class="accent-teal-700" /> Ask for the taker's name and matric number first (optional to fill)</label>
 	</div>
 
 	<h2 class="mb-2 font-semibold">

@@ -160,6 +160,7 @@
 			<p class="text-sm text-slate-500">{apps.length} applications</p>
 		</div>
 		<div class="flex gap-2">
+			{#if form.kind === 'quiz'}<a class="btn-3d btn-3d-lg" href="/admin/forms/{form.id}/results">📄 Result sheet</a>{/if}
 			<a class="btn-3d-ghost btn-3d-lg" href="/admin/forms/{form.id}">Manage form</a>
 			<button class="btn-3d btn-3d-lg disabled:cursor-not-allowed disabled:opacity-50" onclick={exportCsv} disabled={!filtered.length}>Export CSV ({filtered.length})</button>
 		</div>
