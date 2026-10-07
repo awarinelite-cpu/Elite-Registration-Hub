@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
-	import { STATUSES, studentName, joinArray, migrateFormFields } from '$lib/forms.js';
+	import { STATUSES, studentName, joinArray, migrateFormFields, isLegacyScratch, isLegacySsce, ssceLine, scratchLine } from '$lib/forms.js';
 	import { downloadCsv } from '$lib/csv.js';
 
 	const formId = page.params.id;
@@ -72,6 +72,30 @@
 	}
 
 	let copiedId = $state('');
+
+	// One card per value; SSCE exam / scratch card sittings each get their own card.
+	// Old single-box fields (replaced by the grouped fields) are hidden when empty.
+	const detailItems = $derived.by(() => {
+		if (!selected || !form) return [];
+		const grouped = form.fields.some((f) => f.type === 'ssceexams' || f.type === 'scratchcards');
+		const out = [];
+		for (const f of form.fields) {
+			const v = selected.data?.[f.id];
+			const empty = v == null || v === '' || (Array.isArray(v) && !v.length);
+			if (grouped && empty && f.type !== 'ssceexams' && f.type !== 'scratchcards' && (isLegacySsce(f) || isLegacyScratch(f))) continue;
+			if (Array.isArray(v) && v.length && v.every((x) => x && typeof x === 'object')) {
+				v.forEach((x, i) => {
+					const line = 'number' in x ? ssceLine(x) : scratchLine(x);
+					const tag = v.length > 1 ? (i === 0 ? ' (First sitting)' : ' (Second sitting)') : '';
+					out.push({ id: `${f.id}-${i}`, label: f.label + tag, v: line, text: line, second: i > 0 });
+				});
+				continue;
+			}
+			const text = v == null ? '' : Array.isArray(v) ? joinArray(v) : typeof v === 'object' ? '' : String(v);
+			out.push({ id: f.id, label: f.label, v, text });
+		}
+		return out;
+	});
 	async function copyValue(id, text) {
 		try {
 			await navigator.clipboard.writeText(text);
@@ -220,10 +244,10 @@
 				</div>
 			</div>
 			<dl class="grid gap-3 md:grid-cols-2 md:gap-5">
-				{#each form.fields as f (f.id)}
-					{@const v = selected.data?.[f.id]}
-					{@const text = v == null ? '' : Array.isArray(v) ? joinArray(v) : typeof v === 'object' ? '' : String(v)}
-					<div class="flex items-start justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 md:p-5">
+				{#each detailItems as f (f.id)}
+					{@const v = f.v}
+					{@const text = f.text}
+					<div class="flex items-start justify-between gap-2 rounded-xl border p-3 md:p-5 {f.second ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}">
 						<div class="min-w-0">
 							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
 							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">
