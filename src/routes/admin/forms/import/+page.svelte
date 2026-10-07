@@ -1,7 +1,7 @@
 <script>
 	import { parseFormText } from '$lib/parseForm.js';
 	import { createForm } from '$lib/createForm.js';
-	import { FIELD_TYPES, slugify } from '$lib/forms.js';
+	import { FIELD_TYPES, OPTION_TYPES, slugify } from '$lib/forms.js';
 
 	let text = $state('');
 	let parsed = $state(null);
@@ -22,6 +22,8 @@
 		if (!parsed.title.trim()) return (error = 'Form name is required.');
 		const slug = slugify(parsed.slug) || 'registration';
 		const prefix = parsed.prefix.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '') || 'REG';
+		const noOptions = parsed.fields.find((f) => OPTION_TYPES.includes(f.type) && !(f.options || []).length);
+		if (noOptions) return (error = `"${noOptions.label}" is a dropdown/choice field, so it needs options. Type them (separated by commas) under the field.`);
 		busy = true;
 		try {
 			const res = await createForm({ title: parsed.title.trim(), slug, prefix, fields: parsed.fields });
@@ -102,10 +104,19 @@
 				</select>
 				<label class="flex items-center gap-1 text-xs"><input type="checkbox" bind:checked={f.required} class="accent-teal-700" /> Req.</label>
 				<button class="btn-danger !px-2 !py-1" onclick={() => parsed.fields.splice(i, 1)} aria-label="Remove">✕</button>
+				{#if OPTION_TYPES.includes(f.type)}
+					<input
+						class="input w-full"
+						aria-label="Options"
+						placeholder="Options, separated by commas"
+						value={(f.options || []).join(', ')}
+						oninput={(e) => (f.options = e.currentTarget.value.split(',').map((s) => s.trim()).filter(Boolean))}
+					/>
+				{/if}
 			</div>
 		{/each}
 	</div>
-	<p class="mt-2 text-xs text-slate-500">Dropdown/radio/checkbox types need options — set those afterwards in “Edit in builder”.</p>
+	<p class="mt-2 text-xs text-slate-500">Dropdown/radio/checkbox fields need options: type them, separated by commas, in the box under the field.</p>
 	<div class="mt-4 flex gap-2">
 		<button class="btn" onclick={create} disabled={busy || !parsed.fields.length}>{busy ? 'Creating…' : 'Create form & get link'}</button>
 		<button class="btn-ghost" onclick={() => (parsed = null)}>Back to text</button>
