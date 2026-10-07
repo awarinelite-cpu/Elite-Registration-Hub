@@ -67,6 +67,11 @@
 			</div>
 		</div>
 	{:else}
+		<a href="/login" class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-teal-200 bg-teal-50 p-3 text-sm text-teal-900">
+			<span>Already submitted? Log in with your Application Number and PIN.</span>
+			<span class="btn-ghost shrink-0 !px-3 !py-1">Log in</span>
+		</a>
+
 		<header class="mb-5">
 			<h1 class="text-2xl font-bold">{data.form.title}</h1>
 			{#if data.form.description}<p class="mt-1 text-slate-600">{data.form.description}</p>{/if}
@@ -94,6 +99,5 @@
 			</form>
 		{/if}
 
-		<p class="mt-4 text-center text-sm text-slate-500">Already applied? <a href="/login" class="text-teal-700 underline">Check your application</a></p>
 	{/if}
 </main>
