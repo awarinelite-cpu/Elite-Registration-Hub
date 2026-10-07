@@ -13,11 +13,25 @@ export function getSaved() {
 
 export function addSaved(entry) {
 	try {
+		const prev = getSaved().find((x) => x.number === entry.number);
 		const list = getSaved().filter((x) => x.number !== entry.number);
-		list.unshift({ ...entry, at: Date.now() });
+		list.unshift({ ...prev, ...entry, at: Date.now() });
 		localStorage.setItem(KEY, JSON.stringify(list.slice(0, 20)));
 	} catch {
 		/* storage unavailable: nothing to remember */
+	}
+}
+
+// fills in details (form id, title, name) on an entry that is already saved; does nothing otherwise
+export function updateSaved(number, patch) {
+	try {
+		const list = getSaved();
+		const i = list.findIndex((x) => x.number === number);
+		if (i < 0) return;
+		list[i] = { ...list[i], ...patch };
+		localStorage.setItem(KEY, JSON.stringify(list));
+	} catch {
+		/* ignore */
 	}
 }
 

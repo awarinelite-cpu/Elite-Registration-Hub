@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
 import { readSession, SESSION_COOKIE } from '$lib/server/security.js';
-import { SCRATCH_FIELD_ID, SSCE_FIELD_ID, migrateScratchFields, migrateSsceFields, ensureUploadFields } from '$lib/forms.js';
+import { studentName, SCRATCH_FIELD_ID, SSCE_FIELD_ID, migrateScratchFields, migrateSsceFields, ensureUploadFields } from '$lib/forms.js';
 
 async function current(cookies) {
 	const number = readSession(cookies.get(SESSION_COOKIE));
@@ -32,6 +32,8 @@ export async function load({ cookies }) {
 	}
 	return {
 		title: form.title,
+		formId: app.formId,
+		name: studentName(form, app),
 		fields: form.fields,
 		data: app.data,
 		values,

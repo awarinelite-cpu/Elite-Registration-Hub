@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
-	import { getSaved, removeSaved, clearSaved } from '$lib/savedLogins.js';
+	import { addSaved, getSaved, removeSaved, clearSaved } from '$lib/savedLogins.js';
 	let { form } = $props();
 	let busy = $state(false);
 	let number = $state(form?.number ?? '');
@@ -44,9 +44,13 @@
 	<form
 		method="POST"
 		class="card space-y-4"
-		use:enhance={() => {
+		use:enhance={({ formData }) => {
 			busy = true;
-			return async ({ update }) => {
+			const n = String(formData.get('number') || '').trim().toUpperCase();
+			const p = String(formData.get('pin') || '').trim();
+			return async ({ result, update }) => {
+				// a successful login is remembered on this device so the next visit fills in by itself
+				if (result.type === 'redirect') addSaved({ number: n, pin: p });
 				await update({ reset: false });
 				busy = false;
 			};

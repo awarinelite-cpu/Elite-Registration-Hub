@@ -1,9 +1,14 @@
 <script>
+	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { updateSaved } from '$lib/savedLogins.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import ApplicationView from '$lib/ApplicationView.svelte';
 	import { buildDetailItems } from '$lib/forms.js';
 	let { data, form } = $props();
+
+	// if this login was remembered on this device, add the form + name so the home page can list it properly
+	onMount(() => updateSaved(data.applicationNumber, { formId: data.formId, title: data.title, name: data.name }));
 
 	let editing = $state(false);
 	let busy = $state(false);
