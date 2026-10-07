@@ -40,6 +40,9 @@
 
 <svelte:head><title>Admin — EliteReg</title></svelte:head>
 
+{#if state !== 'ok'}
+	<div class="flex justify-end px-4 pt-3"><ThemeToggle /></div>
+{/if}
 {#if state === 'loading'}
 	<div class="grid min-h-screen place-items-center text-slate-500">Loading…</div>
 {:else if state === 'signedout'}
@@ -67,7 +70,7 @@
 			<a href="/admin" class="text-lg font-extrabold text-teal-700">EliteReg <span class="text-xs font-medium text-slate-500">Admin</span></a>
 			<div class="flex items-center gap-3 text-sm">
 				<span class="hidden text-slate-500 sm:inline">{user?.email}</span>
-				<ThemeToggle inline />
+				<ThemeToggle />
 				<button class="btn-3d-ghost btn-3d-lg" onclick={() => signOut(auth)}>Sign out</button>
 			</div>
 		</div>
