@@ -18,7 +18,7 @@
 	const clock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
 	// quiz: name etc. first, then choose a mode and press Continue; the questions (and the clock) start after that
-	const pre = isQuiz ? data.form.fields.filter((f) => !f.scored) : [];
+	const pre = isQuiz ? data.form.fields.filter((f) => !f.scored).map((f) => ({ ...f, required: false })) : [];
 	const qs = isQuiz ? data.form.fields.filter((f) => f.scored) : [];
 	const modes = data.form.modes || 'both';
 	let mode = $state(modes === 'reading' ? 'reading' : 'exam');

@@ -29,7 +29,7 @@ export const actions = {
 		const fd = await request.formData();
 		// when a quiz timer runs out the answers given so far are submitted, so required questions can't block it
 		// quiz questions are never required: anyone can submit an unfinished exam (unanswered ones score 0 and are flagged)
-		const lenient = form.kind === 'quiz' ? form.fields.map((f) => (f.correct && (!Array.isArray(f.correct) || f.correct.length) ? { ...f, required: false } : f)) : form.fields;
+		const lenient = form.kind === 'quiz' ? form.fields.map((f) => ({ ...f, required: false })) : form.fields;
 		const timedOut = form.kind === 'quiz' && fd.get('_timeup') === '1';
 		const { values, errors, uploads } = collect(timedOut ? lenient.map((f) => ({ ...f, required: false })) : lenient, fd);
 		const modes = form.quiz?.modes || 'both';
