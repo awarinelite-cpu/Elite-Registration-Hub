@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 
-// The landing page is for the admin only. Applicants arrive through their form link
-// (/register/<slug>) or /login (check my application), so "/" goes straight to the admin gate.
+// Applicants' home page is the login page (application number + PIN).
+// The admin signs in directly at /admin.
 export function load() {
-	redirect(307, '/admin');
+	redirect(307, '/login');
 }

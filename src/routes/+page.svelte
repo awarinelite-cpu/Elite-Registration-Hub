@@ -1,1 +1,1 @@
-<!-- "/" redirects to /admin, see +page.js -->
+<!-- "/" redirects to /login, see +page.js -->
