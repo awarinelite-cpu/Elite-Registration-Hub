@@ -33,7 +33,15 @@ export function imageSrc(url) {
 	return m ? `https://i.imgur.com/${m[1]}.jpg` : u;
 }
 export const MATRIC_FIELD_ID = 'matric_number'; // managed by the quiz "Ask for matric number" setting
-export const matricField = () => ({ id: MATRIC_FIELD_ID, type: 'text', label: 'Matric number (optional)', required: false, placeholder: '' });
+export const STUDENT_NAME_ID = 'student_name'; // managed by the quiz "Full name" setting
+export const MANAGED_QUIZ_FIELDS = [STUDENT_NAME_ID, MATRIC_FIELD_ID];
+export const IDENT_MODES = [
+	{ value: 'off', label: 'Off (don\'t ask)' },
+	{ value: 'optional', label: 'Optional' },
+	{ value: 'required', label: 'Required' }
+];
+export const matricField = (required = false) => ({ id: MATRIC_FIELD_ID, type: 'text', label: required ? 'Matric number' : 'Matric number (optional)', required: !!required, placeholder: '' });
+export const nameField = (required = false) => ({ id: STUDENT_NAME_ID, type: 'text', label: required ? 'Full name' : 'Full name (optional)', required: !!required, placeholder: '' });
 export const isRegistration = (form) => !form?.kind || form.kind === 'registration';
 /** Fields safe to send to the public: answer keys removed. */
 export const publicFields = (fields) => (fields || []).map(({ correct, explanation, ...f }) => (Array.isArray(correct) ? correct.length : correct) ? { ...f, scored: true } : f);

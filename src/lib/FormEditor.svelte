@@ -4,7 +4,7 @@
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
 	import { adminFetch } from '$lib/adminSession.svelte.js';
-	import { FIELD_TYPES, FORM_KINDS, OPTION_TYPES, newFieldId, slugify, MATRIC_FIELD_ID, matricField, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
+	import { FIELD_TYPES, FORM_KINDS, OPTION_TYPES, newFieldId, slugify, MATRIC_FIELD_ID, STUDENT_NAME_ID, IDENT_MODES, matricField, nameField, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
 
 	let { id = null } = $props();
 	const isNew = !id; // eslint-disable-line
@@ -21,7 +21,9 @@
 	let allowEdits = $state(true);
 	let kind = $state('registration'); // registration | quiz | survey
 	let quiz = $state({ showResult: 'answers', modes: 'both', passMark: '', timeLimit: '' });
-	let askMatric = $state(false); // quiz setting: show an optional Matric number box before the exam
+	let nameMode = $state('off'); // quiz settings: off | optional | required, for the Full name and Matric number boxes before the exam
+	let matricMode = $state('off');
+	const MANAGED = [STUDENT_NAME_ID, MATRIC_FIELD_ID];
 	const toEditor = (f) => ({ ...f, optionsText: (f.options || []).join('\n'), correctList: Array.isArray(f.correct) ? [...f.correct] : f.correct ? [f.correct] : [], points: f.points ?? 1 });
 	const optionLines = (f) => [...new Set((f.optionsText || '').split('\n').map((s) => s.trim()).filter(Boolean))];
 	function toggleCorrect(f, o) {
@@ -49,8 +51,14 @@
 		allowEdits = d.allowEdits ?? true;
 		kind = d.kind || 'registration';
 		quiz = { showResult: d.quiz?.showResult || 'answers', modes: d.quiz?.modes || 'both', passMark: d.quiz?.passMark || '', timeLimit: d.quiz?.timeLimit || '' };
-		askMatric = d.quiz?.askMatric ?? (d.fields || []).some((f) => f.id === MATRIC_FIELD_ID);
-		fields = (d.fields || []).filter((f) => f.id !== MATRIC_FIELD_ID).map(toEditor); // managed by the setting
+		const mode = (id, saved, legacyOn) => {
+			if (saved) return saved;
+			const f = (d.fields || []).find((x) => x.id === id);
+			return f ? (f.required ? 'required' : 'optional') : legacyOn ? 'optional' : 'off';
+		};
+		nameMode = mode(STUDENT_NAME_ID, d.quiz?.nameMode, false);
+		matricMode = mode(MATRIC_FIELD_ID, d.quiz?.matricMode, d.quiz?.askMatric);
+		fields = (d.fields || []).filter((f) => !MANAGED.includes(f.id)).map(toEditor); // managed by the settings
 		loading = false;
 		// old forms: swap separate scratch card / SSCE year boxes for the grouped SCRATCH CARD INFO field automatically
 		if (legacyScratch.length) {
@@ -132,9 +140,10 @@
 			out.push(o);
 		}
 
-		if (kind === 'quiz' && askMatric) {
+		if (kind === 'quiz') {
 			const at = out.findIndex((f) => f.correct && (!Array.isArray(f.correct) || f.correct.length));
-			out.splice(at < 0 ? out.length : at, 0, matricField());
+			const pre = [nameMode !== 'off' && nameField(nameMode === 'required'), matricMode !== 'off' && matricField(matricMode === 'required')].filter(Boolean);
+			out.splice(at < 0 ? out.length : at, 0, ...pre);
 		}
 
 		busy = true;
@@ -144,7 +153,7 @@
 			if (chk.prefixTaken) throw new Error('Another form already uses that prefix.');
 			if (isNew && chk.slugTaken) throw new Error('That link slug is already taken.');
 
-			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, quiz: kind === 'quiz' ? { askMatric, showResult: quiz.showResult, modes: quiz.modes, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
+			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, quiz: kind === 'quiz' ? { nameMode, matricMode, askMatric: matricMode !== 'off', showResult: quiz.showResult, modes: quiz.modes, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
 			if (isNew) {
 				const ref = doc(firestore, 'forms', slug);
 				await setDoc(ref, { ...payload, ownerId: auth.currentUser.uid, counter: 0, createdAt: Date.now() });
@@ -255,7 +264,14 @@
 					<input class="input" id="tl" type="number" min="0" bind:value={quiz.timeLimit} placeholder="none" />
 				</div>
 			</div>
-			<label class="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" bind:checked={askMatric} class="accent-teal-700" /> Ask for matric number before the exam (optional to fill; shown on the result sheet)</label>
+			<div>
+				<label class="label" for="nm">Full name box</label>
+				<select class="input" id="nm" bind:value={nameMode}>{#each IDENT_MODES as m}<option value={m.value}>{m.label}</option>{/each}</select>
+			</div>
+			<div>
+				<label class="label" for="mm">Matric number box</label>
+				<select class="input" id="mm" bind:value={matricMode}>{#each IDENT_MODES as m}<option value={m.value}>{m.label}</option>{/each}</select>
+			</div>
 			<p class="text-xs text-slate-500 sm:col-span-2">Add a "Short text" Name field so you can tell who took it. In each multiple-choice question, tap the correct option(s). Answers are never sent to the quiz page.</p>
 		{/if}
 	</div>

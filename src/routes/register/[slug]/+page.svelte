@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { MANAGED_QUIZ_FIELDS } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import { auth } from '$lib/firebase.js';
 	import { addSaved, getSaved } from '$lib/savedLogins.js';
@@ -19,7 +20,7 @@
 	const clock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
 	// quiz: name etc. first, then choose a mode and press Continue; the questions (and the clock) start after that
-	const pre = isQuiz ? data.form.fields.filter((f) => !f.scored).map((f) => ({ ...f, required: false })) : [];
+	const pre = isQuiz ? data.form.fields.filter((f) => !f.scored).map((f) => ({ ...f, required: !!f.required && MANAGED_QUIZ_FIELDS.includes(f.id) })) : [];
 	const qs = isQuiz ? data.form.fields.filter((f) => f.scored) : [];
 	const modes = data.form.modes || 'both';
 	let mode = $state(modes === 'reading' ? 'reading' : 'exam');

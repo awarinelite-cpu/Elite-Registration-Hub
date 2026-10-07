@@ -2,7 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
 import { hashPin, newPin } from '$lib/server/security.js';
-import { closedReason, migrateFormFields, studentName, isRegistration, publicFields, scoreForm } from '$lib/forms.js';
+import { closedReason, migrateFormFields, studentName, isRegistration, publicFields, scoreForm, MANAGED_QUIZ_FIELDS } from '$lib/forms.js';
 
 async function getForm(slug) {
 	const snap = await db().collection('forms').doc(slug).get();
@@ -29,7 +29,7 @@ export const actions = {
 		const fd = await request.formData();
 		// when a quiz timer runs out the answers given so far are submitted, so required questions can't block it
 		// quiz questions are never required: anyone can submit an unfinished exam (unanswered ones score 0 and are flagged)
-		const lenient = form.kind === 'quiz' ? form.fields.map((f) => ({ ...f, required: false })) : form.fields;
+		const lenient = form.kind === 'quiz' ? form.fields.map((f) => ({ ...f, required: !!f.required && MANAGED_QUIZ_FIELDS.includes(f.id) })) : form.fields;
 		const timedOut = form.kind === 'quiz' && fd.get('_timeup') === '1';
 		const { values, errors, uploads } = collect(timedOut ? lenient.map((f) => ({ ...f, required: false })) : lenient, fd);
 		const modes = form.quiz?.modes || 'both';
