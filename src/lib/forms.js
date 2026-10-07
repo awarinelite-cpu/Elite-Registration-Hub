@@ -32,6 +32,8 @@ export function imageSrc(url) {
 	const m = u.match(/^https?:\/\/(?:www\.|m\.)?imgur\.com\/(?!a\/|gallery\/)([A-Za-z0-9]{5,8})\/?(?:[?#].*)?$/i);
 	return m ? `https://i.imgur.com/${m[1]}.jpg` : u;
 }
+export const MATRIC_FIELD_ID = 'matric_number'; // managed by the quiz "Ask for matric number" setting
+export const matricField = () => ({ id: MATRIC_FIELD_ID, type: 'text', label: 'Matric number (optional)', required: false, placeholder: '' });
 export const isRegistration = (form) => !form?.kind || form.kind === 'registration';
 /** Fields safe to send to the public: answer keys removed. */
 export const publicFields = (fields) => (fields || []).map(({ correct, explanation, ...f }) => (Array.isArray(correct) ? correct.length : correct) ? { ...f, scored: true } : f);

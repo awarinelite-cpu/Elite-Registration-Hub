@@ -1,12 +1,13 @@
 <script>
 	import { parseQuizText, parseQuizCsv, looksLikeQuizCsv } from '$lib/parseQuiz.js';
 	import { createForm } from '$lib/createForm.js';
-	import { newFieldId, slugify } from '$lib/forms.js';
+	import { newFieldId, slugify, matricField } from '$lib/forms.js';
 
 	let text = $state('');
 	let fileTitle = $state('');
 	let parsed = $state(null);
 	let addName = $state(true);
+	let askMatric = $state(true);
 	let showResult = $state('answers');
 	let modes = $state('both');
 	let passMark = $state('');
@@ -56,10 +57,11 @@
 		if (!parsed.title.trim()) return (error = 'Quiz name is required.');
 		if (missing) return (error = `${missing} question${missing === 1 ? ' has' : 's have'} no correct answer yet — tap the right option(s) on the amber cards.`);
 		const fields = parsed.fields.map((f) => ({ ...f, required: false, points: Math.max(1, Number(f.points) || 1) }));
-		if (addName) fields.unshift({ id: newFieldId(), type: 'text', label: 'Full name (optional)', required: false, placeholder: '' }, { id: newFieldId(), type: 'text', label: 'Matric number (optional)', required: false, placeholder: '' });
+		if (addName) fields.unshift({ id: newFieldId(), type: 'text', label: 'Full name (optional)', required: false, placeholder: '' });
+		if (askMatric) fields.splice(addName ? 1 : 0, 0, matricField());
 		const slug = slugify(parsed.slug) || 'quiz';
 		const prefix = parsed.prefix.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '') || 'QUIZ';
-		const quiz = { showResult, modes, passMark: Math.min(100, Math.max(0, Number(passMark) || 0)), timeLimit: Math.max(0, Number(timeLimit) || 0) };
+		const quiz = { askMatric, showResult, modes, passMark: Math.min(100, Math.max(0, Number(passMark) || 0)), timeLimit: Math.max(0, Number(timeLimit) || 0) };
 		busy = true;
 		try {
 			const res = await createForm({ title: parsed.title.trim(), slug, prefix, fields, kind: 'quiz', quiz });
@@ -158,7 +160,8 @@
 			<label class="label" for="qtl">Time limit (min)</label>
 			<input class="input" id="qtl" type="number" min="0" bind:value={timeLimit} placeholder="none" />
 		</div>
-		<label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" bind:checked={addName} class="accent-teal-700" /> Ask for the taker's name and matric number first (optional to fill)</label>
+		<label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" bind:checked={addName} class="accent-teal-700" /> Ask for the taker's name first (optional to fill)</label>
+		<label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" bind:checked={askMatric} class="accent-teal-700" /> Ask for matric number (optional to fill; shown on the result sheet)</label>
 	</div>
 
 	<h2 class="mb-2 font-semibold">
