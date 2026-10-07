@@ -87,9 +87,14 @@
 				v.forEach((x, i) => {
 					const line = 'number' in x ? ssceLine(x) : scratchLine(x);
 					const tag = v.length > 1 ? (i === 0 ? ' (First sitting)' : ' (Second sitting)') : '';
-					// copy icon copies only the number(s): exam number, or PIN (+ serial on the next line for WAEC)
-					const nums = 'number' in x ? x.number : [x.pin, x.board !== 'NECO' ? x.serial : ''].filter(Boolean).join('\n');
-					out.push({ id: `${f.id}-${i}`, label: f.label + tag, v: line, text: nums, second: i > 0 });
+					const item = { id: `${f.id}-${i}`, label: f.label + tag, v: line, text: 'number' in x ? x.number : line, second: i > 0 };
+					// scratch card: PIN and serial each get their own row with their own copy icon
+					if (!('number' in x)) {
+						item.v = `${x.board} | Year: ${x.year}`;
+						item.parts = [{ id: `${item.id}-pin`, label: 'PIN', value: x.pin }];
+						if (x.board !== 'NECO' && x.serial) item.parts.push({ id: `${item.id}-serial`, label: 'Serial', value: x.serial });
+					}
+					out.push(item);
 				});
 				continue;
 			}
@@ -249,6 +254,33 @@
 				{#each detailItems as f (f.id)}
 					{@const v = f.v}
 					{@const text = f.text}
+					{#if f.parts}
+						<div class="rounded-xl border p-3 md:p-5 {f.second ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}">
+							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
+							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">{f.v}</dd>
+							{#each f.parts as p (p.id)}
+								<div class="mt-2 flex items-center justify-between gap-2 rounded-lg bg-white/70 px-3 py-2">
+									<div class="min-w-0">
+										<div class="text-xs font-semibold uppercase tracking-wide text-slate-500">{p.label}</div>
+										<div class="break-all text-lg font-semibold text-slate-900 md:text-2xl">{p.value}</div>
+									</div>
+									<button
+										type="button"
+										class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700 md:p-2.5"
+										aria-label="Copy {p.label}"
+										title="Copy {p.label}"
+										onclick={() => copyValue(p.id, p.value)}
+									>
+										{#if copiedId === p.id}
+											<svg class="h-5 w-5 text-teal-700 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+										{:else}
+											<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
+										{/if}
+									</button>
+								</div>
+							{/each}
+						</div>
+					{:else}
 					<div class="flex items-start justify-between gap-2 rounded-xl border p-3 md:p-5 {f.second ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}">
 						<div class="min-w-0">
 							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
@@ -287,6 +319,7 @@
 							</button>
 						{/if}
 					</div>
+					{/if}
 				{/each}
 			</dl>
 			<div class="mt-6 flex justify-between md:mt-10">
