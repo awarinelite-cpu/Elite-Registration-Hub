@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import FormFields from '$lib/FormFields.svelte';
+	import { auth } from '$lib/firebase.js';
 	import { addSaved, getSaved } from '$lib/savedLogins.js';
 	let { data, form } = $props();
 	let busy = $state(false);
@@ -83,8 +84,12 @@
 
 	// Someone who already submitted this form on this device goes to the home (login) page instead.
 	// "?new=1" (from the Submit another application card) skips that so they can fill a new form.
-	onMount(() => {
-		const again = page.url.searchParams.get('new') === '1';
+	onMount(async () => {
+		// a signed-in admin / sub-admin previewing the form is never bounced to the student login page
+		try {
+			await auth.authStateReady();
+		} catch {}
+		const again = page.url.searchParams.get('new') === '1' || !!auth.currentUser;
 		if (!again && !form?.success && getSaved().some((x) => x.formId === data.form.id)) {
 			goto('/login', { replaceState: true });
 			return;
