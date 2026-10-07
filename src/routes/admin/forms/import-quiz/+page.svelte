@@ -1,9 +1,10 @@
 <script>
-	import { parseQuizText } from '$lib/parseQuiz.js';
+	import { parseQuizText, parseQuizCsv, looksLikeQuizCsv } from '$lib/parseQuiz.js';
 	import { createForm } from '$lib/createForm.js';
 	import { newFieldId, slugify } from '$lib/forms.js';
 
 	let text = $state('');
+	let fileTitle = $state('');
 	let parsed = $state(null);
 	let addName = $state(true);
 	let showResult = $state('score');
@@ -18,9 +19,21 @@
 
 	function parse() {
 		error = '';
-		const p = parseQuizText(text);
+		const csv = looksLikeQuizCsv(text);
+		const p = csv ? parseQuizCsv(text, fileTitle) : parseQuizText(text);
+		if (p.error) return (error = p.error);
 		if (!p.fields.length) return (error = 'No questions found. Each question needs a line of text followed by options like "A. …" and an "Answer: B" line.');
 		parsed = p;
+	}
+
+	async function onFile(e) {
+		const file = e.currentTarget.files?.[0];
+		if (!file) return;
+		error = '';
+		fileTitle = file.name.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, (c) => c.toUpperCase());
+		text = await file.text();
+		e.currentTarget.value = '';
+		parse();
 	}
 
 	const missing = $derived(parsed ? parsed.fields.filter((f) => ![].concat(f.correct || []).length).length : 0);
@@ -95,6 +108,11 @@
 			Paste your questions. Optional first line = quiz name. Each question: text, options (A. B. C. …), then <code>Answer: B</code> (or <code>Answer: A, C</code> for several). You can also mark the right option with a * or put an <code>Answers: 1.B 2.C</code> key at the end.
 		</p>
 		<textarea class="input font-mono" rows="16" bind:value={text} placeholder={'Pharmacology Quiz\n\n' + sample}></textarea>
+		<div class="rounded-lg border border-dashed border-teal-300 bg-teal-50/60 p-3">
+			<label class="label" for="qcsv">Or upload a CSV file</label>
+			<input class="input file:mr-3 file:rounded file:border-0 file:bg-teal-100 file:px-3 file:py-1 file:text-teal-800" id="qcsv" type="file" accept=".csv,.txt,text/csv" onchange={onFile} />
+			<p class="mt-1 text-xs text-slate-600">Columns: <code>question, option_a, option_b, option_c, option_d, answer</code> (letter such as B, or A,C for several), plus optional <code>explanation, topic, marks</code>. Extra columns like year are ignored.</p>
+		</div>
 		<div class="flex flex-wrap gap-2">
 			<button class="btn" onclick={parse} disabled={!text.trim()}>Preview quiz</button>
 			<button class="btn-ghost" onclick={() => (text = 'Sample Quiz\n\n' + sample)}>Use example</button>
@@ -147,6 +165,7 @@
 					<textarea class="input min-w-0 flex-1" rows="2" bind:value={f.label} aria-label="Question"></textarea>
 					<button class="btn-danger !px-2 !py-1" onclick={() => parsed.fields.splice(i, 1)} aria-label="Remove">✕</button>
 				</div>
+				{#if f.topic}<div class="text-xs font-medium text-teal-700">{f.topic}</div>{/if}
 				<div class="flex flex-wrap gap-2">
 					{#each f.options as o}
 						<button type="button" class="rounded-lg border px-3 py-1.5 text-left text-sm {isCorrect(f, o) ? 'border-green-600 bg-green-600 font-semibold text-white' : 'border-slate-300 bg-white'}" onclick={() => toggle(f, o)}>

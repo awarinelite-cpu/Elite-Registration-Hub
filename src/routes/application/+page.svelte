@@ -109,6 +109,7 @@
 							<div class="font-semibold">{r.ok ? '✓' : '✗'} {r.label}</div>
 							<div class="text-slate-700">Your answer: {r.given || '—'}</div>
 							{#if !r.ok}<div class="text-slate-700">Correct answer: {r.answer}</div>{/if}
+							{#if r.explanation}<div class="mt-1 text-xs text-slate-600">{r.explanation}</div>{/if}
 						</li>
 					{/each}
 				</ul>

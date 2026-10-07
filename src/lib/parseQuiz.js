@@ -142,3 +142,100 @@ export function parseQuizText(text) {
 	});
 	return { title, slug: slugify(title || 'quiz') || 'quiz', prefix: (slugify(title || 'quiz') || 'quiz').toUpperCase().slice(0, 24), fields, dropped };
 }
+
+// ---------------------------------------------------------------- CSV
+/** Minimal RFC-4180 reader: quoted cells, escaped quotes, newlines inside quotes, , ; or tab separators. */
+export function parseCsv(text) {
+	const src = String(text || '').replace(/^\ufeff/, '');
+	const head = src.split('\n')[0] || '';
+	const sep = [',', ';', '\t'].map((c) => [c, head.split(c).length]).sort((a, b) => b[1] - a[1])[0][0];
+	const rows = [];
+	let row = [];
+	let cell = '';
+	let q = false;
+	for (let i = 0; i < src.length; i++) {
+		const c = src[i];
+		if (q) {
+			if (c === '"' && src[i + 1] === '"') (cell += '"'), i++;
+			else if (c === '"') q = false;
+			else cell += c;
+		} else if (c === '"' && !cell) q = true;
+		else if (c === sep) (row.push(cell), (cell = ''));
+		else if (c === '\n' || c === '\r') {
+			if (c === '\r' && src[i + 1] === '\n') i++;
+			row.push(cell);
+			cell = '';
+			if (row.some((x) => x.trim())) rows.push(row);
+			row = [];
+		} else cell += c;
+	}
+	row.push(cell);
+	if (row.some((x) => x.trim())) rows.push(row);
+	return rows;
+}
+
+/** True when the text looks like a CSV with a "question" header column. */
+export const looksLikeQuizCsv = (text) => /^\s*\ufeff?"?\s*(questions?|q)\s*"?\s*[,;\t]/i.test(String(text || '').split('\n')[0] || '');
+
+const hkey = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+/**
+ * CSV of MCQs. Header names are matched loosely:
+ *   question | option_a … option_h (or a, b, c / option1…) | answer (letter, letters, number or the option text)
+ *   explanation | topic | year | marks (optional)
+ */
+export function parseQuizCsv(text, title = '') {
+	const rows = parseCsv(text);
+	const header = (rows.shift() || []).map(hkey);
+	const col = (...names) => header.findIndex((h) => names.includes(h));
+	const qi = col('question', 'questions', 'q', 'questiontext');
+	const optCols = [];
+	for (let n = 0; n < 8; n++) {
+		const L = String.fromCharCode(97 + n);
+		const i = col(`option${L}`, `opt${L}`, L, `choice${L}`, `option${n + 1}`, `opt${n + 1}`, `choice${n + 1}`, `answer${L}`);
+		if (i >= 0) optCols.push(i);
+	}
+	const ai = col('answer', 'correct', 'correctanswer', 'correctoption', 'key', 'ans', 'rightanswer');
+	const ei = col('explanation', 'rationale', 'reason', 'solution', 'feedback');
+	const ti = col('topic', 'category', 'subject', 'section');
+	const mi = col('marks', 'points', 'mark', 'score');
+	if (qi < 0 || optCols.length < 2) return { title, slug: slugify(title || 'quiz') || 'quiz', prefix: 'QUIZ', fields: [], dropped: rows.length, error: 'CSV needs a "question" column and at least two option columns (option_a, option_b, …).' };
+
+	const fields = [];
+	let dropped = 0;
+	for (const r of rows) {
+		const get = (i) => (i >= 0 ? String(r[i] ?? '').trim() : '');
+		const label = get(qi);
+		const options = [...new Set(optCols.map(get).filter(Boolean))];
+		if (!label || options.length < 2) {
+			dropped++;
+			continue;
+		}
+		const raw = get(ai);
+		let correct = [];
+		const byText = options.findIndex((o) => norm(o) === norm(raw));
+		if (raw && byText >= 0) correct = [byText];
+		else if (raw) {
+			const m = raw.match(LETTERS);
+			if (m) correct = letterIdx(m[1]);
+			else if (/^\d$/.test(raw)) correct = [Number(raw) - 1];
+		}
+		correct = [...new Set(correct)].filter((i) => i >= 0 && i < options.length).map((i) => options[i]);
+		const f = {
+			id: newFieldId(),
+			type: correct.length > 1 ? 'checkbox' : 'radio',
+			label,
+			required: true,
+			placeholder: '',
+			options,
+			correct: correct.length > 1 ? correct : correct[0] || '',
+			points: Math.max(1, Number(get(mi)) || 1)
+		};
+		if (get(ei)) f.explanation = get(ei);
+		const topic = [get(ti), ''].filter(Boolean)[0];
+		if (topic) f.topic = topic;
+		fields.push(f);
+	}
+	const slug = slugify(title || 'quiz') || 'quiz';
+	return { title, slug, prefix: slug.toUpperCase().slice(0, 24), fields, dropped };
+}
