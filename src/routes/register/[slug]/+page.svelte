@@ -1,9 +1,30 @@
 <script>
+	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import FormFields from '$lib/FormFields.svelte';
+	import { addSaved, getSaved } from '$lib/savedLogins.js';
 	let { data, form } = $props();
 	let busy = $state(false);
 	let copied = $state(false);
+	let ready = $state(false);
+
+	// Someone who already submitted this form on this device goes to the home (login) page instead.
+	// "?new=1" (from the Submit another application card) skips that so they can fill a new form.
+	onMount(() => {
+		const again = page.url.searchParams.get('new') === '1';
+		if (!again && !form?.success && getSaved().some((x) => x.formId === data.form.id)) {
+			goto('/login', { replaceState: true });
+			return;
+		}
+		ready = true;
+	});
+
+	// remember the login on this device so the home page can fill it in next time
+	$effect(() => {
+		if (form?.success) addSaved({ number: form.applicationNumber, pin: form.pin, formId: data.form.id, title: form.title, name: form.name || '' });
+	});
 
 	async function copy(text) {
 		await navigator.clipboard?.writeText(text);
@@ -14,7 +35,9 @@
 
 <svelte:head><title>{data.form.title} — EliteReg</title></svelte:head>
 
-<main class="mx-auto max-w-2xl px-4 py-8">
+<noscript><style>.pre-ready { visibility: visible !important; }</style></noscript>
+
+<main class="pre-ready mx-auto max-w-2xl px-4 py-8 {ready ? '' : 'invisible'}">
 	{#if form?.success}
 		<div class="card text-center">
 			<div class="mb-2 text-4xl">✅</div>
@@ -32,7 +55,7 @@
 				</div>
 			</div>
 			<p class="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-				Save both now — the PIN is shown only once and cannot be recovered. You need them to view or edit your application.
+				Save both now: the PIN is shown only once and cannot be recovered. They are also remembered on this device, so they fill in automatically when you come back.
 			</p>
 			<div class="mt-4 flex flex-wrap justify-center gap-2">
 				<button class="btn-ghost" onclick={() => copy(`Application Number: ${form.applicationNumber}\nAccess PIN: ${form.pin}`)}>
@@ -40,6 +63,7 @@
 				</button>
 				<button class="btn-ghost" onclick={() => window.print()}>Print</button>
 				<a class="btn" href="/login">Go to login</a>
+				<a class="btn-ghost" href="/register/{data.form.id}?new=1" data-sveltekit-reload>Submit another</a>
 			</div>
 		</div>
 	{:else}

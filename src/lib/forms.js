@@ -284,3 +284,38 @@ export function appSearchText(form, app) {
 	}
 	return parts.join(' ').toLowerCase();
 }
+
+
+/**
+ * Cards shown when viewing an application (admin modal and applicant page).
+ * One card per value; SSCE exam / scratch card sittings each get their own card
+ * (scratch card PIN and serial are separate rows). Empty old single-box fields are hidden.
+ */
+export function buildDetailItems(fields, data) {
+	const list = fields || [];
+	const grouped = list.some((f) => f.type === 'ssceexams' || f.type === 'scratchcards');
+	const out = [];
+	for (const f of list) {
+		const v = data?.[f.id];
+		const empty = v == null || v === '' || (Array.isArray(v) && !v.length);
+		if (grouped && empty && f.type !== 'ssceexams' && f.type !== 'scratchcards' && (isLegacySsce(f) || isLegacyScratch(f))) continue;
+		if (empty && f.id === 'doc_ssce_2') continue;
+		if (Array.isArray(v) && v.length && v.every((x) => x && typeof x === 'object')) {
+			v.forEach((x, i) => {
+				const line = 'number' in x ? ssceLine(x) : scratchLine(x);
+				const tag = v.length > 1 ? (i === 0 ? ' (First sitting)' : ' (Second sitting)') : '';
+				const item = { id: `${f.id}-${i}`, label: f.label + tag, v: line, text: 'number' in x ? x.number : line, second: i > 0 };
+				if (!('number' in x)) {
+					item.v = `${x.board} | Year: ${x.year}`;
+					item.parts = [{ id: `${item.id}-pin`, label: 'PIN', value: x.pin }];
+					if (x.board !== 'NECO' && x.serial) item.parts.push({ id: `${item.id}-serial`, label: 'Serial', value: x.serial });
+				}
+				out.push(item);
+			});
+			continue;
+		}
+		const text = v == null ? '' : Array.isArray(v) ? joinArray(v) : typeof v === 'object' ? '' : String(v);
+		out.push({ id: f.id, label: f.label, v, text });
+	}
+	return out;
+}

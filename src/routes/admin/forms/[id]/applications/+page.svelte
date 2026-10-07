@@ -3,7 +3,8 @@
 	import { page } from '$app/state';
 	import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
-	import { STATUSES, studentName, joinArray, migrateFormFields, isLegacyScratch, isLegacySsce, ssceLine, scratchLine } from '$lib/forms.js';
+	import { STATUSES, studentName, joinArray, migrateFormFields, buildDetailItems } from '$lib/forms.js';
+	import ApplicationView from '$lib/ApplicationView.svelte';
 	import { downloadCsv } from '$lib/csv.js';
 
 	const formId = page.params.id;
@@ -73,36 +74,8 @@
 
 	let copiedId = $state('');
 
-	// One card per value; SSCE exam / scratch card sittings each get their own card.
-	// Old single-box fields (replaced by the grouped fields) are hidden when empty.
-	const detailItems = $derived.by(() => {
-		if (!selected || !form) return [];
-		const grouped = form.fields.some((f) => f.type === 'ssceexams' || f.type === 'scratchcards');
-		const out = [];
-		for (const f of form.fields) {
-			const v = selected.data?.[f.id];
-			const empty = v == null || v === '' || (Array.isArray(v) && !v.length);
-			if (grouped && empty && f.type !== 'ssceexams' && f.type !== 'scratchcards' && (isLegacySsce(f) || isLegacyScratch(f))) continue;
-			if (Array.isArray(v) && v.length && v.every((x) => x && typeof x === 'object')) {
-				v.forEach((x, i) => {
-					const line = 'number' in x ? ssceLine(x) : scratchLine(x);
-					const tag = v.length > 1 ? (i === 0 ? ' (First sitting)' : ' (Second sitting)') : '';
-					const item = { id: `${f.id}-${i}`, label: f.label + tag, v: line, text: 'number' in x ? x.number : line, second: i > 0 };
-					// scratch card: PIN and serial each get their own row with their own copy icon
-					if (!('number' in x)) {
-						item.v = `${x.board} | Year: ${x.year}`;
-						item.parts = [{ id: `${item.id}-pin`, label: 'PIN', value: x.pin }];
-						if (x.board !== 'NECO' && x.serial) item.parts.push({ id: `${item.id}-serial`, label: 'Serial', value: x.serial });
-					}
-					out.push(item);
-				});
-				continue;
-			}
-			const text = v == null ? '' : Array.isArray(v) ? joinArray(v) : typeof v === 'object' ? '' : String(v);
-			out.push({ id: f.id, label: f.label, v, text });
-		}
-		return out;
-	});
+	const detailItems = $derived(selected && form ? buildDetailItems(form.fields, selected.data) : []);
+
 	async function copyValue(id, text) {
 		try {
 			await navigator.clipboard.writeText(text);
@@ -250,78 +223,7 @@
 					<button class="btn-3d-ghost btn-3d-lg md:!px-6 md:!py-3 md:!text-lg" onclick={() => (selected = null)}>Close</button>
 				</div>
 			</div>
-			<dl class="grid gap-3 md:grid-cols-2 md:gap-5">
-				{#each detailItems as f (f.id)}
-					{@const v = f.v}
-					{@const text = f.text}
-					{#if f.parts}
-						<div class="rounded-xl border p-3 md:p-5 {f.second ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}">
-							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
-							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">{f.v}</dd>
-							{#each f.parts as p (p.id)}
-								<div class="mt-2 flex items-center justify-between gap-2 rounded-lg bg-white/70 px-3 py-2">
-									<div class="min-w-0">
-										<div class="text-xs font-semibold uppercase tracking-wide text-slate-500">{p.label}</div>
-										<div class="break-all text-lg font-semibold text-slate-900 md:text-2xl">{p.value}</div>
-									</div>
-									<button
-										type="button"
-										class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700 md:p-2.5"
-										aria-label="Copy {p.label}"
-										title="Copy {p.label}"
-										onclick={() => copyValue(p.id, p.value)}
-									>
-										{#if copiedId === p.id}
-											<svg class="h-5 w-5 text-teal-700 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
-										{:else}
-											<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
-										{/if}
-									</button>
-								</div>
-							{/each}
-						</div>
-					{:else}
-					<div class="flex items-start justify-between gap-2 rounded-xl border p-3 md:p-5 {f.second ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}">
-						<div class="min-w-0">
-							<dt class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">{f.label}</dt>
-							<dd class="mt-1 break-words text-lg font-semibold text-slate-900 md:text-2xl">
-								{#if v && typeof v === 'object' && !Array.isArray(v)}
-									<span class="flex items-center gap-2">
-										<button class="min-w-0 break-all text-left text-teal-700 underline" onclick={() => openFile(v)}>📎 {v.name}</button>
-										<button
-											type="button"
-											class="shrink-0 rounded-md p-1.5 text-teal-700 hover:bg-teal-50 disabled:opacity-50 md:p-2.5"
-											aria-label="Download {f.label}"
-											title="Download"
-											disabled={downloading === f.id}
-											onclick={() => downloadFile(v, f.id)}
-										>
-											<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" stroke-linecap="round" stroke-linejoin="round" /></svg>
-										</button>
-									</span>
-								{:else if Array.isArray(v)}{#each v as x}{#if x && typeof x === 'object' && 'number' in x}<div>{x.board} | Exam No: {x.number} | Year: {x.year}</div>{:else if x && typeof x === 'object'}<div>{x.board} | PIN: {x.pin}{#if x.board !== 'NECO'} | Serial: {x.serial}{/if} | Year: {x.year}</div>{:else}{x}{/if}{:else}—{/each}
-								{:else}{v || '—'}{/if}
-							</dd>
-						</div>
-						{#if text}
-							<button
-								type="button"
-								class="shrink-0 rounded-md p-1.5 md:p-2.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
-								aria-label="Copy {f.label}"
-								title="Copy"
-								onclick={() => copyValue(f.id, text)}
-							>
-								{#if copiedId === f.id}
-									<svg class="h-5 w-5 md:h-7 md:w-7 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg>
-								{:else}
-									<svg class="h-5 w-5 md:h-7 md:w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-linecap="round" /></svg>
-								{/if}
-							</button>
-						{/if}
-					</div>
-					{/if}
-				{/each}
-			</dl>
+			<ApplicationView items={detailItems} {openFile} {downloadFile} {downloading} />
 			<div class="mt-6 flex justify-between md:mt-10">
 				<button class="btn-danger md:!px-6 md:!py-3 md:!text-lg" onclick={() => remove(selected)}>Delete</button>
 			</div>

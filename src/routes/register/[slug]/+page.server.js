@@ -2,7 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
 import { hashPin, newPin } from '$lib/server/security.js';
-import { closedReason, migrateFormFields } from '$lib/forms.js';
+import { closedReason, migrateFormFields, studentName } from '$lib/forms.js';
 
 async function getForm(slug) {
 	const snap = await db().collection('forms').doc(slug).get();
@@ -57,6 +57,6 @@ export const actions = {
 		});
 
 		// PIN is shown exactly once and never stored in plain text.
-		return { success: true, applicationNumber, pin, title: form.title };
+		return { success: true, applicationNumber, pin, title: form.title, name: studentName(form, { data: values }) };
 	}
 };
