@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase
 import { firestore } from '$lib/firebase.js';
 
 /** Creates a form, auto-resolving slug/prefix clashes. Returns the final slug. */
-export async function createForm({ title, slug, prefix, fields, description = '' }) {
+export async function createForm({ title, slug, prefix, fields, description = '', kind = 'registration', quiz = null }) {
 	let finalSlug = slug;
 	for (let n = 2; (await getDoc(doc(firestore, 'forms', finalSlug))).exists(); n++) finalSlug = `${slug}-${n}`;
 
@@ -18,7 +18,9 @@ export async function createForm({ title, slug, prefix, fields, description = ''
 		status: 'active',
 		startDate: '',
 		closingDate: '',
-		allowEdits: true,
+		allowEdits: kind === 'registration',
+		kind,
+		quiz,
 		fields,
 		counter: 0,
 		createdAt: Date.now(),

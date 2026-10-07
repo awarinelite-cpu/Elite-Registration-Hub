@@ -79,7 +79,7 @@
 
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
 	<h1 class="text-2xl font-bold">Dashboard</h1>
-	<div class="flex gap-2"><a href="/admin/forms/import" class="btn-3d-ghost">Paste to create</a><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
+	<div class="flex gap-2"><a href="/admin/forms/import" class="btn-3d-ghost">Paste to create</a><a href="/admin/forms/import-quiz" class="btn-3d-ghost">Paste quiz</a><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
 </div>
 
 {#if loading}
