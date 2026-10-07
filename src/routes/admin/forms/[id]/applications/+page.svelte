@@ -87,7 +87,9 @@
 				v.forEach((x, i) => {
 					const line = 'number' in x ? ssceLine(x) : scratchLine(x);
 					const tag = v.length > 1 ? (i === 0 ? ' (First sitting)' : ' (Second sitting)') : '';
-					out.push({ id: `${f.id}-${i}`, label: f.label + tag, v: line, text: line, second: i > 0 });
+					// copy icon copies only the number(s): exam number, or PIN (+ serial on the next line for WAEC)
+					const nums = 'number' in x ? x.number : [x.pin, x.board !== 'NECO' ? x.serial : ''].filter(Boolean).join('\n');
+					out.push({ id: `${f.id}-${i}`, label: f.label + tag, v: line, text: nums, second: i > 0 });
 				});
 				continue;
 			}
