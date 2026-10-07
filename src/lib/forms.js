@@ -23,6 +23,7 @@ export const OPTION_TYPES = ['select', 'radio', 'checkbox'];
 export const FILE_TYPES = ['file', 'photo'];
 
 export const SCRATCH_BOARDS = ['WAEC', 'NECO'];
+export const SSCE_BOARDS = ['WAEC', 'NECO', 'WAEC GCE', 'NECO GCE', 'NABTEB'];
 export const MAX_SITTINGS = 2;
 export const emptyScratch = () => ({ board: '', pin: '', serial: '', year: '' });
 
@@ -124,7 +125,7 @@ function validateSsce(exams) {
 	for (let i = 0; i < exams.length; i++) {
 		const c = exams[i];
 		const n = `Exam ${i + 1}`;
-		if (!SCRATCH_BOARDS.includes(c.board)) return `${n}: select WAEC or NECO.`;
+		if (!SSCE_BOARDS.includes(c.board)) return `${n}: select an exam type.`;
 		if (!c.number) return `${n}: enter the exam number.`;
 		if (!/^\d{4}$/.test(c.year) || Number(c.year) < 1980 || Number(c.year) > maxYear) return `${n}: enter a valid 4-digit exam year.`;
 	}

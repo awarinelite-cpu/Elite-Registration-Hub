@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { SCRATCH_BOARDS, MAX_SITTINGS, emptySsce } from '$lib/forms.js';
+	import { SSCE_BOARDS, MAX_SITTINGS, emptySsce } from '$lib/forms.js';
 
 	// field: the ssceexams field def; value: saved array of exams; error: message string.
 	// BulkFill fills this by dispatching an "ssceexamfill" CustomEvent (detail = array of exams) on the wrapper.
@@ -37,7 +37,7 @@
 				<label class="label" for={`${id}_b${i}`}>Exam type</label>
 				<select class="input" id={`${id}_b${i}`} bind:value={c.board}>
 					<option value="">Select…</option>
-					{#each SCRATCH_BOARDS as b}<option value={b}>{b}</option>{/each}
+					{#each SSCE_BOARDS as b}<option value={b}>{b}</option>{/each}
 				</select>
 			</div>
 			<div>
