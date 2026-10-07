@@ -14,7 +14,7 @@
 {#if staff && !page.url.pathname.startsWith('/admin')}
 	<div class="sticky top-0 z-40 flex items-center justify-between gap-2 bg-teal-800 px-4 py-2 text-sm text-white print:hidden">
 		<span>Admin view of the student page</span>
-		<a href="/admin" data-sveltekit-reload class="rounded-lg bg-white px-3 py-1 font-semibold text-teal-800">← Back to admin</a>
+		<a href="/admin" data-sveltekit-reload class="rounded-lg bg-white px-3 py-1 font-semibold text-teal-800">← Back to Homepage</a>
 	</div>
 {/if}
 
