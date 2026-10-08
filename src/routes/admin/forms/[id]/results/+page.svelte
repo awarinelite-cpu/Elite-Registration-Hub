@@ -4,6 +4,7 @@
 	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { studentName, scoreForm } from '$lib/forms.js';
+	import BackButton from '$lib/BackButton.svelte';
 
 	const formId = page.params.id;
 	let form = $state(null);
@@ -78,7 +79,7 @@
 	<p class="text-slate-500">Loading…</p>
 {:else}
 	<div class="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
-		<a href="/admin/forms/{formId}/applications" class="btn-ghost">← Back</a>
+		<BackButton fallback="/admin" />
 		<button class="btn" onclick={() => window.print()} disabled={!rows.length}>🖨️ Print result sheet (A4)</button>
 	</div>
 
