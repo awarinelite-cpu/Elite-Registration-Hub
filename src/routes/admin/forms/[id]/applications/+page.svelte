@@ -154,13 +154,13 @@
 {:else if loading}
 	<p class="text-slate-500">Loading…</p>
 {:else}
-	<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-		<div>
+	<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+		<div class="min-w-0">
 			<BackButton class="mb-2" />
-			<h1 class="text-2xl font-bold">{form.title}</h1>
+			<h1 class="break-words text-2xl font-bold">{form.title}</h1>
 			<p class="text-sm text-slate-500">{apps.length} applications</p>
 		</div>
-		<div class="flex gap-2">
+		<div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
 			<a class="btn-3d-ghost btn-3d-lg" href="/register/{form.id}?new=1">👁 View {form.kind === 'quiz' ? 'quiz' : form.kind === 'survey' ? 'survey' : 'form'}</a>
 			{#if form.kind === 'quiz'}<a class="btn-3d btn-3d-lg" href="/admin/forms/{form.id}/results">📄 Result sheet</a>{/if}
 			<a class="btn-3d-ghost btn-3d-lg" href="/admin/forms/{form.id}">Manage form</a>
@@ -169,8 +169,8 @@
 	</div>
 
 	<div class="mb-3 flex flex-wrap gap-2">
-		<input class="input max-w-xs" placeholder="Search number or any field…" bind:value={search} />
-		<select class="input max-w-[10rem]" bind:value={statusFilter}>
+		<input class="input w-full sm:max-w-xs" placeholder="Search number or any field…" bind:value={search} />
+		<select class="input w-full sm:max-w-[10rem]" bind:value={statusFilter}>
 			<option value="all">All statuses</option>
 			{#each STATUSES as s}<option value={s}>{s}</option>{/each}
 		</select>
