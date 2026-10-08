@@ -5,6 +5,7 @@
 	import ScratchCards from '$lib/ScratchCards.svelte';
 	import SsceExams from '$lib/SsceExams.svelte';
 	import ExamInfo from '$lib/ExamInfo.svelte';
+	import { prepareUpload } from '$lib/imageConvert.js';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
 	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false } = $props();
 	const qNo = (f) => fields.filter((x) => x.scored).findIndex((x) => x.id === f.id) + 1;
@@ -29,6 +30,27 @@
 	const ssceF = $derived(fields.find((x) => x.type === 'ssceexams'));
 	const scratchF = $derived(fields.find((x) => x.type === 'scratchcards'));
 	const examGroup = $derived(ssceF && scratchF ? (fields.indexOf(ssceF) < fields.indexOf(scratchF) ? ssceF.id : scratchF.id) : null);
+	// auto-convert picked images to JPG (PDFs untouched); result is put back into the file input
+	let fileNote = $state({});
+	async function onPick(e, f) {
+		const input = e.currentTarget;
+		const picked = input.files?.[0];
+		if (!picked) { fileNote[f.id] = null; return; }
+		fileNote[f.id] = { ok: true, text: 'Processing…' };
+		const r = await prepareUpload(picked);
+		if (r.file !== picked) {
+			try {
+				const dt = new DataTransfer();
+				dt.items.add(r.file);
+				input.files = dt.files;
+			} catch {
+				r.ok = false;
+				r.note = 'Could not process this file here. Please pick a JPG or PNG under 1.5 MB.';
+			}
+		}
+		if (!r.ok) input.value = '';
+		fileNote[f.id] = r.note ? { ok: r.ok, text: r.note } : null;
+	}
 	const val = (f) => values?.[f.id] ?? (f.type === 'checkbox' ? [] : '');
 </script>
 
@@ -110,9 +132,13 @@
 				id={`f_${f.id}`}
 				name={`f_${f.id}`}
 				accept={f.type === 'photo' ? 'image/*' : 'image/*,application/pdf'}
+				onchange={(e) => onPick(e, f)}
 			/>
+			{#if fileNote[f.id]}
+				<p class="mt-1 text-xs {fileNote[f.id].ok ? 'text-teal-700' : 'text-red-600'}">{fileNote[f.id].text}</p>
+			{/if}
 			<p class="mt-1 text-xs text-slate-500">
-				{f.type === 'photo' ? 'JPG/PNG/WebP' : 'JPG/PNG/WebP/PDF'}, max 1.5 MB.
+				{f.type === 'photo' ? 'Any photo' : 'Any photo or PDF'} (photos are auto-converted to JPG), max 1.5 MB.
 				{#if existingFiles[f.id]}Current file: <strong>{existingFiles[f.id].name}</strong> (upload a new one to replace).{/if}
 			</p>
 			{#if f.id === 'doc_ssce' && hasSecond && !showSecond}
