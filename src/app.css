@@ -31,12 +31,27 @@
 	.card-amber .text-slate-500, .card-rose .text-slate-500, .card-teal .text-slate-500,
 	.card-blue .text-slate-400, .card-violet .text-slate-400, .card-green .text-slate-400,
 	.card-amber .text-slate-400, .card-rose .text-slate-400, .card-teal .text-slate-400 { color: rgba(255,255,255,.85); }
-	.card-blue { background: #2563eb; border-bottom-color: #1e40af; }
-	.card-violet { background: #7c3aed; border-bottom-color: #5b21b6; }
-	.card-green { background: #16a34a; border-bottom-color: #166534; }
-	.card-amber { background: #d97706; border-bottom-color: #92400e; }
-	.card-rose { background: #e11d48; border-bottom-color: #9f1239; }
-	.card-teal { background: #0d9488; border-bottom-color: #115e59; }
+	.card-blue { background-color: #2563eb; border-bottom-color: #1e40af; }
+	.card-violet { background-color: #7c3aed; border-bottom-color: #5b21b6; }
+	.card-green { background-color: #16a34a; border-bottom-color: #166534; }
+	.card-amber { background-color: #d97706; border-bottom-color: #92400e; }
+	.card-rose { background-color: #e11d48; border-bottom-color: #9f1239; }
+	.card-teal { background-color: #0d9488; border-bottom-color: #115e59; }
+	/* glossy shine */
+	.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
+		position: relative; overflow: hidden;
+		background-image:
+			radial-gradient(ellipse 60% 70% at 18% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 70%),
+			linear-gradient(to bottom, rgba(255,255,255,.34) 0%, rgba(255,255,255,.12) 48%, rgba(255,255,255,0) 50%, rgba(0,0,0,.10) 100%);
+		box-shadow: inset 0 2px 1px rgba(255,255,255,.65), inset 0 -10px 14px rgba(0,0,0,.14), 0 10px 14px -8px rgba(15,23,42,.45);
+	}
+	.card-blue::after, .card-violet::after, .card-green::after, .card-amber::after, .card-rose::after, .card-teal::after {
+		content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; pointer-events: none;
+		background: linear-gradient(105deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));
+		transform: skewX(-20deg); animation: card-sheen 5s ease-in-out infinite;
+	}
+	@keyframes card-sheen { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+	@media (prefers-reduced-motion: reduce) { .card-blue::after, .card-violet::after, .card-green::after, .card-amber::after, .card-rose::after, .card-teal::after { animation: none; display: none; } }
 	.btn-3d, .btn-3d-ghost {
 		@apply inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition duration-100;
 		border-bottom-width: 4px;
@@ -133,12 +148,18 @@ html.dark .card {
 	background: #1e293b;
 	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 10px 14px -8px rgba(0, 0, 0, 0.7);
 }
-html.dark .card-blue { background: #1d4ed8; border-bottom-color: #1e3a8a; }
-html.dark .card-violet { background: #6d28d9; border-bottom-color: #4c1d95; }
-html.dark .card-green { background: #15803d; border-bottom-color: #14532d; }
-html.dark .card-amber { background: #b45309; border-bottom-color: #78350f; }
-html.dark .card-rose { background: #be123c; border-bottom-color: #881337; }
-html.dark .card-teal { background: #0f766e; border-bottom-color: #134e4a; }
+html.dark .card-blue, html.dark .card-violet, html.dark .card-green, html.dark .card-amber, html.dark .card-rose, html.dark .card-teal {
+	background-image:
+		radial-gradient(ellipse 60% 70% at 18% 0%, rgba(255,255,255,.4), rgba(255,255,255,0) 70%),
+		linear-gradient(to bottom, rgba(255,255,255,.26) 0%, rgba(255,255,255,.09) 48%, rgba(255,255,255,0) 50%, rgba(0,0,0,.14) 100%);
+	box-shadow: inset 0 2px 1px rgba(255,255,255,.45), inset 0 -10px 14px rgba(0,0,0,.25), 0 10px 14px -8px rgba(0,0,0,.7);
+}
+html.dark .card-blue { background-color: #1d4ed8; border-bottom-color: #1e3a8a; }
+html.dark .card-violet { background-color: #6d28d9; border-bottom-color: #4c1d95; }
+html.dark .card-green { background-color: #15803d; border-bottom-color: #14532d; }
+html.dark .card-amber { background-color: #b45309; border-bottom-color: #78350f; }
+html.dark .card-rose { background-color: #be123c; border-bottom-color: #881337; }
+html.dark .card-teal { background-color: #0f766e; border-bottom-color: #134e4a; }
 html.dark .btn-3d-ghost {
 	color: #e2e8f0;
 	border-color: #475569;
