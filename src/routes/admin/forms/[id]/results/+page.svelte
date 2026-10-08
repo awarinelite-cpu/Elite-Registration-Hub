@@ -125,7 +125,7 @@
 				</tbody>
 			</table>
 
-			<div class="mt-5 grid gap-4 sm:grid-cols-2" style="page-break-inside:avoid">
+			<div class="no-print mt-5 grid gap-4 sm:grid-cols-2" style="page-break-inside:avoid">
 				{#each [{ t: 'Most passed questions', l: mostPassed, k: 'ok' }, { t: 'Most failed questions', l: mostFailed, k: 'bad' }] as g}
 					<div>
 						<h2 class="mb-1 text-sm font-bold uppercase">{g.t}</h2>
