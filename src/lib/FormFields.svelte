@@ -4,6 +4,7 @@
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
 	import ScratchCards from '$lib/ScratchCards.svelte';
 	import SsceExams from '$lib/SsceExams.svelte';
+	import ExamInfo from '$lib/ExamInfo.svelte';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
 	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false } = $props();
 	const qNo = (f) => fields.filter((x) => x.scored).findIndex((x) => x.id === f.id) + 1;
@@ -24,6 +25,10 @@
 			if (x.type === 'lga' && stateOf(x)?.id === sid && !lgasFor(stateVals[sid]).includes(lgaVals[x.id])) lgaVals[x.id] = '';
 		}
 	}
+	// exam + scratch card fields are shown together as one EXAM INFORMATION group (at whichever comes first)
+	const ssceF = $derived(fields.find((x) => x.type === 'ssceexams'));
+	const scratchF = $derived(fields.find((x) => x.type === 'scratchcards'));
+	const examGroup = $derived(ssceF && scratchF ? (fields.indexOf(ssceF) < fields.indexOf(scratchF) ? ssceF.id : scratchF.id) : null);
 	const val = (f) => values?.[f.id] ?? (f.type === 'checkbox' ? [] : '');
 </script>
 
@@ -32,6 +37,10 @@
 		<!-- hidden until Add SSCE -->
 	{:else if f.scored && reading && answers}
 		<ReadingQuestion {big} field={f} number={qNo(f)} answer={answers[f.id]} value={values?.[f.id]} error={errors?.[f.id]} />
+	{:else if examGroup && f.id === examGroup}
+		<ExamInfo ssceField={ssceF} scratchField={scratchF} ssceValue={values?.[ssceF.id]} scratchValue={values?.[scratchF.id]} ssceError={errors?.[ssceF.id]} scratchError={errors?.[scratchF.id]} />
+	{:else if examGroup && (f.type === 'scratchcards' || f.type === 'ssceexams')}
+		<!-- shown inside the EXAM INFORMATION group -->
 	{:else if f.type === 'scratchcards'}
 		<ScratchCards field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else if f.type === 'ssceexams'}
