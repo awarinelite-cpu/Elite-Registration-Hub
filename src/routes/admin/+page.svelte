@@ -38,9 +38,9 @@
 
 	// one folder per form type, chosen when the form was created
 	const FOLDERS = [
-		{ kind: 'quiz', title: 'MCQ / Quiz forms', icon: '📝' },
-		{ kind: 'survey', title: 'Questionnaires / Surveys', icon: '📋' },
-		{ kind: 'registration', title: 'Registration forms', icon: '🗂️' }
+		{ kind: 'quiz', title: 'MCQ / Quiz forms', icon: '📝', tone: 'amber' },
+		{ kind: 'survey', title: 'Questionnaires / Surveys', icon: '📋', tone: 'rose' },
+		{ kind: 'registration', title: 'Registration forms', icon: '🗂️', tone: 'teal' }
 	];
 	const kindOf = (f) => (f.kind === 'quiz' || f.kind === 'survey' ? f.kind : 'registration');
 	const inFolder = (k) => shownForms.filter((f) => kindOf(f) === k);
@@ -97,16 +97,16 @@
 	<p class="text-slate-500">Loading…</p>
 {:else}
 	<div class="mb-8 grid gap-3 sm:grid-cols-3">
-		<div class="card"><div class="text-sm text-slate-500">Total forms</div><div class="text-3xl font-bold">{forms.length}</div></div>
-		<div class="card"><div class="text-sm text-slate-500">Applications</div><div class="text-3xl font-bold">{total.toLocaleString()}</div></div>
-		<div class="card"><div class="text-sm text-slate-500">Active forms</div><div class="text-3xl font-bold">{activeCount}</div></div>
+		<div class="card card-blue"><div class="text-sm text-slate-500">Total forms</div><div class="text-3xl font-bold">{forms.length}</div></div>
+		<div class="card card-violet"><div class="text-sm text-slate-500">Applications</div><div class="text-3xl font-bold">{total.toLocaleString()}</div></div>
+		<div class="card card-green"><div class="text-sm text-slate-500">Active forms</div><div class="text-3xl font-bold">{activeCount}</div></div>
 	</div>
 
 	<input class="input mb-4" type="search" placeholder="Search student name or application number…" bind:value={formSearch} />
 	{#if !formSearch.trim()}
 		<div class="mb-8 space-y-3">
 			{#each FOLDERS as fo (fo.kind)}
-				<a href="/admin/folder/{fo.kind}" class="card flex items-center justify-between gap-3">
+				<a href="/admin/folder/{fo.kind}" class="card card-{fo.tone} flex items-center justify-between gap-3">
 					<div>
 						<div class="text-lg font-semibold">{fo.icon} {fo.title}</div>
 						<div class="text-sm text-slate-500">{allIn(fo.kind)} form{allIn(fo.kind) === 1 ? '' : 's'}</div>
