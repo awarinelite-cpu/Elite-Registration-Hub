@@ -184,7 +184,7 @@
 			<h1 class="text-2xl font-bold">{isNew ? 'Create new form' : 'Manage form'}</h1>
 		</div>
 		{#if !isNew}
-			<a class="btn" href="/register/{id}?new=1" target="_blank" rel="noreferrer">👁 View {kind === 'quiz' ? 'quiz' : kind === 'survey' ? 'survey' : 'form'}</a>
+			<a class="btn" href="/register/{id}?new=1">👁 View {kind === 'quiz' ? 'quiz' : kind === 'survey' ? 'survey' : 'form'}</a>
 			<a class="btn-ghost" href="/admin/forms/{id}/applications">View applications</a>
 		{/if}
 	</div>

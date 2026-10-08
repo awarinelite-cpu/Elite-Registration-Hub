@@ -100,7 +100,7 @@
 				</div>
 				<div class="flex flex-wrap gap-2">
 					{#if session.role !== 'sub'}<a class="btn" href="/admin/forms/{f.id}/fill">Fill form</a>{/if}
-					<a class="btn-ghost" href="/register/{f.id}?new=1" target="_blank" rel="noreferrer">👁 View {kindOf(f) === 'quiz' ? 'quiz' : kindOf(f) === 'survey' ? 'survey' : 'form'}</a>
+					<a class="btn-ghost" href="/register/{f.id}?new=1">👁 View {kindOf(f) === 'quiz' ? 'quiz' : kindOf(f) === 'survey' ? 'survey' : 'form'}</a>
 					<a class="btn-ghost" href="/admin/forms/{f.id}">Manage</a>
 					<a class="btn-ghost" href="/admin/forms/{f.id}/applications">View applications</a>
 					<button class="btn-ghost" onclick={() => copyLink(f.id)}>{copiedId === f.id ? 'Copied ✓' : 'Copy link'}</button>

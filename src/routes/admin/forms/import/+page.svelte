@@ -62,7 +62,7 @@
 		<code class="block break-all rounded-lg bg-slate-100 p-3 text-sm">{created.link}</code>
 		<div class="flex flex-wrap justify-center gap-2">
 			<button class="btn" onclick={copy}>{copied ? 'Copied ✓' : 'Copy link'}</button>
-			<a class="btn-ghost" href={created.link} target="_blank" rel="noreferrer">Open form</a>
+			<a class="btn-ghost" href={created.link}>Open form</a>
 			<a class="btn-ghost" href="/admin/forms/{created.slug}">Edit in builder</a>
 			<a class="btn-ghost" href="/admin/forms/{created.slug}/applications">Applications</a>
 			<button class="btn-ghost" onclick={reset}>Create another</button>
