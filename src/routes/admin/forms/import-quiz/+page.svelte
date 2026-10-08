@@ -3,7 +3,7 @@
 	import { createForm } from '$lib/createForm.js';
 	import { newFieldId, slugify, matricField, nameField, IDENT_MODES } from '$lib/forms.js';
 	import { onMount } from 'svelte';
-	import { QUIZ_SAMPLE, handoff, downloadQuizTemplate, titleFromFile } from '$lib/quizImport.js';
+	import { QUIZ_SAMPLE, handoff } from '$lib/quizImport.js';
 
 	let text = $state('');
 	let fileTitle = $state('');
@@ -28,16 +28,6 @@
 		if (p.error) return (error = p.error);
 		if (!p.fields.length) return (error = 'No questions found. Each question needs a line of text followed by options like "A. …" and an "Answer: B" line.');
 		parsed = p;
-	}
-
-	async function onFile(e) {
-		const file = e.currentTarget.files?.[0];
-		if (!file) return;
-		error = '';
-		fileTitle = titleFromFile(file.name);
-		text = await file.text();
-		e.currentTarget.value = '';
-		parse();
 	}
 
 	// a file / example chosen in the dashboard "Upload CSV file" pop-up arrives here ready to preview
@@ -84,7 +74,6 @@
 		busy = false;
 	}
 
-	const downloadTemplate = downloadQuizTemplate;
 	async function copy() {
 		await navigator.clipboard.writeText(created.link);
 		copied = true;
@@ -124,12 +113,6 @@
 			Paste your questions. Optional first line = quiz name. Each question: text, options (A. B. C. …), then <code>Answer: B</code> (or <code>Answer: A, C</code> for several). You can also mark the right option with a * or put an <code>Answers: 1.B 2.C</code> key at the end.
 		</p>
 		<textarea class="input font-mono" rows="16" bind:value={text} placeholder={'Pharmacology Quiz\n\n' + sample}></textarea>
-		<div class="rounded-lg border border-dashed border-teal-300 bg-teal-50/60 p-3">
-			<label class="label" for="qcsv">Or upload a CSV file</label>
-			<input class="input file:mr-3 file:rounded file:border-0 file:bg-teal-100 file:px-3 file:py-1 file:text-teal-800" id="qcsv" type="file" accept=".csv,.txt,text/csv" onchange={onFile} />
-			<p class="mt-1 text-xs text-slate-600">Columns: <code>question, option_a, option_b, option_c, option_d, answer</code> (letter such as B, or A,C for several), plus optional <code>explanation, topic, marks, image</code> (image = Imgur/ImgChest link). Extra columns like year are ignored.</p>
-			<button type="button" class="btn-ghost mt-2 !px-3 !py-1 text-sm" onclick={downloadTemplate}>⬇ Download CSV template</button>
-		</div>
 		<div class="flex flex-wrap gap-2">
 			<button class="btn" onclick={parse} disabled={!text.trim()}>Preview quiz</button>
 			<button class="btn-ghost" onclick={() => (text = 'Sample Quiz\n\n' + sample)}>Use example</button>
