@@ -2,7 +2,8 @@
 	import { parseQuizText, parseQuizCsv, looksLikeQuizCsv } from '$lib/parseQuiz.js';
 	import { createForm } from '$lib/createForm.js';
 	import { newFieldId, slugify, matricField, nameField, IDENT_MODES } from '$lib/forms.js';
-	import { downloadCsv } from '$lib/csv.js';
+	import { onMount } from 'svelte';
+	import { QUIZ_SAMPLE, handoff, downloadQuizTemplate, titleFromFile } from '$lib/quizImport.js';
 
 	let text = $state('');
 	let fileTitle = $state('');
@@ -18,7 +19,7 @@
 	let created = $state(null);
 	let copied = $state(false);
 
-	const sample = '1. Which electrolyte is raised in renal failure?\nA. Sodium\nB. Potassium\nC. Calcium\nD. Chloride\nAnswer: B\n\n2. Select all signs of hypoglycaemia\nA. Sweating\nB. Tremors\nC. Polyuria\nAnswer: A, B';
+	const sample = QUIZ_SAMPLE;
 
 	function parse() {
 		error = '';
@@ -33,11 +34,21 @@
 		const file = e.currentTarget.files?.[0];
 		if (!file) return;
 		error = '';
-		fileTitle = file.name.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, (c) => c.toUpperCase());
+		fileTitle = titleFromFile(file.name);
 		text = await file.text();
 		e.currentTarget.value = '';
 		parse();
 	}
+
+	// a file / example chosen in the dashboard "Upload CSV file" pop-up arrives here ready to preview
+	onMount(() => {
+		if (!handoff.text) return;
+		text = handoff.text;
+		fileTitle = handoff.fileTitle;
+		handoff.text = '';
+		handoff.fileTitle = '';
+		parse();
+	});
 
 	const missing = $derived(parsed ? parsed.fields.filter((f) => ![].concat(f.correct || []).length).length : 0);
 	const isCorrect = (f, o) => [].concat(f.correct || []).includes(o);
@@ -73,14 +84,7 @@
 		busy = false;
 	}
 
-	function downloadTemplate() {
-		downloadCsv('quiz-template.csv', [
-			['question', 'option_a', 'option_b', 'option_c', 'option_d', 'answer', 'explanation', 'topic', 'marks', 'image'],
-			['Which organ produces insulin?', 'Liver', 'Pancreas', 'Kidney', 'Spleen', 'B', 'Beta cells of the pancreas make insulin.', 'Physiology', '1', ''],
-			['Which of these are vitamins? (select all that apply)', 'Vitamin C', 'Iron', 'Vitamin D', 'Calcium', 'A,C', 'Iron and calcium are minerals.', 'Nutrition', '2', ''],
-			['Identify the structure shown in the picture.', 'Femur', 'Humerus', 'Tibia', 'Radius', 'A', '', 'Anatomy', '1', 'https://i.imgur.com/abc123.jpg']
-		]);
-	}
+	const downloadTemplate = downloadQuizTemplate;
 	async function copy() {
 		await navigator.clipboard.writeText(created.link);
 		copied = true;

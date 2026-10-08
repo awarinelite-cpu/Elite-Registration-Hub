@@ -5,6 +5,26 @@
 	import { firestore } from '$lib/firebase.js';
 	import { appSearchText, closedReason, studentName } from '$lib/forms.js';
 	import { loadForms, loadAllApplications } from '$lib/adminSession.svelte.js';
+	import { QUIZ_SAMPLE, handoff, downloadQuizTemplate, titleFromFile } from '$lib/quizImport.js';
+
+	// "Upload CSV file" pop-up: pick a quiz CSV (or the example), then continue to the quiz preview
+	let showCsv = $state(false);
+	let csvFile = $state(null);
+	let csvBusy = $state(false);
+	const closeCsv = () => { showCsv = false; csvFile = null; };
+	async function previewCsv() {
+		if (!csvFile) return;
+		csvBusy = true;
+		handoff.text = await csvFile.text();
+		handoff.fileTitle = titleFromFile(csvFile.name);
+		csvBusy = false;
+		goto('/admin/forms/import-quiz');
+	}
+	function useExample() {
+		handoff.text = 'Sample Quiz\n\n' + QUIZ_SAMPLE;
+		handoff.fileTitle = '';
+		goto('/admin/forms/import-quiz');
+	}
 
 	let forms = $state([]);
 	let loading = $state(true);
@@ -90,7 +110,7 @@
 
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
 	<h1 class="text-2xl font-bold">Dashboard</h1>
-	<div class="flex gap-2"><a href="/admin/forms/import" class="btn-3d-ghost">Paste to create</a><a href="/admin/forms/import-quiz" class="btn-3d-ghost">Paste quiz</a><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
+	<div class="flex flex-wrap gap-2"><button type="button" class="btn-3d-ghost" onclick={() => (showCsv = true)}>Upload CSV file</button><a href="/admin/forms/import-quiz" class="btn-3d-ghost">Paste quiz</a><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
 </div>
 
 {#if loading}
@@ -135,4 +155,28 @@
 			{/if}
 		</div>
 	{/if}
+{/if}
+
+<svelte:window onkeydown={(e) => { if (showCsv && e.key === 'Escape') closeCsv(); }} />
+
+{#if showCsv}
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onclick={(e) => { if (e.target === e.currentTarget) closeCsv(); }}>
+		<div class="card max-h-[90vh] w-full max-w-md space-y-3 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Upload CSV file">
+			<div class="flex items-start justify-between gap-2">
+				<h2 class="text-lg font-bold">Upload CSV file</h2>
+				<button type="button" class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Close" onclick={closeCsv}>✕</button>
+			</div>
+			<div class="rounded-lg border border-dashed border-teal-300 bg-teal-50/60 p-3">
+				<label class="label" for="dashcsv">Or upload a CSV file</label>
+				<input class="input file:mr-3 file:rounded file:border-0 file:bg-teal-100 file:px-3 file:py-1 file:text-teal-800" id="dashcsv" type="file" accept=".csv,.txt,text/csv" onchange={(e) => (csvFile = e.currentTarget.files?.[0] ?? null)} />
+				<p class="mt-1 text-xs text-slate-600">Columns: <code>question, option_a, option_b, option_c, option_d, answer</code> (letter such as B, or A,C for several), plus optional <code>explanation, topic, marks, image</code> (image = Imgur/ImgChest link). Extra columns like year are ignored.</p>
+				<button type="button" class="btn-ghost mt-2 !px-3 !py-1 text-sm" onclick={downloadQuizTemplate}>⬇ Download CSV template</button>
+			</div>
+			<div class="flex flex-wrap gap-2">
+				<button type="button" class="btn" onclick={previewCsv} disabled={!csvFile || csvBusy}>{csvBusy ? 'Reading…' : 'Preview quiz'}</button>
+				<button type="button" class="btn-ghost" onclick={useExample}>Use example</button>
+			</div>
+		</div>
+	</div>
 {/if}
