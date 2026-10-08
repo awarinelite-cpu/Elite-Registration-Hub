@@ -22,13 +22,21 @@
 			box-shadow: 0 4px 0 rgba(15, 23, 42, 0.14), 0 14px 18px -8px rgba(15, 23, 42, 0.45);
 		}
 	}
-	/* colour-coded dashboard cards */
-	.card-blue { background: #dbeafe; border-color: #60a5fa; border-bottom-color: #2563eb; }
-	.card-violet { background: #ede9fe; border-color: #a78bfa; border-bottom-color: #7c3aed; }
-	.card-green { background: #dcfce7; border-color: #4ade80; border-bottom-color: #16a34a; }
-	.card-amber { background: #fef3c7; border-color: #fbbf24; border-bottom-color: #d97706; }
-	.card-rose { background: #ffe4e6; border-color: #fb7185; border-bottom-color: #e11d48; }
-	.card-teal { background: #ccfbf1; border-color: #2dd4bf; border-bottom-color: #0d9488; }
+	/* solid capsule dashboard cards */
+	.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
+		border-radius: 9999px; border: 0; border-bottom: 5px solid; color: #fff;
+		padding: 1.1rem 1.75rem;
+	}
+	.card-blue .text-slate-500, .card-violet .text-slate-500, .card-green .text-slate-500,
+	.card-amber .text-slate-500, .card-rose .text-slate-500, .card-teal .text-slate-500,
+	.card-blue .text-slate-400, .card-violet .text-slate-400, .card-green .text-slate-400,
+	.card-amber .text-slate-400, .card-rose .text-slate-400, .card-teal .text-slate-400 { color: rgba(255,255,255,.85); }
+	.card-blue { background: #2563eb; border-bottom-color: #1e40af; }
+	.card-violet { background: #7c3aed; border-bottom-color: #5b21b6; }
+	.card-green { background: #16a34a; border-bottom-color: #166534; }
+	.card-amber { background: #d97706; border-bottom-color: #92400e; }
+	.card-rose { background: #e11d48; border-bottom-color: #9f1239; }
+	.card-teal { background: #0d9488; border-bottom-color: #115e59; }
 	.btn-3d, .btn-3d-ghost {
 		@apply inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition duration-100;
 		border-bottom-width: 4px;
@@ -125,12 +133,12 @@ html.dark .card {
 	background: #1e293b;
 	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 10px 14px -8px rgba(0, 0, 0, 0.7);
 }
-html.dark .card-blue { background: #172554; border-color: #3b82f6; border-bottom-color: #60a5fa; }
-html.dark .card-violet { background: #2e1065; border-color: #8b5cf6; border-bottom-color: #a78bfa; }
-html.dark .card-green { background: #052e16; border-color: #22c55e; border-bottom-color: #4ade80; }
-html.dark .card-amber { background: #451a03; border-color: #f59e0b; border-bottom-color: #fbbf24; }
-html.dark .card-rose { background: #4c0519; border-color: #f43f5e; border-bottom-color: #fb7185; }
-html.dark .card-teal { background: #042f2e; border-color: #14b8a6; border-bottom-color: #2dd4bf; }
+html.dark .card-blue { background: #1d4ed8; border-bottom-color: #1e3a8a; }
+html.dark .card-violet { background: #6d28d9; border-bottom-color: #4c1d95; }
+html.dark .card-green { background: #15803d; border-bottom-color: #14532d; }
+html.dark .card-amber { background: #b45309; border-bottom-color: #78350f; }
+html.dark .card-rose { background: #be123c; border-bottom-color: #881337; }
+html.dark .card-teal { background: #0f766e; border-bottom-color: #134e4a; }
 html.dark .btn-3d-ghost {
 	color: #e2e8f0;
 	border-color: #475569;

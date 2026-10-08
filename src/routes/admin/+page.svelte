@@ -117,9 +117,9 @@
 	<p class="text-slate-500">Loading…</p>
 {:else}
 	<div class="mb-8 grid gap-3 sm:grid-cols-3">
-		<div class="card card-blue"><div class="text-sm text-slate-500">Total forms</div><div class="text-3xl font-bold">{forms.length}</div></div>
-		<div class="card card-violet"><div class="text-sm text-slate-500">Applications</div><div class="text-3xl font-bold">{total.toLocaleString()}</div></div>
-		<div class="card card-green"><div class="text-sm text-slate-500">Active forms</div><div class="text-3xl font-bold">{activeCount}</div></div>
+		<div class="card card-blue flex items-center justify-between"><div class="text-base font-medium text-slate-500">Total forms</div><div class="text-3xl font-bold">{forms.length}</div></div>
+		<div class="card card-violet flex items-center justify-between"><div class="text-base font-medium text-slate-500">Applications</div><div class="text-3xl font-bold">{total.toLocaleString()}</div></div>
+		<div class="card card-green flex items-center justify-between"><div class="text-base font-medium text-slate-500">Active forms</div><div class="text-3xl font-bold">{activeCount}</div></div>
 	</div>
 
 	<input class="input mb-4" type="search" placeholder="Search student name or application number…" bind:value={formSearch} />
