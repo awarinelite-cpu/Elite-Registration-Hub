@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { page } from '$app/state';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
+	import BackButton from '$lib/BackButton.svelte';
 	import { onMount } from 'svelte';
 	import { onAuthStateChanged } from 'firebase/auth';
 	import { auth } from '$lib/firebase.js';
@@ -14,7 +15,7 @@
 {#if staff && !page.url.pathname.startsWith('/admin')}
 	<div class="sticky top-0 z-40 flex items-center justify-between gap-2 bg-teal-800 px-4 py-2 text-sm text-white print:hidden">
 		<span>Admin view of the student page</span>
-		<a href="/admin" data-sveltekit-reload class="rounded-lg bg-white px-3 py-1 font-semibold text-teal-800">← Back to Homepage</a>
+		<BackButton fallback="/admin" class="!py-1" />
 	</div>
 {/if}
 
