@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { collection, deleteDoc, doc, getDocs, query, where, writeBatch } from 'firebase/firestore';
+	import { collection, deleteDoc, doc, getDocs, query, updateDoc, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { closedReason } from '$lib/forms.js';
 	import { loadForms, session } from '$lib/adminSession.svelte.js';
@@ -52,6 +52,17 @@
 			alert('Could not delete form: ' + (e?.message || e));
 		}
 	}
+	// tick = "exam link sent out"; saved on the form so it stays across devices
+	async function toggleSent(f) {
+		const next = !f.linkSent;
+		f.linkSent = next;
+		try {
+			await updateDoc(doc(firestore, 'forms', f.id), { linkSent: next });
+		} catch (e) {
+			f.linkSent = !next;
+			alert('Could not save: ' + (e?.message || e));
+		}
+	}
 	const openApps = (e, f) => {
 		if (e.target.closest('a,button')) return;
 		goto(`/admin/forms/${f.id}/applications`);
@@ -88,15 +99,27 @@
 						<span class={label(f) === 'Active' ? 'text-green-700' : 'text-slate-500'}>{label(f)}</span>
 					</div>
 					</div>
-					<button
-						type="button"
-						class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-						aria-label="Delete form {f.title}"
-						title="Delete form"
-						onclick={() => removeForm(f)}
-					>
-						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 5v6m4-6v6" /></svg>
-					</button>
+					<div class="flex shrink-0 flex-col items-center gap-1">
+						<button
+							type="button"
+							class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+							aria-label="Delete form {f.title}"
+							title="Delete form"
+							onclick={() => removeForm(f)}
+						>
+							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 5v6m4-6v6" /></svg>
+						</button>
+						<button
+							type="button"
+							class="rounded-full p-1 {f.linkSent ? 'text-green-600' : 'text-slate-400 hover:text-green-600'}"
+							aria-label={f.linkSent ? 'Link sent (tap to untick)' : 'Mark exam link as sent'}
+							aria-pressed={!!f.linkSent}
+							title={f.linkSent ? 'Link sent — tap to untick' : 'Tick when link is sent'}
+							onclick={() => toggleSent(f)}
+						>
+							<svg class="h-5 w-5" viewBox="0 0 24 24" fill={f.linkSent ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" />{#if f.linkSent}<path d="m8 12.5 3 3 5-6" stroke="#fff" />{:else}<path d="m8 12.5 3 3 5-6" opacity=".45" />{/if}</svg>
+						</button>
+					</div>
 				</div>
 				<div class="flex flex-wrap gap-2">
 					{#if session.role !== 'sub'}<a class="btn" href="/admin/forms/{f.id}/fill">Fill form</a>{/if}
