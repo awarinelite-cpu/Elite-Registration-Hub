@@ -13,6 +13,7 @@
 	let password = $state('');
 	let error = $state('');
 	let busy = $state(false);
+	let checkError = $state('');
 
 	onMount(() =>
 		onAuthStateChanged(auth, async (u) => {
@@ -25,7 +26,8 @@
 					session.role = snap.data()?.role === 'sub' ? 'sub' : 'owner';
 				}
 				state = snap.exists() ? 'ok' : 'denied';
-			} catch {
+			} catch (err) {
+				checkError = err?.code || err?.message || 'unknown error';
 				state = 'denied';
 			}
 		})
@@ -64,9 +66,15 @@
 {:else if state === 'denied'}
 	<main class="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 		<div class="card space-y-3">
-			<h1 class="text-lg font-bold">Not authorised</h1>
+			<h1 class="text-lg font-bold">{checkError ? 'Could not check admin access' : 'Not authorised'}</h1>
+			{#if checkError}
+				<p class="text-sm text-slate-600">This is a connection or permission error, not a missing admin record. Check your network and try again.</p>
+				<code class="block break-all rounded bg-slate-100 p-2 text-xs">{checkError}</code>
+				<button class="btn" onclick={() => location.reload()}>Retry</button>
+			{:else}
 			<p class="text-sm text-slate-600">This account is not an admin. In the Firebase console, create a Firestore document at <code class="rounded bg-slate-100 px-1">admins/{'{uid}'}</code> with this UID:</p>
 			<code class="block break-all rounded bg-slate-100 p-2 text-xs">{user?.uid}</code>
+			{/if}
 			<button class="btn-3d-ghost btn-3d-lg" onclick={() => signOut(auth)}>Sign out</button>
 		</div>
 	</main>
