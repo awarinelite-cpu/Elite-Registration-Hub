@@ -79,13 +79,13 @@
 	<p class="text-slate-500">Loading…</p>
 {:else}
 	{#if note.shared}
-		<div class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-teal-50 p-3 text-sm text-teal-900 print:hidden">
+		<div class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[2rem] bg-teal-50 px-5 py-3 text-sm text-teal-900 print:hidden">
 			<span class="min-w-0 break-all">Anyone with the link can read this note: <code>{link}</code></span>
 			<button class="btn-ghost" onclick={() => setShared(false)}>Stop sharing</button>
 		</div>
 	{/if}
 	<p class="mb-2 text-sm font-medium text-slate-600 print:hidden">Uploaded: {stamp(note.createdAt)}{#if note.updatedAt && note.updatedAt - note.createdAt > 60000} · Last edited: {stamp(note.updatedAt)}{/if}</p>
-	<div class="card !p-5 sm:!p-8">
+	<div class="card card-pill note-pill">
 		<NoteView {blocks} />
 	</div>
 {/if}

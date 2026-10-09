@@ -236,3 +236,13 @@ html.dark .form-active { color: #4ade80; }
 /* application cards: finished ones stay fully readable, just tinted green */
 .card-pill.app-done { border-color: #86c9a8; background: linear-gradient(to bottom, #ffffff 0%, #f0faf4 28%, #d8f0e2 62%, #b7dfc8 100%); }
 html.dark .card-pill.app-done { border-color: #2f7a57; background: linear-gradient(to bottom, #3d6b57 0%, #2b4f40 30%, #1c372c 65%, #10241c 100%); }
+
+/* long note card: same capsule-tablet surface as the other cards, with a small fixed gloss band
+   (the 22% band used on short cards would cover a big part of a long note) */
+.card-pill.note-pill { border-radius: 2.5rem; padding: 1.5rem 1.6rem 1.75rem; }
+@media (min-width: 640px) { .card-pill.note-pill { padding: 2rem 2.25rem 2.25rem; } }
+.card-pill.note-pill::before { border-radius: 2rem; height: 3.5rem; }
+@media print {
+	.card-pill.note-pill { border: 0; border-radius: 0; background: #fff; box-shadow: none; padding: 0; }
+	.card-pill.note-pill::before { display: none; }
+}

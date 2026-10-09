@@ -15,7 +15,7 @@
 		<h1 class="min-w-0 break-words text-xl font-bold">{data.title}</h1>
 		<button class="btn-ghost shrink-0" onclick={() => window.print()}>Print</button>
 	</div>
-	<div class="card !p-5 sm:!p-8">
+	<div class="card card-pill note-pill">
 		<NoteView {blocks} />
 	</div>
 </main>
