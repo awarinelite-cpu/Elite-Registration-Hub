@@ -171,10 +171,7 @@
 	<div class="rounded-xl border border-slate-300 bg-slate-50 p-4">
 		<p class="font-bold tracking-wide text-slate-800">SEND THE SOFTCOPY OF:</p>
 		<ol class="mt-2 list-decimal space-y-1 pl-6 font-medium text-slate-700">
-			<li>PASSPORT</li>
-			<li>SSCE</li>
-			<li>BIRTH CERTIFICATE/DECLARATION OF AGE</li>
-			<li>SECONDARY SCHOOL TESTIMONIAL</li>
+			{#each Array.isArray(softcopyNote) ? softcopyNote : ['PASSPORT', 'SSCE', 'BIRTH CERTIFICATE/DECLARATION OF AGE', 'SECONDARY SCHOOL TESTIMONIAL'] as item}<li>{item}</li>{/each}
 		</ol>
 	</div>
 {/if}

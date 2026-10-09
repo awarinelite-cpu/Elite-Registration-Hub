@@ -1,9 +1,12 @@
-import { newFieldId, slugify } from '$lib/forms.js';
+import { newFieldId, slugify, SSCE_FIELD_ID, SCRATCH_FIELD_ID } from '$lib/forms.js';
 
 const NOISE = /\b(details?|forms?|registration|application)\b/gi;
 const UPLOAD_WORDS = /send|upload|attach|softcopy|soft copy|scan|submit copies/i;
 const GENDER = ['Male', 'Female'];
 const MARITAL = ['Single', 'Married', 'Divorced', 'Widowed'];
+// "RESULT INFORMATION", "First sitting", "SCRATCH CARD" ... become the grouped exam number + scratch card fields
+const RESULT_HEAD = /result\s*information|scratch\s*card|(first|second)\s*sitting|exam(ination)?\s*(information|details)/i;
+const RESULT_LOOSE = /^exam(ination)?\s*(number|no\b|year)|^exan\s*(number|no\b|year)|^ssce\s*exam|scratch|^(pin|serial)\b/i;
 
 function inferType(label) {
 	const l = label.toLowerCase();
@@ -12,7 +15,7 @@ function inferType(label) {
 	if (/\bnin\b|national identi/.test(l)) return 'nin';
 	if (/date of birth|\bdob\b|birth date|^date\b|date of /.test(l)) return 'date';
 	if (/address/.test(l)) return 'textarea';
-	if (/^state\b/.test(l)) return 'state';
+	if (/\bstate\b/.test(l)) return 'state';
 	if (/local government|\blga\b/.test(l)) return 'lga';
 	if (/^age\b/.test(l)) return 'number';
 	if (/\bgender\b|^sex\b/.test(l) || /marital/.test(l)) return 'select';
@@ -111,6 +114,9 @@ export function parseFormText(text) {
 	let section = '';
 	let mode = 'fields';
 	const fields = [];
+	const softcopy = [];
+	let inResult = false;
+	let examAdded = false;
 
 	lines.forEach((line, i) => {
 		const m = line.match(numbered) || (hasNumbers ? null : line.match(bullet));
@@ -118,11 +124,28 @@ export function parseFormText(text) {
 			const { label, required } = cleanLabel(m[1]);
 			if (!label) return;
 			if (mode === 'upload') {
+				softcopy.push(label.toUpperCase());
 				fields.push({ id: newFieldId(), type: /passport|photo/i.test(label) ? 'photo' : 'file', label: /passport/i.test(label) && !/photo/i.test(label) ? 'Passport photograph' : label, required, placeholder: '' });
 			} else {
-				fields.push({ id: newFieldId(), type: inferType(label), label, required, placeholder: '' });
+				inResult = false;
+				// "5. Sex: MALE": the text after the colon is only a sample, never part of the label
+				const f = m[1].includes(':') ? fieldFromColonLine(m[1], section) : null;
+				fields.push(f || { id: newFieldId(), type: inferType(label), label, required, placeholder: '' });
 			}
 			return;
+		}
+		// result information block: swallow its lines, add one exam-number group and one scratch-card group
+		if (mode === 'fields' && !markers.has(i) && (title || fields.length)) {
+			if (RESULT_HEAD.test(line)) {
+				if (!examAdded) {
+					examAdded = true;
+					fields.push({ id: SSCE_FIELD_ID, type: 'ssceexams', label: 'SSCE EXAM NUMBER', required: true, placeholder: '' });
+					fields.push({ id: SCRATCH_FIELD_ID, type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '' });
+				}
+				inResult = true;
+				return;
+			}
+			if (inResult) return;
 		}
 		// un-numbered line: heading / title / "Label:" style field
 		if (markers.has(i)) {
@@ -148,6 +171,11 @@ export function parseFormText(text) {
 		}
 	});
 
+	// the grouped exam fields replace any loose "Examination number" box from the list
+	if (examAdded) {
+		for (let k = fields.length - 1; k >= 0; k--) if (!['ssceexams', 'scratchcards'].includes(fields[k].type) && RESULT_LOOSE.test(fields[k].label)) fields.splice(k, 1);
+	}
+
 	title = title.replace(/[.:\s]+$/, '').trim() || 'New Registration';
 	// an acronym in brackets, e.g. "(NACON)", makes a neat link and number prefix
 	const acronym = title.match(/\(([A-Za-z]{2,10})\)/)?.[1];
@@ -156,6 +184,7 @@ export function parseFormText(text) {
 		title: /regist|apply|application|form/i.test(title) ? title : `${title.replace(NOISE, ' ').replace(/\s+/g, ' ').trim() || title} Registration`,
 		slug: slugify(base) || 'registration',
 		prefix: acronym ? acronym.toUpperCase() : slugify(base).toUpperCase().slice(0, 24) || 'REG',
-		fields
+		fields,
+		softcopy
 	};
 }

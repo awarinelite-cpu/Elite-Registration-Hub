@@ -26,7 +26,7 @@
 		if (noOptions) return (error = `"${noOptions.label}" is a dropdown/choice field, so it needs options. Type them (separated by commas) under the field.`);
 		busy = true;
 		try {
-			const res = await createForm({ title: parsed.title.trim(), slug, prefix, fields: parsed.fields });
+			const res = await createForm({ title: parsed.title.trim(), slug, prefix, fields: parsed.fields, softcopy: parsed.softcopy || [] });
 			created = { ...res, link: `${location.origin}/register/${res.slug}` };
 		} catch (e) {
 			error = e.message || 'Could not create the form.';

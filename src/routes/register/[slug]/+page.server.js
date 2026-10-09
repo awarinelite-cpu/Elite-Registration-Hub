@@ -7,15 +7,15 @@ import { closedReason, migrateFormFields, studentName, isRegistration, publicFie
 async function getForm(slug) {
 	const snap = await db().collection('forms').doc(slug).get();
 	if (!snap.exists) error(404, 'Form not found');
-	const { title, description, status, startDate, closingDate, fields, prefix, counter, kind = 'registration', quiz = null } = snap.data();
-	return { id: slug, title, description, status, startDate, closingDate, kind, quiz: quiz || {}, fields: migrateFormFields(fields, { uploads: isRegistration({ kind }) }), prefix, counter };
+	const { title, description, status, startDate, closingDate, fields, prefix, counter, kind = 'registration', quiz = null, softcopy = [] } = snap.data();
+	return { id: slug, title, description, status, startDate, closingDate, kind, quiz: quiz || {}, softcopy: Array.isArray(softcopy) ? softcopy : [], fields: migrateFormFields(fields, { uploads: isRegistration({ kind }) }), prefix, counter };
 }
 
 export async function load({ params }) {
 	const form = await getForm(params.slug);
 	if (form.status === 'draft') error(404, 'Form not found');
 	return {
-		form: { id: form.id, title: form.title, description: form.description, kind: form.kind, timeLimit: form.kind === 'quiz' ? Number(form.quiz.timeLimit) || 0 : 0, modes: form.kind === 'quiz' ? form.quiz.modes || 'both' : 'exam', fields: publicFields(form.fields) },
+		form: { id: form.id, title: form.title, description: form.description, kind: form.kind, softcopy: form.kind === 'registration' ? form.softcopy : [], timeLimit: form.kind === 'quiz' ? Number(form.quiz.timeLimit) || 0 : 0, modes: form.kind === 'quiz' ? form.quiz.modes || 'both' : 'exam', fields: publicFields(form.fields) },
 		closed: closedReason(form)
 	};
 }
