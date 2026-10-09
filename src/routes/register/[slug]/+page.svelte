@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -61,15 +61,16 @@
 	}
 
 	// the clock starts only now; the deadline is remembered so refreshing the page can't restart it
-	function startTimer() {
+	function startTimer(resume = false) {
 		const key = `quizEnd:${data.form.id}`;
 		let end = 0;
 		try {
-			end = Number(sessionStorage.getItem(key)) || 0;
+			end = Number(localStorage.getItem(key)) || 0;
 		} catch {}
-		if (end < Date.now() - 5 * 60000 || !end) end = Date.now() + data.form.timeLimit * 60000;
+		// resuming a saved exam keeps the original deadline (the clock does not stop while you are away)
+		if (!end || (!resume && end < Date.now() - 5 * 60000)) end = Date.now() + data.form.timeLimit * 60000;
 		try {
-			sessionStorage.setItem(key, String(end));
+			localStorage.setItem(key, String(end));
 		} catch {}
 		const tick = () => {
 			remaining = Math.max(0, Math.round((end - Date.now()) / 1000));
@@ -84,6 +85,93 @@
 	}
 	onDestroy(() => clearInterval(iv));
 
+	// ---- temporary save: answers are kept on this device so leaving the exam and coming back continues where you stopped ----
+	const DKEY = `quizDraft:${data.form.id}`;
+	let restoring = false;
+	let restored = $state(false);
+	let saveTimer;
+	function saveDraft() {
+		if (!isQuiz || !started || !formEl || restoring || form?.success) return;
+		try {
+			const vals = {};
+			for (const [k, v] of new FormData(formEl).entries()) {
+				if (typeof v !== 'string' || k.startsWith('_')) continue;
+				(vals[k] ||= []).push(v);
+			}
+			localStorage.setItem(DKEY, JSON.stringify({ t: Date.now(), mode, vals }));
+		} catch {}
+	}
+	function queueSave() {
+		clearTimeout(saveTimer);
+		saveTimer = setTimeout(saveDraft, 300);
+	}
+	$effect(() => {
+		if (!formEl) return;
+		const el = formEl;
+		el.addEventListener('input', queueSave);
+		el.addEventListener('change', queueSave);
+		window.addEventListener('pagehide', saveDraft);
+		return () => {
+			el.removeEventListener('input', queueSave);
+			el.removeEventListener('change', queueSave);
+			window.removeEventListener('pagehide', saveDraft);
+		};
+	});
+	async function restoreDraft() {
+		if (!isQuiz || form?.success || !formEl) return;
+		let d = null;
+		try {
+			d = JSON.parse(localStorage.getItem(DKEY) || 'null');
+		} catch {}
+		if (!d?.vals || Date.now() - d.t > 7 * 86400000) {
+			try {
+				localStorage.removeItem(DKEY);
+			} catch {}
+			return;
+		}
+		restoring = true;
+		try {
+			mode = d.mode === 'reading' && modes !== 'exam' ? 'reading' : modes === 'reading' ? 'reading' : 'exam';
+			if (mode === 'reading') {
+				const r = await fetch(`/register/${data.form.id}/answers`);
+				if (!r.ok) throw new Error();
+				answers = await r.json();
+			}
+			started = true;
+			await tick();
+			for (const el of [...formEl.elements]) {
+				const want = d.vals[el.name];
+				if (!el.name || !want || el.type === 'file' || el.type === 'hidden' || el.type === 'submit' || el.type === 'button') continue;
+				if (el.type === 'radio' || el.type === 'checkbox') {
+					const on = want.includes(el.value);
+					if (el.checked !== on) {
+						el.checked = on;
+						if (on) el.dispatchEvent(new Event('change', { bubbles: true }));
+					}
+				} else {
+					el.value = want[0];
+					el.dispatchEvent(new Event('input', { bubbles: true }));
+					el.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+			}
+			if (mode === 'exam' && data.form.timeLimit > 0) startTimer(true);
+			restored = true;
+		} catch {
+			started = false;
+		}
+		restoring = false;
+		saveDraft();
+	}
+	function startOver() {
+		restoring = true; // stops the page from re-saving while it reloads
+		clearTimeout(saveTimer);
+		try {
+			localStorage.removeItem(DKEY);
+			localStorage.removeItem(`quizEnd:${data.form.id}`);
+		} catch {}
+		location.reload();
+	}
+
 	// Someone who already submitted this form on this device goes to the home (login) page instead.
 	// "?new=1" (from the Submit another application card) skips that so they can fill a new form.
 	onMount(async () => {
@@ -96,6 +184,7 @@
 			goto('/login', { replaceState: true });
 			return;
 		}
+		await restoreDraft();
 		ready = true;
 	});
 
@@ -103,7 +192,8 @@
 		if (form?.success) {
 			clearInterval(iv);
 			try {
-				sessionStorage.removeItem(`quizEnd:${data.form.id}`);
+				localStorage.removeItem(`quizEnd:${data.form.id}`);
+				localStorage.removeItem(DKEY);
 			} catch {}
 		}
 	});
@@ -196,6 +286,12 @@
 				</div>
 			{:else if isQuiz && started && mode === 'reading'}
 				<div class="mb-3 rounded-xl border border-teal-300 bg-teal-50 px-4 py-2 text-center text-sm font-semibold text-teal-800">📖 Reading mode — each answer is shown as soon as you choose</div>
+			{/if}
+			{#if restored}
+				<div class="mb-3 flex items-center justify-between gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900 print:hidden">
+					<span>Your earlier progress was restored. Continue where you stopped.</span>
+					<button type="button" class="btn-ghost !px-3 !py-1 text-sm" onclick={startOver}>Start over</button>
+				</div>
 			{/if}
 			<form
 				bind:this={formEl}
