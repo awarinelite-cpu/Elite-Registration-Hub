@@ -79,12 +79,18 @@ export const emptyScratch = () => ({ board: '', pin: '', serial: '', year: '' })
 
 // Stable id so data saved against the on-the-fly converted field matches what the form editor saves later.
 export const SCRATCH_FIELD_ID = 'scratch_card_info';
-export const isLegacyScratch = (f) => f.type !== 'scratchcards' && /scratch|ssce\s*year/i.test(f.label || '');
+// Forms saved with plain boxes labelled EXAN NUMBER / EXAM YEAR / PIN / Serial Number (no "scratch" or "SSCE" in the label):
+// those loose labels only count when the form also has an exam-number box, so an unrelated "PIN" box is never touched.
+const looseExamNo = (f) => f.type !== 'ssceexams' && /^\s*(exam|exan)\s*(number|no)\b/i.test(f.label || '');
+export const hasLooseExamNo = (list) => (list || []).some(looseExamNo);
+const looseScratch = (f) => /^\s*(exam|exan)\s*year\b|^\s*(scratch\s*card\s*)?pin\b|^\s*(scratch\s*card\s*)?serial/i.test(f.label || '');
+export const isLegacyScratch = (f, ctx = false) =>
+	f.type !== 'scratchcards' && (/scratch|ssce\s*year/i.test(f.label || '') || (ctx && !['ssceexams', 'photo', 'file'].includes(f.type) && looseScratch(f)));
 
 // SSCE exam number: exam type (WAEC/NECO) + exam number + exam year, up to two sittings.
 export const emptySsce = () => ({ board: '', number: '', year: '' });
 export const SSCE_FIELD_ID = 'ssce_exam_info';
-export const isLegacySsce = (f) => f.type !== 'ssceexams' && /ssce\s*exam\s*(number|no)/i.test(f.label || '');
+export const isLegacySsce = (f) => f.type !== 'ssceexams' && (/ssce\s*exam\s*(number|no)/i.test(f.label || '') || looseExamNo(f));
 
 export const PHOTO_FIELD_ID = 'passport_photo';
 export const SSCE2_FIELD_ID = 'doc_ssce_2'; // second SSCE picture, revealed by the "Add SSCE" button
@@ -128,12 +134,14 @@ export const migrateFormFields = (fields, opts = {}) => opts.uploads === false ?
 export function migrateScratchFields(fields, { keepLegacy = false } = {}) {
 	const list = Array.isArray(fields) ? fields : [];
 	if (list.some((f) => f.type === 'scratchcards')) return list;
-	const firstIdx = list.findIndex(isLegacyScratch);
+	const ctx = hasLooseExamNo(list);
+	const isOld = (f) => isLegacyScratch(f, ctx);
+	const firstIdx = list.findIndex(isOld);
 	if (firstIdx < 0) return list;
 	const scratch = { id: SCRATCH_FIELD_ID, type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '' };
 	if (keepLegacy) return [...list.slice(0, firstIdx), scratch, ...list.slice(firstIdx)];
-	const before = list.slice(0, firstIdx).filter((f) => !isLegacyScratch(f)).length;
-	const keep = list.filter((f) => !isLegacyScratch(f));
+	const before = list.slice(0, firstIdx).filter((f) => !isOld(f)).length;
+	const keep = list.filter((f) => !isOld(f));
 	keep.splice(before, 0, scratch);
 	return keep;
 }
@@ -146,8 +154,11 @@ export function migrateSsceFields(fields, { keepLegacy = false } = {}) {
 	if (idx < 0) return list;
 	const ssce = { id: SSCE_FIELD_ID, type: 'ssceexams', label: list[idx].label || 'SSCE EXAM NUMBER', required: list[idx].required !== false, placeholder: '' };
 	if (keepLegacy) return [...list.slice(0, idx), ssce, ...list.slice(idx)];
-	const keep = [...list];
-	keep.splice(idx, 1, ssce);
+	const keep = [];
+	list.forEach((f, i) => {
+		if (i === idx) keep.push(ssce);
+		else if (!isLegacySsce(f)) keep.push(f);
+	});
 	return keep;
 }
 
@@ -357,7 +368,7 @@ export function buildDetailItems(fields, data) {
 	for (const f of list) {
 		const v = data?.[f.id];
 		const empty = v == null || v === '' || (Array.isArray(v) && !v.length);
-		if (grouped && empty && f.type !== 'ssceexams' && f.type !== 'scratchcards' && (isLegacySsce(f) || isLegacyScratch(f))) continue;
+		if (grouped && empty && f.type !== 'ssceexams' && f.type !== 'scratchcards' && (isLegacySsce(f) || isLegacyScratch(f, hasLooseExamNo(list)))) continue;
 		if (empty && f.id === 'doc_ssce_2') continue;
 		if (Array.isArray(v) && v.length && v.every((x) => x && typeof x === 'object')) {
 			v.forEach((x, i) => {
