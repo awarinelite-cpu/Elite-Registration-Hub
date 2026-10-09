@@ -16,7 +16,7 @@ async function load(request, id) {
 
 export async function GET({ request, params }) {
 	const { d } = await load(request, params.id);
-	return json({ id: params.id, title: d.title || 'Untitled', text: d.text || '', updatedAt: d.updatedAt || 0 });
+	return json({ id: params.id, title: d.title || 'Untitled', text: d.text || '', updatedAt: d.updatedAt || 0, shared: !!d.shared });
 }
 
 export async function PUT({ request, params }) {
@@ -29,6 +29,14 @@ export async function PUT({ request, params }) {
 	if (text.length > MAX_CHARS) error(400, 'This note is too long to save in one piece. Split it into two notes.');
 	await ref.update({ title, text, updatedAt: Date.now() });
 	return json({ ok: true });
+}
+
+// turn the public share link on or off
+export async function PATCH({ request, params }) {
+	const { ref } = await load(request, params.id);
+	const body = await request.json().catch(() => ({}));
+	await ref.update({ shared: !!body.shared });
+	return json({ ok: true, shared: !!body.shared });
 }
 
 export async function DELETE({ request, params }) {

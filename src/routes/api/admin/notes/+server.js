@@ -11,7 +11,7 @@ export async function GET({ request }) {
 	const notes = q.docs
 		.map((d) => {
 			const x = d.data();
-			return { id: d.id, title: x.title || 'Untitled', createdAt: x.createdAt || 0, updatedAt: x.updatedAt || 0, chars: (x.text || '').length };
+			return { id: d.id, title: x.title || 'Untitled', createdAt: x.createdAt || 0, updatedAt: x.updatedAt || 0, chars: (x.text || '').length, shared: !!x.shared };
 		})
 		.sort((p, q2) => q2.updatedAt - p.updatedAt);
 	return json({ notes });
