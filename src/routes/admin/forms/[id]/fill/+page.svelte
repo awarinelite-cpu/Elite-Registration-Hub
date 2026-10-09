@@ -103,7 +103,7 @@
 					}}
 				>
 					{#if fail?.message}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">{fail.message}</div>{/if}
-					<FormFields fields={form.fields} errors={fail?.errors} />
+					<FormFields fields={form.fields} errors={fail?.errors} softcopyNote={isRegistration(form)} />
 					<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : 'SUBMIT APPLICATION'}</button>
 				</form>
 			{/key}

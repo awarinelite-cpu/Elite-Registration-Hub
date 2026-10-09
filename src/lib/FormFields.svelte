@@ -1,5 +1,5 @@
 <script>
-	import { STATES, pairedStateField, imageSrc } from '$lib/forms.js';
+	import { STATES, pairedStateField, imageSrc, UPLOADS_ENABLED } from '$lib/forms.js';
 	import { lgasFor } from '$lib/lgas.js';
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
 	import ScratchCards from '$lib/ScratchCards.svelte';
@@ -7,7 +7,7 @@
 	import ExamInfo from '$lib/ExamInfo.svelte';
 	import { prepareUpload } from '$lib/imageConvert.js';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
-	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false } = $props();
+	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false, softcopyNote = false } = $props();
 	const qNo = (f) => fields.filter((x) => x.scored).findIndex((x) => x.id === f.id) + 1;
 
 	function inputType(t) {
@@ -163,3 +163,15 @@
 	</div>
 	{/if}
 {/each}
+
+{#if softcopyNote && !UPLOADS_ENABLED}
+	<div class="rounded-xl border border-slate-300 bg-slate-50 p-4">
+		<p class="font-bold tracking-wide text-slate-800">SEND THE SOFTCOPY OF:</p>
+		<ol class="mt-2 list-decimal space-y-1 pl-6 font-medium text-slate-700">
+			<li>PASSPORT</li>
+			<li>SSCE</li>
+			<li>BIRTH CERTIFICATE/DECLARATION OF AGE</li>
+			<li>SECONDARY SCHOOL TESTIMONIAL</li>
+		</ol>
+	</div>
+{/if}

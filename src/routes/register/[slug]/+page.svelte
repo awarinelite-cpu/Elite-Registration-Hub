@@ -255,7 +255,7 @@
 						<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 					{/if}
 				{:else}
-					<FormFields big={!isReg} fields={data.form.fields} values={form?.values} errors={form?.errors} />
+					<FormFields big={!isReg} fields={data.form.fields} values={form?.values} errors={form?.errors} softcopyNote={isReg} />
 					<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 				{/if}
 			</form>
