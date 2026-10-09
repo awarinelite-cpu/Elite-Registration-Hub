@@ -5,6 +5,7 @@
 	import { adminFetch } from '$lib/adminSession.svelte.js';
 	import { parseNotes } from '$lib/parseNotes.js';
 	import NoteView from '$lib/NoteView.svelte';
+	import { stamp } from '$lib/dateFmt.js';
 
 	let note = $state(null);
 	let error = $state('');
@@ -83,6 +84,7 @@
 			<button class="btn-ghost" onclick={() => setShared(false)}>Stop sharing</button>
 		</div>
 	{/if}
+	<p class="mb-2 text-sm font-medium text-slate-600 print:hidden">Uploaded: {stamp(note.createdAt)}{#if note.updatedAt && note.updatedAt - note.createdAt > 60000} · Last edited: {stamp(note.updatedAt)}{/if}</p>
 	<div class="card !p-5 sm:!p-8">
 		<NoteView {blocks} />
 	</div>

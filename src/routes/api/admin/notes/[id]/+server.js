@@ -16,7 +16,7 @@ async function load(request, id) {
 
 export async function GET({ request, params }) {
 	const { d } = await load(request, params.id);
-	return json({ id: params.id, title: d.title || 'Untitled', text: d.text || '', updatedAt: d.updatedAt || 0, shared: !!d.shared });
+	return json({ id: params.id, title: d.title || 'Untitled', text: d.text || '', createdAt: d.createdAt || 0, updatedAt: d.updatedAt || 0, shared: !!d.shared });
 }
 
 export async function PUT({ request, params }) {

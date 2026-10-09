@@ -7,6 +7,7 @@
 	import { STATUSES, studentName, joinArray, migrateFormFields, buildDetailItems, isRegistration, scoreForm } from '$lib/forms.js';
 	import ApplicationView from '$lib/ApplicationView.svelte';
 	import { downloadCsv } from '$lib/csv.js';
+	import { stamp } from '$lib/dateFmt.js';
 
 	const formId = page.params.id;
 	let form = $state(null);
@@ -159,6 +160,7 @@
 			<BackButton class="mb-2" />
 			<h1 class="break-words text-2xl font-bold">{form.title}</h1>
 			<p class="text-sm text-slate-500">{apps.length} applications</p>
+			{#if form.createdAt}<p class="text-sm font-medium text-slate-600">Uploaded: {stamp(form.createdAt)}</p>{/if}
 		</div>
 		<div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
 			<a class="btn-3d-ghost btn-3d-lg" href="/register/{form.id}?new=1">👁 View {form.kind === 'quiz' ? 'quiz' : form.kind === 'survey' ? 'survey' : 'form'}</a>

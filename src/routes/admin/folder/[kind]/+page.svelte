@@ -6,6 +6,7 @@
 	import { firestore } from '$lib/firebase.js';
 	import { closedReason } from '$lib/forms.js';
 	import { loadForms, session } from '$lib/adminSession.svelte.js';
+	import { stamp } from '$lib/dateFmt.js';
 
 	const META = {
 		quiz: { title: 'MCQ / Quiz forms', icon: '📝' },
@@ -95,6 +96,7 @@
 					<div class="min-w-0">
 					<div class="form-title">{f.title}</div>
 					{#if f.prefix}<div class="form-code">{f.prefix}</div>{/if}
+					{#if f.createdAt}<div class="form-meta text-xs">Uploaded: {stamp(f.createdAt)}</div>{/if}
 					<div class="form-meta text-sm">
 						{(f.counter || 0).toLocaleString()} applications ·
 						<span class={label(f) === 'Active' ? 'form-active' : ''}>{label(f)}</span>

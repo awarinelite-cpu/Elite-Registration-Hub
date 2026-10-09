@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { adminFetch } from '$lib/adminSession.svelte.js';
+	import { stamp } from '$lib/dateFmt.js';
 
 	let notes = $state([]);
 	let loading = $state(true);
@@ -33,7 +34,7 @@
 			<a href="/admin/notes/{n.id}" class="card card-pill flex items-center justify-between gap-3">
 				<div class="min-w-0">
 					<div class="truncate text-lg font-semibold">{n.title}</div>
-					<div class="text-sm text-slate-500">{new Date(n.updatedAt).toLocaleDateString()} · {n.chars.toLocaleString()} characters{#if n.shared} · <span class="font-semibold text-teal-700">Shared</span>{/if}</div>
+					<div class="text-sm text-slate-500">Uploaded: {stamp(n.createdAt)} · {n.chars.toLocaleString()} characters{#if n.shared} · <span class="font-semibold text-teal-700">Shared</span>{/if}</div>
 				</div>
 				<span class="text-2xl text-slate-400">›</span>
 			</a>
