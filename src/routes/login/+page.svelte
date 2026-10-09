@@ -40,7 +40,12 @@
 <svelte:head><title>My application — EliteReg</title></svelte:head>
 
 <main class="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 px-4 py-8">
-	<div class="text-center text-xl font-extrabold text-teal-700">EliteReg</div>
+	<div class="relative flex items-center justify-center">
+		<a href="/admin" aria-label="Back to admin login" title="Back to admin login" class="btn-3d-ghost btn-3d-lg !absolute left-0 !px-3 !text-teal-800">
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+		</a>
+		<div class="text-xl font-extrabold text-teal-700">EliteReg</div>
+	</div>
 	<form
 		method="POST"
 		class="card space-y-4"
