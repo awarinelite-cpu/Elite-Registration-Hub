@@ -291,7 +291,7 @@
 			<div>
 				<label class="label" for="vr_voice">Voice</label>
 				<select class="input" id="vr_voice" bind:value={voiceURI}>
-					{#each voices as v (v.voiceURI)}<option value={v.voiceURI}>{v.name} ({v.lang})</option>{/each}
+					{#each voices as v, vi (`${vi}`)}<option value={v.voiceURI}>{v.name} ({v.lang})</option>{/each}
 				</select>
 			</div>
 			<div>

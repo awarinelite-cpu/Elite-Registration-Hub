@@ -51,6 +51,7 @@
 		if (!r.ok) input.value = '';
 		fileNote[f.id] = r.note ? { ok: r.ok, text: r.note } : null;
 	}
+	const LET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	const val = (f) => values?.[f.id] ?? (f.type === 'checkbox' ? [] : '');
 </script>
 
@@ -109,18 +110,20 @@
 			<p class="mt-1 text-xs text-slate-500">1 = lowest, 5 = highest</p>
 		{:else if f.type === 'radio'}
 			<div class="space-y-1.5" id={`f_${f.id}`}>
-				{#each f.options || [] as o}
+				{#each f.options || [] as o, oi}
 					<label class="flex items-center gap-2 text-sm">
 						<input type="radio" name={`f_${f.id}`} value={o} checked={val(f) === o} class="accent-teal-700" />
+						{#if f.scored}<span class="optletter">{LET[oi]}</span>{/if}
 						{o}
 					</label>
 				{/each}
 			</div>
 		{:else if f.type === 'checkbox'}
 			<div class="space-y-1.5" id={`f_${f.id}`}>
-				{#each f.options || [] as o}
+				{#each f.options || [] as o, oi}
 					<label class="flex items-center gap-2 text-sm">
 						<input type="checkbox" name={`f_${f.id}`} value={o} checked={val(f).includes(o)} class="accent-teal-700" />
+						{#if f.scored}<span class="optletter">{LET[oi]}</span>{/if}
 						{o}
 					</label>
 				{/each}

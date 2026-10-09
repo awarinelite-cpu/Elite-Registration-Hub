@@ -22,13 +22,14 @@
 	<div class="label {big ? 'qtext' : ''}">{number}. {field.label}{#if multi}<span class="ml-1 text-xs font-normal text-slate-500">(select all that apply)</span>{/if}</div>
 	{#if imageSrc(field.image)}<img src={imageSrc(field.image)} alt="" loading="lazy" referrerpolicy="no-referrer" class="mb-2 max-h-96 w-full rounded-lg border border-slate-200 bg-white object-contain" />{/if}
 	<div class="space-y-1.5" id={`f_${field.id}`}>
-		{#each field.options || [] as o}
+		{#each field.options || [] as o, oi}
 			<label class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm {big ? 'opt' : ''} {tone(o)}">
 				{#if multi}
 					<input type="checkbox" name={`f_${field.id}`} value={o} bind:group={pick} onclick={lock} class="accent-teal-700" />
 				{:else}
 					<input type="radio" name={`f_${field.id}`} value={o} bind:group={pick} onclick={lock} onchange={() => { pick = o; check(); }} class="accent-teal-700" />
 				{/if}
+				<span class="optletter">{'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[oi]}</span>
 				<span class="flex-1">{o}</span>
 				{#if revealed && right.includes(o)}<span class="font-bold text-green-700">✓</span>{:else if revealed && chosen.includes(o)}<span class="font-bold text-red-600">✗</span>{/if}
 			</label>
