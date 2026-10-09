@@ -4,7 +4,7 @@
 	import { collection, deleteDoc, doc, getDocs, orderBy, query, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { appSearchText, closedReason, studentName } from '$lib/forms.js';
-	import { loadForms, loadAllApplications } from '$lib/adminSession.svelte.js';
+	import { loadForms, loadAllApplications, adminFetch } from '$lib/adminSession.svelte.js';
 	import { QUIZ_SAMPLE, handoff, downloadQuizTemplate, titleFromFile } from '$lib/quizImport.js';
 
 	// "Upload CSV file" pop-up: pick a quiz CSV (or the example), then continue to the quiz preview
@@ -71,7 +71,9 @@
 	const activeCount = $derived(forms.filter((f) => !closedReason(f)).length);
 	const titleOf = (id) => forms.find((f) => f.id === id)?.title ?? id;
 
+	let noteCount = $state(null);
 	onMount(async () => {
+		adminFetch('/api/admin/notes').then((r) => (noteCount = r.notes.length)).catch(() => {});
 		forms = await loadForms();
 		loading = false;
 	});
@@ -110,7 +112,7 @@
 
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
 	<h1 class="text-2xl font-bold">Dashboard</h1>
-	<div class="flex flex-wrap gap-2"><button type="button" class="btn-3d-ghost" onclick={() => (showCsv = true)}>Upload CSV file</button><a href="/admin/forms/import" class="btn-3d-ghost">Paste to create</a><a href="/admin/forms/import-quiz" class="btn-3d-ghost">Paste quiz</a><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
+	<div class="flex flex-wrap gap-2"><button type="button" class="btn-3d-ghost" onclick={() => (showCsv = true)}>Upload CSV file</button><a href="/admin/forms/import" class="btn-3d-ghost">Paste to create</a><a href="/admin/forms/import-quiz" class="btn-3d-ghost">Paste quiz</a><a href="/admin/notes/new" class="btn-3d-ghost">Paste notes</a><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
 </div>
 
 {#if loading}
@@ -134,6 +136,13 @@
 					<span class="text-2xl text-slate-400">›</span>
 				</a>
 			{/each}
+			<a href="/admin/notes" class="card card-pill flex items-center justify-between gap-3">
+				<div>
+					<div class="text-lg font-semibold">📓 Notes</div>
+					<div class="text-sm text-slate-500">{noteCount === null ? 'Notebook' : `${noteCount} note${noteCount === 1 ? '' : 's'}`}</div>
+				</div>
+				<span class="text-2xl text-slate-400">›</span>
+			</a>
 		</div>
 	{/if}
 
