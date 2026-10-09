@@ -3,7 +3,7 @@
 	// with the answer and explanation shown instantly. Repeats until every one is right.
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
 	import { shuffle } from '$lib/shuffle.js';
-	let { fields = [], review = [] } = $props();
+	let { fields = [], review = [], formId = '' } = $props();
 
 	const byId = $derived(Object.fromEntries(fields.map((f) => [f.id, f])));
 	const missed = $derived(review.filter((r) => r.id && !r.ok && byId[r.id] && Array.isArray(r.correct) && r.correct.length));
@@ -46,7 +46,7 @@
 				<div class="space-y-4">
 					{#each queue as q, i (q.id)}
 						<div class="rounded-xl border border-slate-200 bg-white p-3">
-							<ReadingQuestion field={q.field} number={i + 1} answer={q.answer} onreveal={(ok) => (results[q.id] = ok)} />
+							<ReadingQuestion {formId} field={q.field} number={i + 1} answer={q.answer} onreveal={(ok) => (results[q.id] = ok)} />
 						</div>
 					{/each}
 				</div>

@@ -9,6 +9,8 @@
 	import RetryQuiz from '$lib/RetryQuiz.svelte';
 	import TopicBreakdown from '$lib/TopicBreakdown.svelte';
 	import ProgressChart from '$lib/ProgressChart.svelte';
+	import StarButton from '$lib/StarButton.svelte';
+	import { loadStars, starredIds } from '$lib/bookmarks.svelte.js';
 	import { addAttempt, topicStats } from '$lib/history.js';
 	import { shuffle } from '$lib/shuffle.js';
 	import { auth } from '$lib/firebase.js';
@@ -36,7 +38,13 @@
 	let plan = $state(null); // { ids, opts } chosen when the quiz starts; saved with the draft so a refresh keeps the same order
 	const topics = [...new Set(qs.map((q) => (q.topic || '').trim()).filter(Boolean))];
 	let pickedTopics = $state([]); // empty = every topic
-	const pool = $derived(pickedTopics.length ? qs.filter((q) => pickedTopics.includes((q.topic || '').trim())) : qs);
+	let onlyStarred = $state(false);
+	const starCount = $derived(qs.filter((q) => starredIds(data.form.id).includes(q.id)).length);
+	const pool = $derived.by(() => {
+		let list = pickedTopics.length ? qs.filter((q) => pickedTopics.includes((q.topic || '').trim())) : qs;
+		if (onlyStarred) list = list.filter((q) => starredIds(data.form.id).includes(q.id));
+		return list;
+	});
 	const countChoices = $derived([10, 20, 30, 50, 100].filter((n) => n < pool.length));
 	function toggleTopic(t) {
 		pickedTopics = pickedTopics.includes(t) ? pickedTopics.filter((x) => x !== t) : [...pickedTopics, t];
@@ -46,6 +54,7 @@
 	function makePlan() {
 		const useCount = count > 0 && count < pool.length;
 		if (!shuffleOn && !useCount && pool.length === qs.length) return null;
+		if (!pool.length) return null;
 		let list = pool;
 		if (useCount) {
 			const keep = new Set(shuffle(pool.map((q) => q.id)).slice(0, count));
@@ -208,6 +217,7 @@
 	// Someone who already submitted this form on this device goes to the home (login) page instead.
 	// "?new=1" (from the Submit another application card) skips that so they can fill a new form.
 	onMount(async () => {
+		loadStars();
 		// a signed-in admin / sub-admin previewing the form is never bounced to the student login page
 		try {
 			await auth.authStateReady();
@@ -280,7 +290,7 @@
 				<ul class="qreview mt-3 space-y-2 text-left text-sm">
 					{#each form.review as r, i}
 						<li class="rounded-lg border p-3 {r.unanswered ? 'border-slate-200' : r.ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
-							<div class="font-semibold">{r.unanswered ? '–' : r.ok ? '✓' : '✗'} {i + 1}. {r.label}</div>
+							<div class="flex items-start justify-between gap-2"><div class="font-semibold">{r.unanswered ? '–' : r.ok ? '✓' : '✗'} {i + 1}. {r.label}</div><StarButton formId={data.form.id} id={r.id} small /></div>
 							{#if r.unanswered}<div class="text-slate-600">Not answered</div>{:else}<div class="text-slate-700">Your answer: {r.given}</div>{/if}
 							{#if !r.ok}<div class="text-slate-700">Correct answer: {r.answer}</div>{/if}
 							{#if r.explanation}<div class="mt-1 text-xs text-slate-600">{r.explanation}</div>{/if}
@@ -288,7 +298,7 @@
 					{/each}
 				</ul>
 				<TopicBreakdown fields={data.form.fields} review={form.review} />
-				<RetryQuiz fields={data.form.fields} review={form.review} />
+				<RetryQuiz formId={data.form.id} fields={data.form.fields} review={form.review} />
 			{/if}
 
 			<div class="mt-5 grid gap-3 text-left sm:grid-cols-2">
@@ -407,6 +417,12 @@
 										<input type="checkbox" bind:checked={shuffleOn} class="accent-teal-700" />
 										🔀 Shuffle questions and answer options
 									</label>
+									{#if starCount > 0}
+										<label class="flex cursor-pointer items-center gap-2 text-sm font-medium">
+											<input type="checkbox" bind:checked={onlyStarred} onchange={() => (count = 0)} class="accent-teal-700" />
+											⭐ Only my starred questions ({starCount})
+										</label>
+									{/if}
 									{#if countChoices.length}
 										<label class="flex flex-wrap items-center gap-2 text-sm font-medium">
 											🎯 Questions to practise:
@@ -423,7 +439,7 @@
 						</div>
 					{:else}
 						<VoiceReader questions={shownQs} root={formEl} />
-						<FormFields big fields={shownQs} values={form?.values} errors={form?.errors} reading={mode === 'reading'} {answers} />
+						<FormFields big formId={data.form.id} fields={shownQs} values={form?.values} errors={form?.errors} reading={mode === 'reading'} {answers} />
 						<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 					{/if}
 				{:else}

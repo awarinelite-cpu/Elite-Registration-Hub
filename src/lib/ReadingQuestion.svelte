@@ -1,7 +1,8 @@
 <script>
 	import { imageSrc } from '$lib/forms.js';
+	import StarButton from '$lib/StarButton.svelte';
 	// Reading mode: the answer (and explanation) appears as soon as the option is chosen.
-	let { field, number, answer, value = '', error = '', big = false, onreveal = null } = $props();
+	let { field, number, answer, value = '', error = '', big = false, onreveal = null, formId = '' } = $props();
 	const multi = field.type === 'checkbox';
 	let pick = $state(multi ? (Array.isArray(value) ? [...value] : []) : value || '');
 	let revealed = $state(false);
@@ -22,7 +23,10 @@
 </script>
 
 <div class={big ? 'qbig' : ''}>
-	<div class="label {big ? 'qtext' : ''}">{number}. {field.label}{#if multi}<span class="ml-1 text-xs font-normal text-slate-500">(select all that apply)</span>{/if}</div>
+	<div class="flex items-start justify-between gap-2">
+		<div class="label {big ? 'qtext' : ''}">{number}. {field.label}{#if multi}<span class="ml-1 text-xs font-normal text-slate-500">(select all that apply)</span>{/if}</div>
+		<StarButton {formId} id={field.id} />
+	</div>
 	{#if imageSrc(field.image)}<img src={imageSrc(field.image)} alt="" loading="lazy" referrerpolicy="no-referrer" class="mb-2 max-h-96 w-full rounded-lg border border-slate-200 bg-white object-contain" />{/if}
 	<div class="space-y-1.5" id={`f_${field.id}`}>
 		{#each field.options || [] as o, oi}

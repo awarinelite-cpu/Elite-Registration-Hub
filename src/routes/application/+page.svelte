@@ -117,7 +117,7 @@
 					{/each}
 				</ul>
 				<TopicBreakdown fields={data.fields} review={data.review} />
-				<RetryQuiz fields={data.fields} review={data.review} />
+				<RetryQuiz formId={data.formId} fields={data.fields} review={data.review} />
 			{/if}
 		{:else}
 			<p class="mb-4 rounded-lg bg-slate-100 p-3 text-sm text-slate-700">

@@ -2,12 +2,13 @@
 	import { STATES, pairedStateField, imageSrc, UPLOADS_ENABLED } from '$lib/forms.js';
 	import { lgasFor } from '$lib/lgas.js';
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
+	import StarButton from '$lib/StarButton.svelte';
 	import ScratchCards from '$lib/ScratchCards.svelte';
 	import SsceExams from '$lib/SsceExams.svelte';
 	import ExamInfo from '$lib/ExamInfo.svelte';
 	import { prepareUpload } from '$lib/imageConvert.js';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
-	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false, softcopyNote = false } = $props();
+	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false, softcopyNote = false, formId = '' } = $props();
 	const qNo = (f) => fields.filter((x) => x.scored).findIndex((x) => x.id === f.id) + 1;
 
 	function inputType(t) {
@@ -59,7 +60,7 @@
 	{#if f.id === 'doc_ssce_2' && !showSecond}
 		<!-- hidden until Add SSCE -->
 	{:else if f.scored && reading && answers}
-		<ReadingQuestion {big} field={f} number={qNo(f)} answer={answers[f.id]} value={values?.[f.id]} error={errors?.[f.id]} />
+		<ReadingQuestion {big} {formId} field={f} number={qNo(f)} answer={answers[f.id]} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else if examGroup && f.id === examGroup}
 		<ExamInfo ssceField={ssceF} scratchField={scratchF} ssceValue={values?.[ssceF.id]} scratchValue={values?.[scratchF.id]} ssceError={errors?.[ssceF.id]} scratchError={errors?.[scratchF.id]} />
 	{:else if examGroup && (f.type === 'scratchcards' || f.type === 'ssceexams')}
@@ -70,9 +71,12 @@
 		<SsceExams field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else}
 	<div class={big ? 'qbig' : ''}>
-		<label class="label {big ? 'qtext' : ''}" for={`f_${f.id}`}>
-			{#if f.scored}{qNo(f)}. {/if}{f.label}{#if f.required}<span class="text-red-600"> *</span>{/if}
-		</label>
+		<div class="flex items-start justify-between gap-2">
+			<label class="label {big ? 'qtext' : ''}" for={`f_${f.id}`}>
+				{#if f.scored}{qNo(f)}. {/if}{f.label}{#if f.required}<span class="text-red-600"> *</span>{/if}
+			</label>
+			{#if f.scored && formId}<StarButton {formId} id={f.id} />{/if}
+		</div>
 		{#if imageSrc(f.image)}<img src={imageSrc(f.image)} alt="" loading="lazy" referrerpolicy="no-referrer" class="mb-2 max-h-96 w-full rounded-lg border border-slate-200 bg-white object-contain" />{/if}
 
 		{#if f.type === 'textarea'}
