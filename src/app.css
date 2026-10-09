@@ -176,10 +176,12 @@ html.dark .btn-3d-ghost {
 .qbig label.flex, .qbig .opt { font-size: 1.05rem !important; line-height: 1.45; text-align: justify; }
 .qbig .input { font-size: 1.05rem; }
 .qbig .text-xs { font-size: 0.85rem; }
-/* Desktop: quiz / survey pages use the full screen width, so the text can be a little larger too */
+/* Desktop: scale the whole app up (all sizes are in rem, so text, buttons and spacing grow together) */
 @media (min-width: 1024px) {
-	.qbig .label.qtext { font-size: 1.35rem; }
-	.qbig label.flex, .qbig .opt { font-size: 1.2rem !important; padding-top: 0.7rem; padding-bottom: 0.7rem; }
+	html { font-size: 112.5%; }
+}
+@media (min-width: 1536px) {
+	html { font-size: 125%; }
 }
 .qreview li { text-align: justify; font-size: 1.05rem; line-height: 1.5; }
 .qreview li .text-xs { font-size: 0.9rem; }
