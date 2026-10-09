@@ -1,5 +1,10 @@
 // Shared (client + server) form helpers.
 
+// Passport photo / document uploads need Firebase Storage (Blaze plan). While this is false, upload fields are
+// never added to forms, are hidden from every form that already has them, and can't be picked in the form editor.
+// Set to true once a storage bucket is available.
+export const UPLOADS_ENABLED = false;
+
 export const FIELD_TYPES = [
 	{ value: 'text', label: 'Short text' },
 	{ value: 'textarea', label: 'Long text' },
@@ -18,7 +23,7 @@ export const FIELD_TYPES = [
 	{ value: 'photo', label: 'Passport photograph' },
 	{ value: 'scratchcards', label: 'Scratch card info (WAEC/NECO, up to 2 sittings)' },
 	{ value: 'ssceexams', label: 'SSCE exam number (WAEC/NECO, up to 2 sittings)' }
-];
+].filter((t) => UPLOADS_ENABLED || (t.value !== 'file' && t.value !== 'photo'));
 
 export const FORM_KINDS = [
 	{ value: 'registration', label: 'Registration form' },
@@ -71,6 +76,8 @@ export function scoreForm(fields, values, quiz = {}) {
 
 export const OPTION_TYPES = ['select', 'radio', 'checkbox'];
 export const FILE_TYPES = ['file', 'photo'];
+/** Drop every upload field (passport photo, documents) while uploads are switched off. */
+export const withoutUploads = (fields) => (Array.isArray(fields) ? fields : []).filter((f) => UPLOADS_ENABLED || !FILE_TYPES.includes(f.type));
 
 export const SCRATCH_BOARDS = ['WAEC', 'NECO'];
 export const SSCE_BOARDS = ['WAEC', 'NECO', 'WAEC GCE', 'NECO GCE', 'NABTEB'];
@@ -103,6 +110,7 @@ export const DOC_FIELDS = [
 
 /** Make sure a form has a passport photograph and the three softcopy document uploads (added at the end if missing). */
 export function ensureUploadFields(fields, { required = true, uploads = true } = {}) {
+	if (!UPLOADS_ENABLED) return withoutUploads(fields);
 	if (!uploads) return Array.isArray(fields) ? fields : []; // quizzes / questionnaires have no passport photo or documents
 	const list = (Array.isArray(fields) ? fields : []).filter((f) => f.id !== DOCS_FIELD_ID);
 	if (!list.some((f) => f.type === 'photo')) {
@@ -124,7 +132,7 @@ export function ensureUploadFields(fields, { required = true, uploads = true } =
 }
 
 /** Everything applied on the fly to forms saved before these fields existed. */
-export const migrateFormFields = (fields, opts = {}) => opts.uploads === false ? (Array.isArray(fields) ? fields : []) : ensureUploadFields(migrateSsceFields(migrateScratchFields(fields, opts), opts), opts);
+export const migrateFormFields = (fields, opts = {}) => opts.uploads === false ? withoutUploads(fields) : ensureUploadFields(migrateSsceFields(migrateScratchFields(fields, opts), opts), opts);
 
 /**
  * Old forms stored separate scratch card / SSCE year boxes. Swap them for the grouped SCRATCH CARD INFO field
