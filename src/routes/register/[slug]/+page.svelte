@@ -8,6 +8,8 @@
 	import VoiceReader from '$lib/VoiceReader.svelte';
 	import RetryQuiz from '$lib/RetryQuiz.svelte';
 	import TopicBreakdown from '$lib/TopicBreakdown.svelte';
+	import ProgressChart from '$lib/ProgressChart.svelte';
+	import { addAttempt, topicStats } from '$lib/history.js';
 	import { shuffle } from '$lib/shuffle.js';
 	import { auth } from '$lib/firebase.js';
 	import { addSaved, getSaved } from '$lib/savedLogins.js';
@@ -229,6 +231,17 @@
 		}
 	});
 
+	// keep this score on the device so the student can watch their progress over several tries
+	let histVersion = $state(0);
+	let histSaved = false;
+	$effect(() => {
+		if (form?.success && isQuiz && form.result && !histSaved) {
+			histSaved = true;
+			addAttempt({ formId: data.form.id, at: Date.now(), score: form.result.score, total: form.result.total, pct: form.result.pct, mode: mode, topics: form.review ? topicStats(data.form.fields, form.review) : undefined });
+			histVersion += 1;
+		}
+	});
+
 	// remember the login on this device so the home page can fill it in next time
 	$effect(() => {
 		if (form?.success) addSaved({ number: form.applicationNumber, pin: form.pin, formId: data.form.id, title: form.title, name: form.name || '' });
@@ -262,6 +275,7 @@
 </div>
 				</div>
 			{/if}
+			{#if isQuiz && form.result}<div class="mt-3"><ProgressChart formId={data.form.id} refresh={histVersion} /></div>{/if}
 			{#if form.review}
 				<ul class="qreview mt-3 space-y-2 text-left text-sm">
 					{#each form.review as r, i}
@@ -356,6 +370,7 @@
 						<FormFields big={!isReg} fields={pre} values={form?.values} errors={form?.errors} />
 					</div>
 					{#if !started}
+						<ProgressChart formId={data.form.id} title="Your past attempts" />
 						<div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
 							<p class="text-sm text-slate-700">
 								<strong>{pool.length}</strong> question{pool.length === 1 ? '' : 's'}.
