@@ -23,7 +23,31 @@
 		}
 	}
 	/* plain (uncolored) capsule dashboard cards */
-	.card-pill { border-radius: 9999px; padding: 1.1rem 1.75rem; }
+	/* real capsule-tablet surface: rounded cylinder shading, top highlight, soft shadow underneath (no colors) */
+	.card-pill {
+		position: relative; overflow: hidden;
+		border: 1px solid #c3ccd8; border-radius: 9999px; padding: 1.1rem 2rem;
+		background: linear-gradient(to bottom, #ffffff 0%, #f6f8fb 28%, #e6ebf2 62%, #cdd6e2 100%);
+		box-shadow:
+			inset 0 3px 3px rgba(255,255,255,.95),
+			inset 0 -12px 16px rgba(71,85,105,.30),
+			inset 14px 0 18px -10px rgba(71,85,105,.22),
+			inset -14px 0 18px -10px rgba(71,85,105,.22),
+			0 14px 16px -9px rgba(15,23,42,.5);
+	}
+	/* glossy highlight band along the top of the capsule */
+	.card-pill::before {
+		content: ''; position: absolute; pointer-events: none;
+		top: 6%; left: 6%; right: 6%; height: 36%; border-radius: 9999px;
+		background: linear-gradient(to bottom, rgba(255,255,255,.95), rgba(255,255,255,.15));
+	}
+	.card-pill > * { position: relative; z-index: 1; }
+	@media (hover: hover) {
+		.card.card-pill:hover {
+			transform: translateY(-2px);
+			box-shadow: inset 0 3px 3px rgba(255,255,255,.95), inset 0 -12px 16px rgba(71,85,105,.30), inset 14px 0 18px -10px rgba(71,85,105,.22), inset -14px 0 18px -10px rgba(71,85,105,.22), 0 18px 20px -9px rgba(15,23,42,.5);
+		}
+	}
 	/* solid capsule dashboard cards */
 	.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
 		border-radius: 9999px; border: 0; border-bottom: 5px solid; color: #fff;
@@ -150,6 +174,12 @@ html.dark .card {
 	background: #1e293b;
 	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 10px 14px -8px rgba(0, 0, 0, 0.7);
 }
+html.dark .card-pill {
+	border-color: #475569;
+	background: linear-gradient(to bottom, #475569 0%, #334155 30%, #1e293b 65%, #0f172a 100%);
+	box-shadow: inset 0 3px 3px rgba(255,255,255,.28), inset 0 -12px 16px rgba(0,0,0,.45), inset 14px 0 18px -10px rgba(0,0,0,.4), inset -14px 0 18px -10px rgba(0,0,0,.4), 0 14px 16px -9px rgba(0,0,0,.75);
+}
+html.dark .card-pill::before { background: linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,.03)); }
 html.dark .card-blue, html.dark .card-violet, html.dark .card-green, html.dark .card-amber, html.dark .card-rose, html.dark .card-teal {
 	background-image:
 		radial-gradient(ellipse 60% 70% at 18% 0%, rgba(255,255,255,.4), rgba(255,255,255,0) 70%),
