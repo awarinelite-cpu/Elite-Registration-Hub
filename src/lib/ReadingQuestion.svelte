@@ -1,7 +1,7 @@
 <script>
 	import { imageSrc } from '$lib/forms.js';
 	// Reading mode: the answer (and explanation) appears as soon as the option is chosen.
-	let { field, number, answer, value = '', error = '', big = false } = $props();
+	let { field, number, answer, value = '', error = '', big = false, onreveal = null } = $props();
 	const multi = field.type === 'checkbox';
 	let pick = $state(multi ? (Array.isArray(value) ? [...value] : []) : value || '');
 	let revealed = $state(false);
@@ -9,7 +9,10 @@
 	const chosen = $derived(multi ? pick : pick ? [pick] : []);
 	const ok = $derived(chosen.length === right.length && right.every((x) => chosen.includes(x)));
 	const check = () => {
-		if (chosen.length) revealed = true;
+		if (chosen.length && !revealed) {
+			revealed = true;
+			onreveal?.(ok);
+		}
 	};
 	// once revealed the choice is locked (and still submitted)
 	const lock = (e) => {

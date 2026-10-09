@@ -6,6 +6,7 @@
 	import { MANAGED_QUIZ_FIELDS } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import VoiceReader from '$lib/VoiceReader.svelte';
+	import RetryQuiz from '$lib/RetryQuiz.svelte';
 	import { auth } from '$lib/firebase.js';
 	import { addSaved, getSaved } from '$lib/savedLogins.js';
 	let { data, form } = $props();
@@ -242,6 +243,7 @@
 						</li>
 					{/each}
 				</ul>
+				<RetryQuiz fields={data.form.fields} review={form.review} />
 			{/if}
 
 			<div class="mt-5 grid gap-3 text-left sm:grid-cols-2">

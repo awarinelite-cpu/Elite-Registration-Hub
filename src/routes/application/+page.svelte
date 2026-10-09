@@ -4,6 +4,7 @@
 	import { updateSaved } from '$lib/savedLogins.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import ApplicationView from '$lib/ApplicationView.svelte';
+	import RetryQuiz from '$lib/RetryQuiz.svelte';
 	import { buildDetailItems } from '$lib/forms.js';
 	let { data, form } = $props();
 
@@ -114,6 +115,7 @@
 						</li>
 					{/each}
 				</ul>
+				<RetryQuiz fields={data.fields} review={data.review} />
 			{/if}
 		{:else}
 			<p class="mb-4 rounded-lg bg-slate-100 p-3 text-sm text-slate-700">

@@ -78,7 +78,7 @@ export const actions = {
 			kind: form.kind,
 			name: studentName(form, { data: values }),
 			result: result && show !== 'none' ? result : null,
-			review: scored && (show === 'answers' || mode === 'reading') ? scored.items.map(({ label, given, answer, ok, unanswered, explanation }) => ({ label, given, answer, ok, unanswered, explanation })) : null
+			review: scored && (show === 'answers' || mode === 'reading') ? scored.items.map(({ id, label, given, answer, correct, ok, unanswered, explanation }) => ({ id, label, given, answer, correct, ok, unanswered, explanation })) : null
 		};
 	}
 };

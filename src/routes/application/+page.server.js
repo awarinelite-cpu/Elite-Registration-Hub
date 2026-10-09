@@ -35,7 +35,7 @@ export async function load({ cookies }) {
 	return {
 		kind: form.kind || 'registration',
 		result: form.kind === 'quiz' && show !== 'none' ? app.result || null : null,
-		review: scored ? scored.items.map(({ label, given, answer, ok, unanswered, explanation }) => ({ label, given, answer, ok, unanswered, explanation })) : null,
+		review: scored ? scored.items.map(({ id, label, given, answer, correct, ok, unanswered, explanation }) => ({ id, label, given, answer, correct, ok, unanswered, explanation })) : null,
 		title: form.title,
 		formId: app.formId,
 		name: studentName(form, app),

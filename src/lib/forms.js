@@ -67,7 +67,7 @@ export function scoreForm(fields, values, quiz = {}) {
 		total += pts;
 		if (ok) score += pts;
 		if (got.length) answered++;
-		items.push({ id: f.id, label: f.label, given: got.join(', '), answer: want.join(', '), ok, unanswered: !got.length, points: pts, explanation: f.explanation || '' });
+		items.push({ id: f.id, label: f.label, given: got.join(', '), answer: want.join(', '), correct: want, ok, unanswered: !got.length, points: pts, explanation: f.explanation || '' });
 	}
 	const pct = total ? Math.round((score / total) * 1000) / 10 : 0;
 	const passMark = Number(quiz?.passMark) || 0;
