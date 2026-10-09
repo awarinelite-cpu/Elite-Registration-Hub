@@ -53,6 +53,7 @@
 			if (used) {
 				c.board = boardOf(e.board) || c.board;
 				c.year = e.year;
+				if (e.board && c.board !== 'WAEC') c.serial = ''; // only WAEC cards have a serial (kept until an exam type is chosen, so a pasted serial survives)
 			} else {
 				c.board = '';
 				c.year = '';
@@ -116,16 +117,18 @@
 					<label class="label" for={`${cid}_p${i}`}>Scratch card PIN</label>
 					<input class="input" id={`${cid}_p${i}`} bind:value={c.pin} autocomplete="off" />
 				</div>
-				<div>
-					<label class="label" for={`${cid}_s${i}`}>Serial number <span class="text-xs font-normal text-slate-500">(if any)</span></label>
-					<input class="input" id={`${cid}_s${i}`} bind:value={c.serial} autocomplete="off" />
-				</div>
+				{#if boardOf(e.board) === 'WAEC'}
+					<div>
+						<label class="label" for={`${cid}_s${i}`}>Serial number</label>
+						<input class="input" id={`${cid}_s${i}`} bind:value={c.serial} autocomplete="off" />
+					</div>
+				{/if}
 			</div>
 		</div>
 	{/each}
 
 	{#if exams.length < MAX_SITTINGS}
-		<button type="button" class="btn-ghost !px-2 !py-1 text-[11px]" onclick={addSitting}>+ Add second sitting</button>
+		<button type="button" class="btn-ghost !w-auto !px-2 !py-0.5 !text-[11px] leading-tight" onclick={addSitting}>+ Add second sitting</button>
 	{/if}
 
 	<input type="hidden" name={eid} value={JSON.stringify(exams)} />
