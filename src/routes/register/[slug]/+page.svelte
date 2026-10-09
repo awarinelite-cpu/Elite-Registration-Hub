@@ -7,6 +7,7 @@
 	import FormFields from '$lib/FormFields.svelte';
 	import VoiceReader from '$lib/VoiceReader.svelte';
 	import RetryQuiz from '$lib/RetryQuiz.svelte';
+	import TopicBreakdown from '$lib/TopicBreakdown.svelte';
 	import { shuffle } from '$lib/shuffle.js';
 	import { auth } from '$lib/firebase.js';
 	import { addSaved, getSaved } from '$lib/savedLogins.js';
@@ -31,15 +32,22 @@
 	let shuffleOn = $state(false);
 	let count = $state(0); // 0 = all questions
 	let plan = $state(null); // { ids, opts } chosen when the quiz starts; saved with the draft so a refresh keeps the same order
-	const countChoices = [10, 20, 30, 50, 100].filter((n) => n < qs.length);
+	const topics = [...new Set(qs.map((q) => (q.topic || '').trim()).filter(Boolean))];
+	let pickedTopics = $state([]); // empty = every topic
+	const pool = $derived(pickedTopics.length ? qs.filter((q) => pickedTopics.includes((q.topic || '').trim())) : qs);
+	const countChoices = $derived([10, 20, 30, 50, 100].filter((n) => n < pool.length));
+	function toggleTopic(t) {
+		pickedTopics = pickedTopics.includes(t) ? pickedTopics.filter((x) => x !== t) : [...pickedTopics, t];
+		count = 0;
+	}
 	const shownQs = $derived(plan ? plan.ids.map((id) => qs.find((q) => q.id === id)).filter(Boolean).map((q) => (plan.opts?.[q.id] ? { ...q, options: plan.opts[q.id] } : q)) : qs);
 	function makePlan() {
-		const useCount = count > 0 && count < qs.length;
-		if (!shuffleOn && !useCount) return null;
-		let list = qs;
+		const useCount = count > 0 && count < pool.length;
+		if (!shuffleOn && !useCount && pool.length === qs.length) return null;
+		let list = pool;
 		if (useCount) {
-			const keep = new Set(shuffle(qs.map((q) => q.id)).slice(0, count));
-			list = qs.filter((q) => keep.has(q.id));
+			const keep = new Set(shuffle(pool.map((q) => q.id)).slice(0, count));
+			list = pool.filter((q) => keep.has(q.id));
 		}
 		if (shuffleOn) list = shuffle(list);
 		const opts = {};
@@ -265,6 +273,7 @@
 						</li>
 					{/each}
 				</ul>
+				<TopicBreakdown fields={data.form.fields} review={form.review} />
 				<RetryQuiz fields={data.form.fields} review={form.review} />
 			{/if}
 
@@ -349,7 +358,7 @@
 					{#if !started}
 						<div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
 							<p class="text-sm text-slate-700">
-								<strong>{qs.length}</strong> question{qs.length === 1 ? '' : 's'}.
+								<strong>{pool.length}</strong> question{pool.length === 1 ? '' : 's'}.
 								Do not leave any question unanswered. Ensure you tick an option even if you don't know the answer, you may unknowingly pick the right one.
 							</p>
 							{#if modes === 'both'}
@@ -371,6 +380,14 @@
 							{/if}
 							{#if qs.length > 1}
 								<div class="space-y-2 rounded-xl border border-slate-300 bg-white p-3">
+									{#if topics.length > 1}
+										<div class="text-sm font-medium">📚 Topics <span class="font-normal text-slate-500">(tap to choose, or leave blank for all)</span></div>
+										<div class="flex flex-wrap gap-2">
+											{#each topics as t}
+												<button type="button" class="rounded-full border px-3 py-1 text-sm {pickedTopics.includes(t) ? 'border-teal-700 bg-teal-700 text-white' : 'border-slate-300 bg-white text-slate-700'}" onclick={() => toggleTopic(t)}>{t}</button>
+											{/each}
+										</div>
+									{/if}
 									<label class="flex cursor-pointer items-center gap-2 text-sm font-medium">
 										<input type="checkbox" bind:checked={shuffleOn} class="accent-teal-700" />
 										🔀 Shuffle questions and answer options
@@ -379,7 +396,7 @@
 										<label class="flex flex-wrap items-center gap-2 text-sm font-medium">
 											🎯 Questions to practise:
 											<select class="input !w-auto !py-1" bind:value={count}>
-												<option value={0}>All {qs.length}</option>
+												<option value={0}>All {pool.length}</option>
 												{#each countChoices as n}<option value={n}>Random {n}</option>{/each}
 											</select>
 										</label>

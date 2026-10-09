@@ -337,6 +337,7 @@
 							</div>
 							<label class="mt-2 flex items-center gap-2 text-sm">Marks <input class="input !w-20 !py-1" type="number" min="1" bind:value={f.points} /></label>
 							<textarea class="input mt-2" rows="2" placeholder="Explanation (shown after submitting if you show correct answers)" bind:value={f.explanation}></textarea>
+							<input class="input mt-2" placeholder="Topic (optional, e.g. Pharmacology). Lets students pick topics and see weak ones" bind:value={f.topic} />
 						</div>
 					{/if}
 				{/if}

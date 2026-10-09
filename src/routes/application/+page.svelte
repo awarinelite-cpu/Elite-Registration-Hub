@@ -5,6 +5,7 @@
 	import FormFields from '$lib/FormFields.svelte';
 	import ApplicationView from '$lib/ApplicationView.svelte';
 	import RetryQuiz from '$lib/RetryQuiz.svelte';
+	import TopicBreakdown from '$lib/TopicBreakdown.svelte';
 	import { buildDetailItems } from '$lib/forms.js';
 	let { data, form } = $props();
 
@@ -115,6 +116,7 @@
 						</li>
 					{/each}
 				</ul>
+				<TopicBreakdown fields={data.fields} review={data.review} />
 				<RetryQuiz fields={data.fields} review={data.review} />
 			{/if}
 		{:else}
