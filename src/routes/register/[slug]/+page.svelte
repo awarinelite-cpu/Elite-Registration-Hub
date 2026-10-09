@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import { MANAGED_QUIZ_FIELDS } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
+	import VoiceReader from '$lib/VoiceReader.svelte';
 	import { auth } from '$lib/firebase.js';
 	import { addSaved, getSaved } from '$lib/savedLogins.js';
 	let { data, form } = $props();
@@ -251,6 +252,7 @@
 							<button type="button" class="btn w-full" onclick={start} disabled={loadingAnswers}>{loadingAnswers ? 'Loading…' : 'CONTINUE'}</button>
 						</div>
 					{:else}
+						<VoiceReader questions={qs} root={formEl} />
 						<FormFields big fields={qs} values={form?.values} errors={form?.errors} reading={mode === 'reading'} {answers} />
 						<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 					{/if}
