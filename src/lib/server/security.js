@@ -1,3 +1,4 @@
+import { serviceAccount } from './firebase.js';
 import { scryptSync, randomBytes, timingSafeEqual, createHmac, randomInt } from 'node:crypto';
 
 export const newPin = () => String(randomInt(100000, 1000000));
@@ -15,9 +16,16 @@ export function checkPin(pin, stored) {
 	return a.length === b.length && timingSafeEqual(a, b);
 }
 
+// No separate SESSION_SECRET needed: the signing key is derived from the service-account
+// private key (server-only). An explicit SESSION_SECRET still wins if you set one.
+let derived;
+function secret() {
+	if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+	return (derived ??= createHmac('sha256', serviceAccount().private_key).update('elitereg-session-v1').digest('hex'));
+}
+
 function sig(payload) {
-	if (!process.env.SESSION_SECRET) throw new Error('SESSION_SECRET is not set');
-	return createHmac('sha256', process.env.SESSION_SECRET).update(payload).digest('base64url');
+	return createHmac('sha256', secret()).update(payload).digest('base64url');
 }
 
 const SESSION_MS = 2 * 60 * 60 * 1000;

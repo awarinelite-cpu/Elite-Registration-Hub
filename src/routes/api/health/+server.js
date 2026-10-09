@@ -5,8 +5,7 @@ import { db } from '$lib/server/firebase.js';
 export async function GET() {
 	const out = {
 		has_FIREBASE_SERVICE_ACCOUNT: !!process.env.FIREBASE_SERVICE_ACCOUNT,
-		has_SESSION_SECRET: !!process.env.SESSION_SECRET,
-		FIRESTORE_DATABASE_ID: process.env.FIRESTORE_DATABASE_ID || '(not set, using default "elitereg")'
+		database: '(default)'
 	};
 	try {
 		const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '');
