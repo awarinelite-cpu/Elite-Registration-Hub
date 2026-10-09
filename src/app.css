@@ -22,6 +22,8 @@
 			box-shadow: 0 4px 0 rgba(15, 23, 42, 0.14), 0 14px 18px -8px rgba(15, 23, 42, 0.45);
 		}
 	}
+	/* plain (uncolored) capsule dashboard cards */
+	.card-pill { border-radius: 9999px; padding: 1.1rem 1.75rem; }
 	/* solid capsule dashboard cards */
 	.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
 		border-radius: 9999px; border: 0; border-bottom: 5px solid; color: #fff;
