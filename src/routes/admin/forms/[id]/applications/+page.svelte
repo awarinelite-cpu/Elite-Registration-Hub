@@ -179,7 +179,7 @@
 	<div class="space-y-4">
 		{#each filtered as a (a.id)}
 			<div
-				class="card cursor-pointer space-y-3 {a.status === 'done' ? '!bg-slate-200 opacity-60' : ''}"
+				class="card card-pill card-tall cursor-pointer space-y-3 {a.status === 'done' ? 'app-done' : ''}"
 				role="button"
 				tabindex="0"
 				onclick={(e) => { if (!e.target.closest('button,select,a')) selected = a; }}
@@ -187,9 +187,9 @@
 			>
 				<div class="flex items-start justify-between gap-2">
 					<div class="min-w-0">
-						<p class="break-all font-mono text-sm font-semibold">{a.applicationNumber}</p>
-						<p class="mt-1 text-base font-bold">{nameOf(a) || '—'}{#if a.status === 'done'} ✅✅{/if}{#if a.result} <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-sm text-teal-800">{a.result.score}/{a.result.total}</span>{/if}</p>
-						<p class="text-xs text-slate-500">{new Date(a.submittedAt).toLocaleDateString()}</p>
+						<p class="form-code break-all !mt-0 !text-sm">{a.applicationNumber}</p>
+						<p class="form-title mt-1">{nameOf(a) || '—'}{#if a.status === 'done'} ✅✅{/if}{#if a.result} <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-sm text-teal-800">{a.result.score}/{a.result.total}</span>{/if}</p>
+						<p class="form-meta text-xs">{new Date(a.submittedAt).toLocaleDateString()}</p>
 					</div>
 					<button
 						type="button"
