@@ -85,7 +85,7 @@
 	<div class="mb-8 space-y-3">
 		{#each shownForms as f (f.id)}
 			<div
-				class="card flex cursor-pointer flex-wrap items-center justify-between gap-3"
+				class="card card-pill card-tall flex cursor-pointer flex-wrap items-center justify-between gap-3"
 				role="link"
 				tabindex="0"
 				onclick={(e) => openApps(e, f)}
@@ -93,10 +93,11 @@
 			>
 				<div class="flex w-full items-start justify-between gap-2">
 					<div class="min-w-0">
-					<div class="font-semibold">{f.title}</div>
-					<div class="text-sm text-slate-500">
+					<div class="form-title">{f.title}</div>
+					{#if f.prefix}<div class="form-code">{f.prefix}</div>{/if}
+					<div class="form-meta text-sm">
 						{(f.counter || 0).toLocaleString()} applications ·
-						<span class={label(f) === 'Active' ? 'text-green-700' : 'text-slate-500'}>{label(f)}</span>
+						<span class={label(f) === 'Active' ? 'form-active' : ''}>{label(f)}</span>
 					</div>
 					</div>
 					<div class="flex shrink-0 flex-col items-center gap-1">

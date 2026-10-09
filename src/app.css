@@ -220,3 +220,15 @@ html.dark .btn-3d-ghost {
 
 /* quiz option letter badge (A, B, C...) */
 .optletter { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 0.4rem; background: #ccfbf1; color: #115e59; font-weight: 700; font-size: 0.85rem; line-height: 1; }
+
+/* form cards in the folders: tall capsule tablet with clearly readable titles */
+.card-pill.card-tall { border-radius: 2.5rem; padding: 1.25rem 1.6rem 1.4rem; }
+.card-pill.card-tall::before { border-radius: 2rem; height: 22%; }
+.form-title { font-size: 1.2rem; font-weight: 800; line-height: 1.3; color: #0f172a; text-shadow: 0 1px 0 rgba(255,255,255,.9); overflow-wrap: anywhere; }
+.form-code { margin-top: .15rem; font-family: ui-monospace, monospace; font-size: .78rem; font-weight: 700; letter-spacing: .04em; color: #0f766e; }
+.form-meta { margin-top: .2rem; font-weight: 600; color: #334155; }
+.form-active { color: #15803d; font-weight: 700; }
+html.dark .form-title { color: #f8fafc; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+html.dark .form-code { color: #5eead4; }
+html.dark .form-meta { color: #cbd5e1; }
+html.dark .form-active { color: #4ade80; }
