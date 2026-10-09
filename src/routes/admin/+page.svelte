@@ -117,16 +117,16 @@
 	<p class="text-slate-500">Loading…</p>
 {:else}
 	<div class="mb-8 grid gap-3 sm:grid-cols-3">
-		<div class="card card-blue flex items-center justify-between"><div class="text-base font-medium text-slate-500">Total forms</div><div class="text-3xl font-bold">{forms.length}</div></div>
-		<div class="card card-violet flex items-center justify-between"><div class="text-base font-medium text-slate-500">Applications</div><div class="text-3xl font-bold">{total.toLocaleString()}</div></div>
-		<div class="card card-green flex items-center justify-between"><div class="text-base font-medium text-slate-500">Active forms</div><div class="text-3xl font-bold">{activeCount}</div></div>
+		<div class="card flex items-center justify-between"><div class="text-base font-medium text-slate-500">Total forms</div><div class="text-3xl font-bold">{forms.length}</div></div>
+		<div class="card flex items-center justify-between"><div class="text-base font-medium text-slate-500">Applications</div><div class="text-3xl font-bold">{total.toLocaleString()}</div></div>
+		<div class="card flex items-center justify-between"><div class="text-base font-medium text-slate-500">Active forms</div><div class="text-3xl font-bold">{activeCount}</div></div>
 	</div>
 
 	<input class="input mb-4" type="search" placeholder="Search student name or application number…" bind:value={formSearch} />
 	{#if !formSearch.trim()}
 		<div class="mb-8 space-y-3">
 			{#each FOLDERS as fo (fo.kind)}
-				<a href="/admin/folder/{fo.kind}" class="card card-{fo.tone} flex items-center justify-between gap-3">
+				<a href="/admin/folder/{fo.kind}" class="card flex items-center justify-between gap-3">
 					<div>
 						<div class="text-lg font-semibold">{fo.icon} {fo.title}</div>
 						<div class="text-sm text-slate-500">{allIn(fo.kind)} form{allIn(fo.kind) === 1 ? '' : 's'}</div>
