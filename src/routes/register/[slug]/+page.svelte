@@ -7,6 +7,7 @@
 	import FormFields from '$lib/FormFields.svelte';
 	import VoiceReader from '$lib/VoiceReader.svelte';
 	import RetryQuiz from '$lib/RetryQuiz.svelte';
+	import { shuffle } from '$lib/shuffle.js';
 	import { auth } from '$lib/firebase.js';
 	import { addSaved, getSaved } from '$lib/savedLogins.js';
 	let { data, form } = $props();
@@ -26,6 +27,25 @@
 	const qs = isQuiz ? data.form.fields.filter((f) => f.scored) : [];
 	const modes = data.form.modes || 'both';
 	let mode = $state(modes === 'reading' ? 'reading' : 'exam');
+	// practice options on the start screen: shuffle order, and/or use only a random number of questions
+	let shuffleOn = $state(false);
+	let count = $state(0); // 0 = all questions
+	let plan = $state(null); // { ids, opts } chosen when the quiz starts; saved with the draft so a refresh keeps the same order
+	const countChoices = [10, 20, 30, 50, 100].filter((n) => n < qs.length);
+	const shownQs = $derived(plan ? plan.ids.map((id) => qs.find((q) => q.id === id)).filter(Boolean).map((q) => (plan.opts?.[q.id] ? { ...q, options: plan.opts[q.id] } : q)) : qs);
+	function makePlan() {
+		const useCount = count > 0 && count < qs.length;
+		if (!shuffleOn && !useCount) return null;
+		let list = qs;
+		if (useCount) {
+			const keep = new Set(shuffle(qs.map((q) => q.id)).slice(0, count));
+			list = qs.filter((q) => keep.has(q.id));
+		}
+		if (shuffleOn) list = shuffle(list);
+		const opts = {};
+		if (shuffleOn) for (const q of list) if (q.options?.length) opts[q.id] = shuffle(q.options);
+		return { ids: list.map((q) => q.id), opts };
+	}
 	let started = $state(!isQuiz);
 	let startError = $state('');
 	let loadingAnswers = $state(false);
@@ -56,6 +76,7 @@
 			}
 			loadingAnswers = false;
 		}
+		plan = makePlan();
 		started = true;
 		window.scrollTo({ top: 0 });
 		if (mode === 'exam' && data.form.timeLimit > 0) startTimer();
@@ -99,7 +120,7 @@
 				if (typeof v !== 'string' || k.startsWith('_')) continue;
 				(vals[k] ||= []).push(v);
 			}
-			localStorage.setItem(DKEY, JSON.stringify({ t: Date.now(), mode, vals }));
+			localStorage.setItem(DKEY, JSON.stringify({ t: Date.now(), mode, vals, plan: $state.snapshot(plan) }));
 		} catch {}
 	}
 	function queueSave() {
@@ -138,6 +159,7 @@
 				if (!r.ok) throw new Error();
 				answers = await r.json();
 			}
+			plan = d.plan && Array.isArray(d.plan.ids) ? d.plan : null;
 			started = true;
 			await tick();
 			for (const el of [...formEl.elements]) {
@@ -302,7 +324,7 @@
 				class="card space-y-4"
 				use:enhance={({ formData, cancel }) => {
 					if (isQuiz && !timeUp) {
-						const left = qs.filter((f) => !formData.getAll(`f_${f.id}`).some((v) => String(v).trim())).length;
+						const left = shownQs.filter((f) => !formData.getAll(`f_${f.id}`).some((v) => String(v).trim())).length;
 						if (left && !confirm(`You have ${left} unanswered question${left === 1 ? '' : 's'}. Submit anyway?`)) {
 							cancel();
 							return;
@@ -319,6 +341,7 @@
 				{#if form?.message}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">{form.message}</div>{/if}
 				<input type="hidden" name="_timeup" value={timeUp ? '1' : ''} />
 				<input type="hidden" name="_mode" value={mode} />
+				<input type="hidden" name="_qids" value={plan && plan.ids.length < qs.length ? plan.ids.join(',') : ''} />
 				{#if isQuiz}
 					<div class={started && !preError ? 'hidden' : 'space-y-4'}>
 						<FormFields big={!isReg} fields={pre} values={form?.values} errors={form?.errors} />
@@ -346,12 +369,29 @@
 							{:else}
 								<p class="text-sm"><strong>📝 Exam mode:</strong> answers are shown only after you submit.</p>
 							{/if}
+							{#if qs.length > 1}
+								<div class="space-y-2 rounded-xl border border-slate-300 bg-white p-3">
+									<label class="flex cursor-pointer items-center gap-2 text-sm font-medium">
+										<input type="checkbox" bind:checked={shuffleOn} class="accent-teal-700" />
+										🔀 Shuffle questions and answer options
+									</label>
+									{#if countChoices.length}
+										<label class="flex flex-wrap items-center gap-2 text-sm font-medium">
+											🎯 Questions to practise:
+											<select class="input !w-auto !py-1" bind:value={count}>
+												<option value={0}>All {qs.length}</option>
+												{#each countChoices as n}<option value={n}>Random {n}</option>{/each}
+											</select>
+										</label>
+									{/if}
+								</div>
+							{/if}
 							{#if startError}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">{startError}</div>{/if}
 							<button type="button" class="btn w-full" onclick={start} disabled={loadingAnswers}>{loadingAnswers ? 'Loading…' : 'CONTINUE'}</button>
 						</div>
 					{:else}
-						<VoiceReader questions={qs} root={formEl} />
-						<FormFields big fields={qs} values={form?.values} errors={form?.errors} reading={mode === 'reading'} {answers} />
+						<VoiceReader questions={shownQs} root={formEl} />
+						<FormFields big fields={shownQs} values={form?.values} errors={form?.errors} reading={mode === 'reading'} {answers} />
 						<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 					{/if}
 				{:else}

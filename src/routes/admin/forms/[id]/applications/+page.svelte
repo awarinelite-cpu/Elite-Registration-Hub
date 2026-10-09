@@ -80,10 +80,15 @@
 
 	const detailItems = $derived.by(() => {
 		if (!selected || !form) return [];
-		const items = buildDetailItems(form.fields, selected.data);
+		let items = buildDetailItems(form.fields, selected.data);
 		if (form.kind !== 'quiz') return items;
+		// a practice run that used only some of the questions: hide the ones that were not asked
+		if (selected.asked?.length) {
+			const out = new Set(form.fields.filter((f) => (Array.isArray(f.correct) ? f.correct.length : f.correct) && !selected.asked.includes(f.id)).map((f) => f.id));
+			items = items.filter((it) => !out.has(it.id));
+		}
 		// mark each question right/wrong and put the score first
-		const s = scoreForm(form.fields, selected.data, form.quiz);
+		const s = scoreForm(form.fields, selected.data, form.quiz, selected.asked);
 		const byId = Object.fromEntries(s.items.map((x) => [x.id, x]));
 		const marked = items.map((it) => (byId[it.id] ? { ...it, label: it.label + (byId[it.id].ok ? ' ✓' : byId[it.id].unanswered ? ` ⚠ not answered (correct: ${byId[it.id].answer})` : ` ✗ (correct: ${byId[it.id].answer})`) } : it));
 		const head = `${s.score} / ${s.total} (${s.pct}%)${s.passed === true ? ' — Passed' : s.passed === false ? ' — Not passed' : ''}`;

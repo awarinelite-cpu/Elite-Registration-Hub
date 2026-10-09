@@ -40,7 +40,11 @@ export const actions = {
 		}
 
 		const files = await storeUploads(form.id, uploads);
-		const scored = form.kind === 'quiz' ? scoreForm(form.fields, values, form.quiz) : null;
+		// a practice run can use a random subset of the questions: only those are scored
+		const scoredIds = form.fields.filter((f) => (Array.isArray(f.correct) ? f.correct.length : f.correct)).map((f) => f.id);
+		const askedRaw = String(fd.get('_qids') || '').split(',').filter((x) => scoredIds.includes(x));
+		const asked = form.kind === 'quiz' && askedRaw.length && askedRaw.length < scoredIds.length ? [...new Set(askedRaw)] : null;
+		const scored = form.kind === 'quiz' ? scoreForm(form.fields, values, form.quiz, asked) : null;
 		const result = scored ? { score: scored.score, total: scored.total, pct: scored.pct, passed: scored.passed, answered: scored.answered, questions: scored.questions } : null;
 		const pin = newPin();
 		const pinHash = hashPin(pin);
@@ -63,6 +67,7 @@ export const actions = {
 				failedAttempts: 0,
 				lockUntil: 0,
 				...(result ? { result, mode } : {}),
+				...(asked ? { asked } : {}),
 				data: { ...values, ...files }
 			});
 			return num;

@@ -31,7 +31,7 @@ export async function load({ cookies }) {
 		else if (v !== undefined) values[f.id] = v;
 	}
 	const show = form.quiz?.showResult || 'answers';
-	const scored = form.kind === 'quiz' && (show === 'answers' || app.mode === 'reading') ? scoreForm(form.fields, app.data, form.quiz) : null;
+	const scored = form.kind === 'quiz' && (show === 'answers' || app.mode === 'reading') ? scoreForm(form.fields, app.data, form.quiz, app.asked) : null;
 	return {
 		kind: form.kind || 'registration',
 		result: form.kind === 'quiz' && show !== 'none' ? app.result || null : null,

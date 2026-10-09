@@ -37,7 +37,7 @@
 		if (!form) return [];
 		return apps
 			.map((a) => {
-				const s = scoreForm(form.fields, a.data || {}, form.quiz);
+				const s = scoreForm(form.fields, a.data || {}, form.quiz, a.asked);
 				return { id: a.id, name: studentName(form, a) || '—', matric: matricOf(a) || '—', appNo: a.applicationNumber, answered: s.answered, questions: s.questions, score: s.score, total: s.total, pct: s.pct, passed: s.passed, at: a.submittedAt || 0, items: s.items };
 			})
 			.sort((x, y) => y.score - x.score || x.at - y.at)

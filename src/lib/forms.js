@@ -53,7 +53,7 @@ export const publicFields = (fields) => (fields || []).map(({ correct, explanati
 
 const listOf = (v) => (Array.isArray(v) ? v : v ? [v] : []);
 /** Score a quiz submission. Only fields with a correct answer count; checkbox questions need the exact set. */
-export function scoreForm(fields, values, quiz = {}) {
+export function scoreForm(fields, values, quiz = {}, asked = null) {
 	const items = [];
 	let score = 0;
 	let total = 0;
@@ -61,6 +61,7 @@ export function scoreForm(fields, values, quiz = {}) {
 	for (const f of fields || []) {
 		const want = listOf(f.correct);
 		if (!want.length) continue;
+		if (asked?.length && !asked.includes(f.id)) continue; // practice runs may use only some of the questions
 		const pts = Number(f.points) > 0 ? Number(f.points) : 1;
 		const got = listOf(values?.[f.id]);
 		const ok = got.length === want.length && want.every((x) => got.includes(x));
