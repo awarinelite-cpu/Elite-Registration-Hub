@@ -123,7 +123,7 @@
 
 <noscript><style>.pre-ready { visibility: visible !important; }</style></noscript>
 
-<main class="pre-ready mx-auto max-w-2xl px-4 py-8 {ready ? '' : 'invisible'}">
+<main class="pre-ready mx-auto px-4 py-8 {isReg ? 'max-w-2xl' : 'max-w-2xl lg:max-w-none lg:px-10 xl:px-16'} {ready ? '' : 'invisible'}">
 	{#if form?.success}
 		<div class="card text-center">
 			<div class="mb-2 text-4xl">✅</div>
