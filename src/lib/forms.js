@@ -215,9 +215,8 @@ function validateScratch(cards) {
 	for (let i = 0; i < cards.length; i++) {
 		const c = cards[i];
 		const n = `Scratch card ${i + 1}`;
-		if (!SCRATCH_BOARDS.includes(c.board)) return `${n}: select WAEC or NECO.`;
+		if (!SCRATCH_BOARDS.includes(c.board)) return `${n}: scratch cards are for WAEC or NECO exams only. Set the exam type to WAEC or NECO.`;
 		if (!c.pin) return `${n}: enter the scratch card pin.`;
-		if (c.board === 'WAEC' && !c.serial) return `${n}: enter the scratch serial number.`;
 		if (!/^\d{4}$/.test(c.year) || Number(c.year) < 1980 || Number(c.year) > maxYear) return `${n}: enter a valid 4-digit exam year.`;
 	}
 	return '';

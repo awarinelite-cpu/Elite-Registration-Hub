@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { SSCE_BOARDS, SCRATCH_BOARDS, MAX_SITTINGS, emptySsce, emptyScratch } from '$lib/forms.js';
+	import { SSCE_BOARDS, MAX_SITTINGS, emptySsce, emptyScratch } from '$lib/forms.js';
 
 	// Exam info + scratch card info, grouped per sitting. Data stays in two fields (ssceexams + scratchcards)
 	// so saved applications, exports and bulk paste are unchanged; a sitting is just index i in both arrays.
@@ -39,6 +39,25 @@
 			rootE.removeEventListener('ssceexamfill', he);
 			rootC.removeEventListener('scratchfill', hc);
 		};
+	});
+
+	// One exam type + one exam year per sitting: the scratch card of that sitting follows them.
+	const boardOf = (b) => (/waec/i.test(b) ? 'WAEC' : /neco/i.test(b) ? 'NECO' : '');
+	$effect(() => {
+		for (let i = 0; i < exams.length; i++) {
+			const e = exams[i];
+			const c = cards[i];
+			if (!c) continue;
+			const used = !!(c.pin || c.serial);
+			if (!e.year && c.year) e.year = c.year; // BulkFill may only know the scratch card year
+			if (used) {
+				c.board = boardOf(e.board) || c.board;
+				c.year = e.year;
+			} else {
+				c.board = '';
+				c.year = '';
+			}
+		}
 	});
 
 	const eid = $derived(`f_${ssceField.id}`);
@@ -94,25 +113,12 @@
 			<div class="space-y-3 border-t border-slate-200 pt-3">
 				<p class="text-sm font-semibold text-slate-700">Scratch card</p>
 				<div>
-					<label class="label" for={`${cid}_b${i}`}>Scratch card result name</label>
-					<select class="input" id={`${cid}_b${i}`} bind:value={c.board} onchange={() => { if (c.board !== 'WAEC') c.serial = ''; }}>
-						<option value="">Select…</option>
-						{#each SCRATCH_BOARDS as b}<option value={b}>{b}</option>{/each}
-					</select>
-				</div>
-				<div>
-					<label class="label" for={`${cid}_p${i}`}>Scratch card pin</label>
+					<label class="label" for={`${cid}_p${i}`}>Scratch card PIN</label>
 					<input class="input" id={`${cid}_p${i}`} bind:value={c.pin} autocomplete="off" />
 				</div>
-				{#if c.board === 'WAEC'}
-					<div>
-						<label class="label" for={`${cid}_s${i}`}>Scratch serial number</label>
-						<input class="input" id={`${cid}_s${i}`} bind:value={c.serial} autocomplete="off" />
-					</div>
-				{/if}
 				<div>
-					<label class="label" for={`${cid}_y${i}`}>Exam year</label>
-					<input class="input" id={`${cid}_y${i}`} bind:value={c.year} inputmode="numeric" maxlength="4" placeholder="e.g. 2012" />
+					<label class="label" for={`${cid}_s${i}`}>Serial number <span class="text-xs font-normal text-slate-500">(if any)</span></label>
+					<input class="input" id={`${cid}_s${i}`} bind:value={c.serial} autocomplete="off" />
 				</div>
 			</div>
 		</div>
