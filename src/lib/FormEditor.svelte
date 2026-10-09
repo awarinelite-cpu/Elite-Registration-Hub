@@ -12,6 +12,7 @@
 
 	let title = $state('');
 	let description = $state('');
+	let softcopyText = $state(''); // registration forms: one item per line, shown at the bottom as "SEND THE SOFTCOPY OF"
 	let slug = $state('');
 	let slugTouched = $state(false);
 	let prefix = $state('');
@@ -48,6 +49,7 @@
 		}
 		const d = snap.data();
 		({ title, description = '', status, startDate = '', closingDate = '', prefix } = d);
+		softcopyText = Array.isArray(d.softcopy) ? d.softcopy.join('\n') : '';
 		slug = id;
 		allowEdits = d.allowEdits ?? true;
 		kind = d.kind || 'registration';
@@ -154,7 +156,7 @@
 			if (chk.prefixTaken) throw new Error('Another form already uses that prefix.');
 			if (isNew && chk.slugTaken) throw new Error('That link slug is already taken.');
 
-			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, quiz: kind === 'quiz' ? { nameMode, matricMode, askMatric: matricMode !== 'off', showResult: quiz.showResult, modes: quiz.modes, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
+			const payload = { title: title.trim(), description: description.trim(), prefix: cleanPrefix, status, startDate, closingDate, allowEdits: kind === 'registration' ? allowEdits : false, kind, softcopy: kind === 'registration' ? softcopyText.split(/\r?\n/).map((x) => x.replace(/^\s*(\d+[.)]|[-•*])\s*/, '').trim().toUpperCase()).filter(Boolean) : [], quiz: kind === 'quiz' ? { nameMode, matricMode, askMatric: matricMode !== 'off', showResult: quiz.showResult, modes: quiz.modes, passMark: Math.min(100, Math.max(0, Number(quiz.passMark) || 0)), timeLimit: Math.max(0, Number(quiz.timeLimit) || 0) } : null, fields: out, updatedAt: Date.now() };
 			if (isNew) {
 				const ref = doc(firestore, 'forms', slug);
 				await setDoc(ref, { ...payload, ownerId: auth.currentUser.uid, counter: 0, createdAt: Date.now() });
@@ -201,6 +203,12 @@
 			<label class="label" for="d">Description</label>
 			<textarea class="input" id="d" rows="2" bind:value={description}></textarea>
 		</div>
+		{#if kind === 'registration'}
+			<div class="sm:col-span-2">
+				<label class="label" for="sc">Send softcopy of (one per line, shown as a numbered list at the bottom of the form)</label>
+				<textarea class="input" id="sc" rows="5" bind:value={softcopyText} placeholder={'Passport photograph\nSSCE result\nBirth certificate\nTestimonial\nRN notification'}></textarea>
+			</div>
+		{/if}
 		<div>
 			<label class="label" for="s">Link slug</label>
 			<input class="input" id="s" bind:value={slug} oninput={() => (slugTouched = true)} disabled={!isNew} placeholder="fuoye-2026" />
