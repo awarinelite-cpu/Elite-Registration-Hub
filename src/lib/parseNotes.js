@@ -2,7 +2,9 @@
 //   { t: 'h', level: 1|2|3, text }            heading / subheading / small heading (bold + underlined)
 //   { t: 'p', lead, sep, rest }               paragraph; "lead" is a small heading at the front ("Term:" or "Term - ...")
 //   { t: 'ul' | 'ol', items: [{ lead, sep, rest }] }
-//   { t: 'table', rows: [[cell, ...], ...] }  from tab-separated or | separated lines
+//   { t: 'table', rows: [[cell, ...], ...], widths, line, marker }  from tab-separated or | separated lines;
+//     an optional line {{cols: 90, 140, 320}} right before the rows holds the column widths (px) set in the editor
+//     (line = index of the first row, marker = index of the {{cols}} line or -1)
 const DASH = '\\u2014\\u2013';
 const words = (s) => s.split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w)).length;
 const UNIT = /^(unit|chapter|module|week|lecture)\s+[ivxlcdm\d]+\s*[:.\-\u2013\u2014]\s*\S/i;
@@ -57,6 +59,11 @@ export function parseNotes(input) {
 			atoms.push({ k: 'blank' });
 			continue;
 		}
+		const mk = raw.trim().match(/^\{\{\s*cols\s*:\s*([\d\s,]+)\}\}$/i);
+		if (mk) {
+			atoms.push({ k: 'cols', widths: mk[1].split(',').map((x) => parseInt(x, 10)).filter((x) => x > 0) });
+			continue;
+		}
 		atoms.push(classify(raw));
 	}
 	// a run of very short lines (table cells pasted as plain lines) is not a run of headings
@@ -79,6 +86,9 @@ export function parseNotes(input) {
 	let seenUnit = false;
 	let group = []; // consecutive plain lines, flushed as paragraphs or a list
 	let rows = [];
+	let tableLine = -1;
+	let tableMeta = null;
+	let pendingCols = null;
 	let items = [];
 	let lastHeading = '';
 
@@ -118,8 +128,9 @@ export function parseNotes(input) {
 		group = [];
 	};
 	const flushRows = () => {
-		if (rows.length) blocks.push({ t: 'table', rows });
+		if (rows.length) blocks.push({ t: 'table', rows, line: tableLine, marker: tableMeta ? tableMeta.line : -1, widths: tableMeta && tableMeta.widths.length ? tableMeta.widths : null });
 		rows = [];
+		tableMeta = null;
 	};
 	const flushItems = () => {
 		if (!items.length) return;
@@ -132,14 +143,24 @@ export function parseNotes(input) {
 		flushItems();
 	};
 
-	for (const a of atoms) {
+	for (let ai = 0; ai < atoms.length; ai++) {
+		const a = atoms[ai];
 		if (a.k === 'blank') {
 			flushAll();
+			continue;
+		}
+		if (a.k === 'cols') {
+			flushAll();
+			pendingCols = { line: ai, widths: a.widths };
 			continue;
 		}
 		if (a.k === 'row') {
 			flushGroup();
 			flushItems();
+			if (!rows.length) {
+				tableLine = ai;
+				tableMeta = pendingCols && pendingCols.line === ai - 1 ? pendingCols : null;
+			}
 			rows.push(a.cells);
 			continue;
 		}

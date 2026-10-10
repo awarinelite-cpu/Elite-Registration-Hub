@@ -41,6 +41,19 @@
 		loading = false;
 	});
 
+	// column widths dragged in the preview are stored as a {{cols: ...}} line right before the table's first row
+	function setWidths(b, widths) {
+		const lines = text.replace(/\r/g, '').split('\n');
+		if (!widths) {
+			if (b.marker >= 0) lines.splice(b.marker, 1);
+		} else {
+			const m = `{{cols: ${widths.join(', ')}}}`;
+			if (b.marker >= 0) lines[b.marker] = m;
+			else lines.splice(b.line, 0, m);
+		}
+		text = lines.join('\n');
+	}
+
 	async function save() {
 		error = '';
 		const t = (title.trim() || suggested).trim();
@@ -83,7 +96,7 @@
 			<textarea class="input font-mono" rows="18" bind:value={text} placeholder={'UNIT I: INTRODUCTION TO COMPUTERS\n1.1 Definition of a Computer\nA computer is an electronic device...\nKey characteristics of a computer\nSpeed - performs millions of instructions per second.'}></textarea>
 		{:else}
 			<div class="rounded-xl border border-slate-200 p-4">
-				{#if blocks.length}<NoteView {blocks} />{:else}<p class="text-sm text-slate-500">Nothing to preview yet.</p>{/if}
+				{#if blocks.length}<NoteView {blocks} editable onwidths={setWidths} />{:else}<p class="text-sm text-slate-500">Nothing to preview yet.</p>{/if}
 			</div>
 		{/if}
 		<div class="flex flex-wrap gap-2">
