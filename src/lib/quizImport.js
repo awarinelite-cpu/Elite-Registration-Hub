@@ -6,6 +6,8 @@ export const QUIZ_SAMPLE =
 
 /** Hands a file (or example) picked in the dashboard pop-up over to the quiz import page. */
 export const handoff = { text: '', fileTitle: '' };
+// a Word document chosen on the dashboard arrives in the note editor ready to preview
+export const noteHandoff = { text: '', fileTitle: '' };
 
 export function downloadQuizTemplate() {
 	downloadCsv('quiz-template.csv', [

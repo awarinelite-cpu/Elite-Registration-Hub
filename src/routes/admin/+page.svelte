@@ -5,7 +5,8 @@
 	import { firestore } from '$lib/firebase.js';
 	import { appSearchText, closedReason, studentName } from '$lib/forms.js';
 	import { loadForms, loadAllApplications, adminFetch } from '$lib/adminSession.svelte.js';
-	import { QUIZ_SAMPLE, handoff, downloadQuizTemplate, titleFromFile } from '$lib/quizImport.js';
+	import { QUIZ_SAMPLE, handoff, noteHandoff, downloadQuizTemplate, titleFromFile } from '$lib/quizImport.js';
+	import { docxToNoteText } from '$lib/docxImport.js';
 
 	// "Upload CSV file" pop-up: pick a quiz CSV (or the example), then continue to the quiz preview
 	let showCsv = $state(false);
@@ -24,6 +25,26 @@
 		handoff.text = 'Sample Quiz\n\n' + QUIZ_SAMPLE;
 		handoff.fileTitle = '';
 		goto('/admin/forms/import-quiz');
+	}
+
+	// "Upload Word file": read a .docx here, then open the note editor with it ready to preview
+	let docBusy = $state(false);
+	let docError = $state('');
+	async function onWordFile(e) {
+		const input = e.currentTarget;
+		const file = input.files?.[0];
+		input.value = '';
+		if (!file) return;
+		docError = '';
+		docBusy = true;
+		try {
+			noteHandoff.text = await docxToNoteText(file);
+			noteHandoff.fileTitle = titleFromFile(file.name);
+			await goto('/admin/notes/new');
+		} catch (err) {
+			docError = err.message || 'Could not read that Word document.';
+		}
+		docBusy = false;
 	}
 
 	let forms = $state([]);
@@ -112,7 +133,8 @@
 
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
 	<h1 class="text-2xl font-bold">Dashboard</h1>
-	<div class="flex flex-wrap gap-2"><button type="button" class="btn-3d-ghost" onclick={() => (showCsv = true)}>Upload CSV file</button><a href="/admin/forms/import" class="btn-3d-ghost">Paste to create</a><a href="/admin/forms/import-quiz" class="btn-3d-ghost">Paste quiz</a><a href="/admin/notes/new" class="btn-3d-ghost">Paste notes</a><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
+	<div class="flex flex-wrap gap-2"><button type="button" class="btn-3d-ghost" onclick={() => (showCsv = true)}>Upload CSV file</button><a href="/admin/forms/import" class="btn-3d-ghost">Paste to create</a><a href="/admin/forms/import-quiz" class="btn-3d-ghost">Paste quiz</a><a href="/admin/notes/new" class="btn-3d-ghost">Paste notes</a><label class="btn-3d-ghost cursor-pointer" class:opacity-60={docBusy}>{docBusy ? 'Reading…' : 'Upload Word file'}<input type="file" class="sr-only" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange={onWordFile} disabled={docBusy} /></label><a href="/admin/forms/new" class="btn-3d">+ Create new form</a></div>
+	{#if docError}<div class="mt-2 w-full rounded-lg bg-red-50 p-3 text-sm text-red-700">{docError}</div>{/if}
 </div>
 
 {#if loading}

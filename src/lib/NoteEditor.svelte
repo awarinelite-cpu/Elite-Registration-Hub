@@ -4,7 +4,7 @@
 	import { adminFetch } from '$lib/adminSession.svelte.js';
 	import { parseNotes, noteTitle } from '$lib/parseNotes.js';
 	import NoteView from '$lib/NoteView.svelte';
-	import { docxToNoteText } from '$lib/docxImport.js';
+	import { noteHandoff } from '$lib/quizImport.js';
 
 	let { id = null } = $props();
 	let title = $state('');
@@ -14,14 +14,22 @@
 	let busy = $state(false);
 	let loading = $state(!!id);
 	let error = $state('');
-	let reading = $state(false);
-	let fileName = $state('');
 
 	const blocks = $derived(parseNotes(text));
 	const suggested = $derived(noteTitle(text));
 
 	onMount(async () => {
-		if (!id) return;
+		if (!id) {
+			// a Word document chosen on the dashboard arrives ready to preview
+			if (noteHandoff.text) {
+				text = noteHandoff.text;
+				if (!noteTitle(text)) title = noteHandoff.fileTitle;
+				noteHandoff.text = '';
+				noteHandoff.fileTitle = '';
+				tab = 'preview';
+			}
+			return;
+		}
 		try {
 			const n = await adminFetch(`/api/admin/notes/${id}`);
 			title = n.title;
@@ -33,30 +41,10 @@
 		loading = false;
 	});
 
-	// Word document: read it in the browser and fill the note box (added below any text already there)
-	async function onFile(e) {
-		const input = e.currentTarget;
-		const file = input.files?.[0];
-		input.value = '';
-		if (!file) return;
-		error = '';
-		reading = true;
-		try {
-			const t = await docxToNoteText(file);
-			text = text.trim() ? `${text.replace(/\s+$/, '')}\n\n${t}` : t;
-			fileName = file.name;
-			if (!titleTouched && !noteTitle(text)) title = file.name.replace(/\.docx$/i, '');
-			tab = 'preview';
-		} catch (err) {
-			error = err.message || 'Could not read that Word document.';
-		}
-		reading = false;
-	}
-
 	async function save() {
 		error = '';
 		const t = (title.trim() || suggested).trim();
-		if (!text.trim()) return (error = 'Upload a Word document or paste your notes first.');
+		if (!text.trim()) return (error = 'Paste your notes first.');
 		if (!t) return (error = 'Give the note a title.');
 		busy = true;
 		try {
@@ -84,20 +72,13 @@
 			<label class="label" for="nt">Title</label>
 			<input class="input" id="nt" value={titleTouched ? title : title || suggested} oninput={(e) => { title = e.currentTarget.value; titleTouched = true; }} placeholder="Nursing Informatics (GNS 420)" />
 		</div>
-		<div class="flex flex-wrap items-center gap-2 rounded-[1.5rem] border border-teal-300 bg-teal-50 p-3">
-			<label class="btn-3d btn-3d-lg cursor-pointer !rounded-full" class:opacity-60={reading}>
-				{reading ? 'Reading document…' : '📄 Upload Word document (.docx)'}
-				<input type="file" class="sr-only" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange={onFile} disabled={reading} />
-			</label>
-			<span class="min-w-0 text-xs text-slate-600">{fileName ? `Loaded: ${fileName}. ` : ''}Headings, lists and tables are kept; pictures are skipped. You can edit the text before saving.</span>
-		</div>
 		<div class="flex gap-2">
 			<button type="button" class={tab === 'paste' ? 'btn !px-4 !py-2' : 'btn-ghost !px-4 !py-2'} onclick={() => (tab = 'paste')}>Paste</button>
 			<button type="button" class={tab === 'preview' ? 'btn !px-4 !py-2' : 'btn-ghost !px-4 !py-2'} onclick={() => (tab = 'preview')}>Notebook preview</button>
 		</div>
 		{#if tab === 'paste'}
 			<p class="text-xs text-slate-600">
-				Upload a Word document above, or paste the whole note. Headings, sub-headings, small headings and the “Term:” at the front of a line become bold and underlined; text is justified. Tables copied from Word keep their rows and columns.
+				Paste the whole note. Headings, sub-headings, small headings and the “Term:” at the front of a line become bold and underlined; text is justified. Tables copied from Word keep their rows and columns.
 			</p>
 			<textarea class="input font-mono" rows="18" bind:value={text} placeholder={'UNIT I: INTRODUCTION TO COMPUTERS\n1.1 Definition of a Computer\nA computer is an electronic device...\nKey characteristics of a computer\nSpeed - performs millions of instructions per second.'}></textarea>
 		{:else}
