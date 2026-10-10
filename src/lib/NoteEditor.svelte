@@ -5,6 +5,7 @@
 	import { parseNotes, noteTitle } from '$lib/parseNotes.js';
 	import NoteView from '$lib/NoteView.svelte';
 	import { noteHandoff } from '$lib/quizImport.js';
+	import { stamp } from '$lib/dateFmt.js';
 
 	let { id = null } = $props();
 	let title = $state('');
@@ -14,6 +15,7 @@
 	let busy = $state(false);
 	let loading = $state(!!id);
 	let error = $state('');
+	let dup = $state(null); // notes that look the same as this one, waiting for Accept / Reject
 
 	const blocks = $derived(parseNotes(text));
 	const suggested = $derived(noteTitle(text));
@@ -54,13 +56,29 @@
 		text = lines.join('\n');
 	}
 
-	async function save() {
+	// editing the title or text clears an earlier duplicate warning
+	$effect(() => {
+		text;
+		title;
+		dup = null;
+	});
+
+	async function save(force = false) {
 		error = '';
 		const t = (title.trim() || suggested).trim();
 		if (!text.trim()) return (error = 'Paste your notes first.');
 		if (!t) return (error = 'Give the note a title.');
 		busy = true;
 		try {
+			// a new note is checked against the ones already saved; the admin accepts or rejects a match
+			if (!id && !force) {
+				const r = await adminFetch('/api/admin/notes/check', { method: 'POST', body: JSON.stringify({ title: t, text }) });
+				if (r.matches.length) {
+					dup = r.matches;
+					busy = false;
+					return;
+				}
+			}
 			const res = await adminFetch(id ? `/api/admin/notes/${id}` : '/api/admin/notes', { method: id ? 'PUT' : 'POST', body: JSON.stringify({ title: t, text }) });
 			await goto(`/admin/notes/${id || res.id}`);
 		} catch (e) {
@@ -68,6 +86,8 @@
 		}
 		busy = false;
 	}
+
+	const why = (m) => (m.reason === 'identical' ? 'Identical content' : m.reason === 'near' ? `${m.percent}% the same content` : 'Same title');
 </script>
 
 <div class="mb-4 flex items-center justify-between gap-2">
@@ -99,8 +119,25 @@
 				{#if blocks.length}<NoteView {blocks} editable onwidths={setWidths} />{:else}<p class="text-sm text-slate-500">Nothing to preview yet.</p>{/if}
 			</div>
 		{/if}
+		{#if dup}
+			<div class="space-y-3 rounded-[1.5rem] border border-amber-300 bg-amber-50 p-4 text-amber-900">
+				<div class="font-semibold">⚠ This looks like a note you already uploaded</div>
+				<ul class="space-y-2 text-sm">
+					{#each dup as m (m.id)}
+						<li class="flex flex-wrap items-center justify-between gap-2 rounded-full bg-white/70 px-4 py-2">
+							<span class="min-w-0"><span class="font-semibold">{m.title}</span> · {why(m)} · uploaded {stamp(m.createdAt)}</span>
+							<a class="underline" href="/admin/notes/{m.id}" target="_blank" rel="noopener">View</a>
+						</li>
+					{/each}
+				</ul>
+				<div class="flex flex-wrap gap-2">
+					<button type="button" class="btn-3d btn-3d-lg !rounded-full" onclick={() => save(true)} disabled={busy}>{busy ? 'Saving…' : 'Accept – save anyway'}</button>
+					<button type="button" class="btn-3d-ghost btn-3d-lg !rounded-full" onclick={() => goto('/admin/notes')} disabled={busy}>Reject – don't save</button>
+				</div>
+			</div>
+		{/if}
 		<div class="flex flex-wrap gap-2">
-			<button class="btn" onclick={save} disabled={busy || !text.trim()}>{busy ? 'Saving…' : id ? 'Save changes' : 'Save to notebook'}</button>
+			<button class="btn" onclick={() => save()} disabled={busy || !text.trim()}>{busy ? 'Saving…' : id ? 'Save changes' : 'Save to notebook'}</button>
 			<span class="self-center text-xs text-slate-500">{text.length.toLocaleString()} characters · {blocks.length} blocks</span>
 		</div>
 	</div>
