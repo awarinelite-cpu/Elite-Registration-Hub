@@ -5,6 +5,7 @@
 	import { adminFetch } from '$lib/adminSession.svelte.js';
 	import { parseNotes } from '$lib/parseNotes.js';
 	import NoteView from '$lib/NoteView.svelte';
+	import NoteReader from '$lib/NoteReader.svelte';
 	import { stamp } from '$lib/dateFmt.js';
 
 	let note = $state(null);
@@ -85,6 +86,7 @@
 		</div>
 	{/if}
 	<p class="mb-2 text-sm font-medium text-slate-600 print:hidden">Uploaded: {stamp(note.createdAt)}{#if note.updatedAt && note.updatedAt - note.createdAt > 60000} · Last edited: {stamp(note.updatedAt)}{/if}</p>
+	<div class="mb-3"><NoteReader /></div>
 	<div class="card card-pill note-pill">
 		<NoteView {blocks} />
 	</div>
