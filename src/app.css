@@ -248,120 +248,95 @@ html.dark .card-pill.app-done { border-color: #2f7a57; background: linear-gradie
 }
 
 /* ======================================================================
-   BUBBLE-GLASS THEME — glossy glass rim, soft inner glow, rounded "bubble" buttons & cards
-   (unlayered on purpose so it overrides the component styles above; delete this block to go back)
+   GLASS-BUBBLE ICON THEME — solid "felt" centre sealed under a clear glass shell:
+   thick transparent rim + glossy clear coat on top (like the glass app icons).
+   Unlayered on purpose so it overrides the component styles above; delete this block to go back.
+   No backdrop-filter (it blacks out some Android phones).
    ====================================================================== */
 :root {
-	--glass-rim: rgba(134, 208, 178, .85);
-	--glass-rim-dark: rgba(52, 140, 112, .55);
-	--glass-shadow: 0 10px 18px -8px rgba(18, 88, 68, .38);
+	--rim: linear-gradient(145deg, rgba(255,255,255,.95) 0%, rgba(176,228,207,.7) 32%, rgba(112,192,162,.65) 66%, rgba(238,251,245,.95) 100%);
+	--glass-drop: 0 9px 14px -6px rgba(18,88,68,.42);
+	--fa: #fbf8ef; --fb: #ece6d3;
+}
+html.dark {
+	--rim: linear-gradient(145deg, rgba(255,255,255,.45) 0%, rgba(120,200,170,.5) 35%, rgba(70,140,115,.55) 68%, rgba(210,240,228,.5) 100%);
+	--glass-drop: 0 9px 14px -6px rgba(0,0,0,.75);
 }
 
-/* shared glass shell for every button style */
-.btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost {
-	position: relative; overflow: hidden;
-	border: 2px solid var(--glass-rim); border-bottom-width: 2px;
-	border-radius: 9999px;
+/* ---- shared glass shell: transparent rim around a solid centre ---- */
+.btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost, .card {
+	position: relative;
+	border: 3px solid transparent; border-radius: 1.15rem;
+	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
+	box-shadow:
+		inset 0 0 7px 1px rgba(255,255,255,.55),   /* glow where the glass meets the centre */
+		inset 0 -3px 5px rgba(0,0,0,.12),            /* depth of the centre */
+		var(--glass-drop);
 	transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
-/* ghost = cream/white glass bubble */
-.btn-ghost, .btn-3d-ghost {
-	color: #1f4d3f;
-	background-image:
-		radial-gradient(ellipse 70% 55% at 30% 8%, rgba(255,255,255,.95), rgba(255,255,255,0) 70%),
-		linear-gradient(to bottom, rgba(255,255,255,.92), rgba(226,246,237,.82));
-	box-shadow:
-		inset 0 2px 3px rgba(255,255,255,.95),
-		inset 0 -5px 8px rgba(60,150,120,.18),
-		inset 0 0 0 1px rgba(255,255,255,.55),
-		var(--glass-shadow);
+/* clear-coat gloss over the whole bubble */
+.btn::before, .btn-ghost::before, .btn-danger::before, .btn-3d::before, .btn-3d-ghost::before, .card::before {
+	content: ''; position: absolute; pointer-events: none;
+	top: 2px; left: 3px; right: 3px; height: 44%;
+	border-radius: 1rem 1rem 55% 55% / 1rem 1rem 1.1rem 1.1rem;
+	background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.06));
 }
-/* primary = green glass bubble */
-.btn, .btn-3d {
-	color: #fff; text-shadow: 0 1px 1px rgba(10,60,45,.45);
-	border-color: rgba(190, 240, 215, .9);
-	background-color: #3f9b78;
-	background-image:
-		radial-gradient(ellipse 70% 45% at 30% 6%, rgba(255,255,255,.75), rgba(255,255,255,0) 72%),
-		linear-gradient(to bottom, rgba(255,255,255,.28) 0%, rgba(255,255,255,.06) 50%, rgba(0,40,30,.14) 100%);
-	box-shadow:
-		inset 0 2px 3px rgba(255,255,255,.7),
-		inset 0 -6px 10px rgba(0,60,45,.28),
-		inset 0 0 0 1px rgba(255,255,255,.25),
-		var(--glass-shadow);
+/* little reflected-light dash at the bottom corner */
+.btn::after, .btn-ghost::after, .btn-danger::after, .btn-3d::after, .btn-3d-ghost::after {
+	content: ''; position: absolute; pointer-events: none;
+	right: 7px; bottom: 2px; width: 22%; height: 3px; border-radius: 9999px; background: rgba(255,255,255,.55);
 }
-/* danger = rose glass bubble */
-.btn-danger {
-	color: #b4233f; border-color: rgba(244, 170, 186, .9);
-	background-image:
-		radial-gradient(ellipse 70% 55% at 30% 8%, rgba(255,255,255,.95), rgba(255,255,255,0) 70%),
-		linear-gradient(to bottom, rgba(255,255,255,.92), rgba(255,226,232,.85));
-	box-shadow: inset 0 2px 3px rgba(255,255,255,.95), inset 0 -5px 8px rgba(200,60,90,.16), var(--glass-shadow);
+
+/* ---- colours of the centre (the "icon" under the glass) ---- */
+.btn, .btn-3d { --fa: #62b087; --fb: #3f8c66; color: #fff; text-shadow: 0 1px 1px rgba(10,60,45,.5); }
+.btn-ghost, .btn-3d-ghost { --fa: #fdfaf2; --fb: #ebe5d2; color: #2c5a45; }
+.btn-danger { --fa: #f8c8d0; --fb: #ee9fae; color: #8f1f3a; }
+
+/* ---- cards ---- */
+.card { border-width: 5px; border-radius: 1.75rem; --fa: #fefcf6; --fb: #f2eddd; }
+.card::before { top: 3px; left: 5px; right: 5px; height: 18%; border-radius: 1.4rem 1.4rem 55% 55% / 1.4rem 1.4rem 1rem 1rem; }
+.card > * { position: relative; z-index: 1; }
+.card-pill, .card.card-pill { border-width: 5px; border-color: transparent; border-radius: 2rem; }
+.card-pill.card-tall, .card-pill.note-pill { border-radius: 2.5rem; }
+.card-pill.app-done { --fa: #f3fbf6; --fb: #cdebd9; border-color: transparent;
+	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box; }
+/* coloured dashboard cards: solid colour centre under the same glass */
+.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
+	border: 5px solid transparent; border-radius: 2rem; color: #fff;
+	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
 }
+.card-blue { --fa: #3b74ee; --fb: #1f4fc0; }
+.card-violet { --fa: #8b5cf0; --fb: #6330c8; }
+.card-green { --fa: #2fb760; --fb: #17803f; }
+.card-amber { --fa: #e8891c; --fb: #b45f0c; }
+.card-rose { --fa: #ee3a64; --fb: #bb1840; }
+.card-teal { --fa: #17a699; --fb: #0e7a70; }
+
+/* ---- hover / press ---- */
 @media (hover: hover) {
-	.btn:hover, .btn-3d:hover { filter: brightness(1.07); transform: translateY(-1px); background-color: #3f9b78; }
-	.btn-ghost:hover, .btn-3d-ghost:hover, .btn-danger:hover { transform: translateY(-1px); background-color: transparent; }
+	.btn:hover, .btn-3d:hover { filter: brightness(1.08); transform: translateY(-1px); }
+	.btn-ghost:hover, .btn-3d-ghost:hover, .btn-danger:hover { filter: brightness(1.03); transform: translateY(-1px); }
+	.card:hover { transform: translateY(-3px); }
 }
 .btn:active, .btn-ghost:active, .btn-danger:active, .btn-3d:active, .btn-3d-ghost:active {
-	transform: translateY(1px) scale(.98); border-bottom-width: 2px;
-	box-shadow: inset 0 3px 6px rgba(0,60,45,.28), 0 2px 4px -2px rgba(18,88,68,.35);
+	transform: translateY(1px) scale(.98);
+	border-bottom-width: 3px;
 }
 
-/* plain cards = frosted glass tiles with a mint rim */
-.card {
-	border: 2px solid var(--glass-rim); border-bottom: 2px solid var(--glass-rim); border-radius: 1.5rem;
-	background-image:
-		radial-gradient(ellipse 65% 40% at 22% 0%, rgba(255,255,255,.9), rgba(255,255,255,0) 70%),
-		linear-gradient(to bottom, rgba(255,255,255,.96), rgba(238,250,244,.9));
-	box-shadow:
-		inset 0 2px 3px rgba(255,255,255,.95),
-		inset 0 -8px 14px rgba(60,150,120,.14),
-		inset 0 0 0 1px rgba(255,255,255,.55),
-		0 14px 22px -12px rgba(18,88,68,.4);
+/* ---- dark mode: same bubble, darker centre ---- */
+html.dark .btn, html.dark .btn-3d { --fa: #3f9a70; --fb: #276f4d; }
+html.dark .btn-ghost, html.dark .btn-3d-ghost { --fa: #3b4c46; --fb: #26342f; color: #d6f5e8; }
+html.dark .btn-danger { --fa: #7a3040; --fb: #55202d; color: #fda4b4; }
+html.dark .card, html.dark .card-pill { --fa: #2e3f39; --fb: #1e2b27; }
+html.dark .card-pill.app-done { --fa: #3d6b57; --fb: #1c372c; }
+html.dark .btn, html.dark .btn-ghost, html.dark .btn-danger, html.dark .btn-3d, html.dark .btn-3d-ghost,
+html.dark .card, html.dark .card-pill, html.dark .card-pill.app-done {
+	border-color: transparent;
+	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
+	box-shadow: inset 0 0 7px 1px rgba(255,255,255,.18), inset 0 -3px 5px rgba(0,0,0,.35), var(--glass-drop);
 }
-@media (hover: hover) {
-	.card:hover { transform: translateY(-3px); box-shadow: inset 0 2px 3px rgba(255,255,255,.95), inset 0 -8px 14px rgba(60,150,120,.14), inset 0 0 0 1px rgba(255,255,255,.55), 0 18px 26px -12px rgba(18,88,68,.45); }
-}
-/* capsule dashboard cards: same glass, bubble gloss band on top */
-.card-pill, .card.card-pill {
-	border: 2px solid var(--glass-rim); border-bottom: 2px solid var(--glass-rim);
-	background: linear-gradient(to bottom, rgba(255,255,255,.97) 0%, rgba(240,251,246,.92) 45%, rgba(214,241,228,.9) 100%);
-	box-shadow:
-		inset 0 3px 4px rgba(255,255,255,.95),
-		inset 0 -12px 18px rgba(60,150,120,.2),
-		inset 0 0 0 1px rgba(255,255,255,.55),
-		0 14px 20px -10px rgba(18,88,68,.45);
-}
-.card-pill::before { background: linear-gradient(to bottom, rgba(255,255,255,.95), rgba(255,255,255,.1)); }
-/* solid-color capsules become tinted glass bubbles */
-.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
-	border: 2px solid rgba(255,255,255,.6); border-bottom: 2px solid rgba(255,255,255,.35);
-	box-shadow:
-		inset 0 3px 4px rgba(255,255,255,.7),
-		inset 0 -10px 16px rgba(0,0,0,.18),
-		inset 0 0 0 1px rgba(255,255,255,.25),
-		0 12px 18px -8px rgba(15,23,42,.45);
-}
-
-/* dark mode: smoky glass */
-html.dark .btn-ghost, html.dark .btn-3d-ghost {
-	color: #d6f5e8; border-color: rgba(110,190,160,.55);
-	background-image:
-		radial-gradient(ellipse 70% 55% at 30% 8%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%),
-		linear-gradient(to bottom, rgba(51,85,75,.9), rgba(24,48,42,.9));
-	box-shadow: inset 0 2px 3px rgba(255,255,255,.2), inset 0 -5px 8px rgba(0,0,0,.35), 0 10px 18px -8px rgba(0,0,0,.7);
-}
-html.dark .btn-danger { color: #fda4b4; border-color: rgba(220,100,125,.55); background-image: linear-gradient(to bottom, rgba(80,30,40,.9), rgba(45,18,26,.9)); }
-html.dark .card {
-	border-color: rgba(110,190,160,.45); border-bottom-color: rgba(110,190,160,.45);
-	background-image:
-		radial-gradient(ellipse 65% 40% at 22% 0%, rgba(255,255,255,.14), rgba(255,255,255,0) 70%),
-		linear-gradient(to bottom, rgba(36,60,54,.95), rgba(20,38,34,.95));
-	box-shadow: inset 0 2px 3px rgba(255,255,255,.14), inset 0 -8px 14px rgba(0,0,0,.35), 0 14px 22px -12px rgba(0,0,0,.75);
-}
-html.dark .card-pill, html.dark .card.card-pill {
-	border-color: rgba(110,190,160,.45);
-	background: linear-gradient(to bottom, rgba(62,98,88,.95) 0%, rgba(36,62,55,.95) 50%, rgba(20,38,34,.95) 100%);
-	box-shadow: inset 0 3px 4px rgba(255,255,255,.2), inset 0 -12px 18px rgba(0,0,0,.4), 0 14px 20px -10px rgba(0,0,0,.75);
+html.dark .card-blue, html.dark .card-violet, html.dark .card-green, html.dark .card-amber, html.dark .card-rose, html.dark .card-teal {
+	border-color: transparent;
+	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
 }
 @media (prefers-reduced-motion: reduce) { .btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost, .card { transition: none; } }
