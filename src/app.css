@@ -254,12 +254,12 @@ html.dark .card-pill.app-done { border-color: #2f7a57; background: linear-gradie
    No backdrop-filter (it blacks out some Android phones).
    ====================================================================== */
 :root {
-	--rim: linear-gradient(145deg, rgba(255,255,255,.95) 0%, rgba(176,228,207,.7) 32%, rgba(112,192,162,.65) 66%, rgba(238,251,245,.95) 100%);
-	--glass-drop: 0 9px 14px -6px rgba(18,88,68,.42);
-	--fa: #fbf8ef; --fb: #ece6d3;
+	--rim: linear-gradient(145deg, rgba(255,255,255,.95) 0%, rgba(190,232,228,.75) 32%, rgba(120,190,186,.65) 66%, rgba(238,251,245,.95) 100%);
+	--glass-drop: 0 9px 14px -6px rgba(15,60,70,.4);
+	--fa: #ffffff; --fb: #e2e8f0;
 }
 html.dark {
-	--rim: linear-gradient(145deg, rgba(255,255,255,.45) 0%, rgba(120,200,170,.5) 35%, rgba(70,140,115,.55) 68%, rgba(210,240,228,.5) 100%);
+	--rim: linear-gradient(145deg, rgba(255,255,255,.45) 0%, rgba(120,200,195,.5) 35%, rgba(70,140,135,.55) 68%, rgba(210,240,238,.5) 100%);
 	--glass-drop: 0 9px 14px -6px rgba(0,0,0,.75);
 }
 
@@ -288,17 +288,17 @@ html.dark {
 }
 
 /* ---- colours of the centre (the "icon" under the glass) ---- */
-.btn, .btn-3d { --fa: #62b087; --fb: #3f8c66; color: #fff; text-shadow: 0 1px 1px rgba(10,60,45,.5); }
-.btn-ghost, .btn-3d-ghost { --fa: #fdfaf2; --fb: #ebe5d2; color: #2c5a45; }
-.btn-danger { --fa: #f8c8d0; --fb: #ee9fae; color: #8f1f3a; }
+.btn, .btn-3d { --fa: #14b8a6; --fb: #0f766e; color: #fff; text-shadow: 0 1px 1px rgba(4,47,46,.55); }
+.btn-ghost, .btn-3d-ghost { --fa: #ffffff; --fb: #e2e8f0; color: #334155; }
+.btn-danger { --fa: #ffffff; --fb: #fde8ea; color: #dc2626; }
 
 /* ---- cards ---- */
-.card { border-width: 5px; border-radius: 1.75rem; --fa: #fefcf6; --fb: #f2eddd; }
+.card { border-width: 5px; border-radius: 1.75rem; --fa: #ffffff; --fb: #f1f5f9; }
 .card::before { top: 3px; left: 5px; right: 5px; height: 18%; border-radius: 1.4rem 1.4rem 55% 55% / 1.4rem 1.4rem 1rem 1rem; }
 .card > * { position: relative; z-index: 1; }
 .card-pill, .card.card-pill { border-width: 5px; border-color: transparent; border-radius: 2rem; }
 .card-pill.card-tall, .card-pill.note-pill { border-radius: 2.5rem; }
-.card-pill.app-done { --fa: #f3fbf6; --fb: #cdebd9; border-color: transparent;
+.card-pill.app-done { --fa: #f0faf4; --fb: #b7dfc8; border-color: transparent;
 	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box; }
 /* coloured dashboard cards: solid colour centre under the same glass */
 .card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
@@ -324,10 +324,10 @@ html.dark {
 }
 
 /* ---- dark mode: same bubble, darker centre ---- */
-html.dark .btn, html.dark .btn-3d { --fa: #3f9a70; --fb: #276f4d; }
-html.dark .btn-ghost, html.dark .btn-3d-ghost { --fa: #3b4c46; --fb: #26342f; color: #d6f5e8; }
-html.dark .btn-danger { --fa: #7a3040; --fb: #55202d; color: #fda4b4; }
-html.dark .card, html.dark .card-pill { --fa: #2e3f39; --fb: #1e2b27; }
+html.dark .btn, html.dark .btn-3d { --fa: #14a395; --fb: #0f766e; }
+html.dark .btn-ghost, html.dark .btn-3d-ghost { --fa: #334155; --fb: #1e293b; color: #e2e8f0; }
+html.dark .btn-danger { --fa: #3b1d27; --fb: #2a1219; color: #fda4b4; }
+html.dark .card, html.dark .card-pill { --fa: #273449; --fb: #1e293b; }
 html.dark .card-pill.app-done { --fa: #3d6b57; --fb: #1c372c; }
 html.dark .btn, html.dark .btn-ghost, html.dark .btn-danger, html.dark .btn-3d, html.dark .btn-3d-ghost,
 html.dark .card, html.dark .card-pill, html.dark .card-pill.app-done {
