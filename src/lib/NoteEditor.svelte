@@ -105,9 +105,10 @@
 			<label class="label" for="nt">Title</label>
 			<input class="input" id="nt" value={titleTouched ? title : title || suggested} oninput={(e) => { title = e.currentTarget.value; titleTouched = true; }} placeholder="Nursing Informatics (GNS 420)" />
 		</div>
-		<div class="flex gap-2">
+		<div class="flex flex-wrap items-center gap-2">
 			<button type="button" class={tab === 'paste' ? 'btn !px-4 !py-2' : 'btn-ghost !px-4 !py-2'} onclick={() => (tab = 'paste')}>Paste</button>
 			<button type="button" class={tab === 'preview' ? 'btn !px-4 !py-2' : 'btn-ghost !px-4 !py-2'} onclick={() => (tab = 'preview')}>Notebook preview</button>
+			<button type="button" class="btn-3d !px-4 !py-2" onclick={() => save()} disabled={busy || !text.trim()}>{busy ? 'Saving…' : id ? 'Save changes' : 'Save'}</button>
 		</div>
 		{#if tab === 'paste'}
 			<p class="text-xs text-slate-600">
