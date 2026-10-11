@@ -94,9 +94,19 @@ function fieldFromColonLine(line, section) {
  *                                         1. Passport           (numbered lines after an upload heading = file uploads)
  */
 export function parseFormText(text) {
-	const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+	let lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 	const numbered = /^\(?\d+[.)\]]\s*(.+)$/;
 	const bullet = /^[-•*]\s+(.+)$/;
+
+	// A filled-in sample can be pasted more than once (or the same form for several people):
+	// when the first field's label shows up again, everything from there on is a repeat, so drop it.
+	const labelKey = (l) => (l.match(numbered)?.[1] ?? l).split(':')[0].toLowerCase().replace(/[^a-z]/g, '');
+	const firstLabelAt = lines.findIndex((l) => /:\s*\S/.test(l) && labelKey(l));
+	if (firstLabelAt >= 0) {
+		const key = labelKey(lines[firstLabelAt]);
+		const again = lines.findIndex((l, i) => i > firstLabelAt && l.includes(':') && labelKey(l) === key);
+		if (again > 0) lines = lines.slice(0, again);
+	}
 	const isItem = (l) => numbered.test(l) || bullet.test(l);
 
 	// upload headings: a heading word, no value after a colon, and a list of items right after it
@@ -147,9 +157,16 @@ export function parseFormText(text) {
 			}
 			if (inResult) return;
 		}
+		// numbered list whose first line lost its "1." (e.g. "Surname Name: Adebayo" then "2. Other Name(s): ..."):
+		// that line is the first field, not the form title
+		const firstFieldWithoutNumber =
+			mode === 'fields' && numberedFields && !title && !fields.length && /^[^:]+:/.test(line) && lines[i + 1] && numbered.test(lines[i + 1]);
 		// un-numbered line: heading / title / "Label:" style field
 		if (markers.has(i)) {
 			mode = 'upload';
+		} else if (firstFieldWithoutNumber) {
+			const f = fieldFromColonLine(line, section);
+			if (f) fields.push(f);
 		} else if (!title && !hasNumbers && !line.endsWith(':') && !(!numberedFields && line.includes(':'))) {
 			title = line;
 		} else if (!title && hasNumbers && !fields.length && !(!numberedFields && line.includes(':'))) {
