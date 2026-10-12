@@ -48,7 +48,9 @@
 			if (statusFilter !== 'all' && a.status !== statusFilter) return false;
 			if (!q) return true;
 			return a.applicationNumber.toLowerCase().includes(q) || form.fields.some((f) => String(display(f, a)).toLowerCase().includes(q));
-		});
+		})
+			// applications marked "done" sink below the rest (the sort is stable, so each group keeps its newest-first order)
+			.sort((x, y) => (x.status === 'done') - (y.status === 'done'));
 	});
 
 	async function setStatus(a, status) {
