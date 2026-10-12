@@ -340,3 +340,42 @@ html.dark .card-blue, html.dark .card-violet, html.dark .card-green, html.dark .
 	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
 }
 @media (prefers-reduced-motion: reduce) { .btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost, .card { transition: none; } }
+
+/* ======================================================================
+   VISIBILITY BOOST — stronger rims, shadows and contrast so buttons, cards and text stand out
+   ====================================================================== */
+:root {
+	--rim: linear-gradient(145deg, #f4fffd 0%, #6cc9bf 28%, #1f8f86 64%, #9fdcd5 100%);
+	--glass-drop: 0 10px 16px -6px rgba(8,50,60,.6);
+	--ring: 0 0 0 1px rgba(13,101,95,.7);                 /* thin dark outline around the glass edge */
+}
+html.dark {
+	--rim: linear-gradient(145deg, rgba(255,255,255,.85) 0%, rgba(120,215,205,.8) 30%, rgba(60,160,150,.8) 66%, rgba(200,245,240,.8) 100%);
+	--glass-drop: 0 10px 16px -6px rgba(0,0,0,.9);
+	--ring: 0 0 0 1px rgba(150,230,220,.55);
+}
+.btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost, .card {
+	box-shadow: inset 0 0 7px 1px rgba(255,255,255,.6), inset 0 -3px 5px rgba(0,0,0,.18), var(--ring), var(--glass-drop);
+}
+html.dark .btn, html.dark .btn-ghost, html.dark .btn-danger, html.dark .btn-3d, html.dark .btn-3d-ghost,
+html.dark .card, html.dark .card-pill, html.dark .card-pill.app-done {
+	box-shadow: inset 0 0 7px 1px rgba(255,255,255,.22), inset 0 -3px 5px rgba(0,0,0,.4), var(--ring), var(--glass-drop);
+}
+.btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost { border-width: 4px; font-weight: 700; }
+
+/* light mode: centres that separate from the white page */
+.btn-ghost, .btn-3d-ghost { --fa: #f1f5f9; --fb: #c5d0de; color: #0f172a; }
+.btn-danger { --fa: #fff1f2; --fb: #fbc4cb; color: #b91c1c; }
+.card, .card-pill { --fa: #ffffff; --fb: #e3eaf3; }
+.card-pill.app-done { --fa: #eafaf1; --fb: #a9dcc0; }
+/* light mode: darker secondary text and clearer input borders */
+:where(html:not(.dark)) .text-slate-500 { color: #475569; }
+:where(html:not(.dark)) .text-slate-400 { color: #64748b; }
+html:not(.dark) .input { border-color: #94a3b8; }
+
+/* dark mode: lighter centres so cards and buttons stand out from the near-black page */
+html.dark .btn-ghost, html.dark .btn-3d-ghost { --fa: #475a75; --fb: #2e3d56; color: #f8fafc; }
+html.dark .btn-danger { --fa: #8a3446; --fb: #5e2231; color: #ffe4e8; }
+html.dark .card, html.dark .card-pill { --fa: #34465f; --fb: #243349; }
+html.dark .card-pill.app-done { --fa: #3f7a60; --fb: #214536; }
+html.dark .input { border-color: #64748b; }
