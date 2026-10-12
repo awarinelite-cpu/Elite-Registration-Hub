@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { collection, deleteDoc, doc, getDocs, query, updateDoc, where, writeBatch } from 'firebase/firestore';
+	import { collection, deleteDoc, doc, getCountFromServer, getDocs, query, updateDoc, where, writeBatch } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { closedReason } from '$lib/forms.js';
 	import { loadForms, session } from '$lib/adminSession.svelte.js';
@@ -26,9 +26,31 @@
 		return forms.filter((f) => kindOf(f) === kind && (!q || (f.title || '').toLowerCase().includes(q) || String(f.id).toLowerCase().includes(q)));
 	});
 
+	// per registration form: how many applications are marked "done" (attended to) out of the total
+	let stats = $state({});
+	async function loadStats(list) {
+		const apps = collection(firestore, 'applications');
+		await Promise.all(
+			list
+				.filter((f) => kindOf(f) === 'registration' && (f.counter || 0) > 0)
+				.map(async (f) => {
+					try {
+						const [all, done] = await Promise.all([
+							getCountFromServer(query(apps, where('formId', '==', f.id))),
+							getCountFromServer(query(apps, where('formId', '==', f.id), where('status', '==', 'done')))
+						]);
+						stats[f.id] = { total: all.data().count, done: done.data().count };
+					} catch {
+						/* keep showing the plain total */
+					}
+				})
+		);
+	}
+
 	onMount(async () => {
 		forms = await loadForms();
 		loading = false;
+		loadStats(forms);
 	});
 
 	async function copyLink(id) {
@@ -98,8 +120,14 @@
 					{#if f.prefix}<div class="form-code">{f.prefix}</div>{/if}
 					{#if f.createdAt}<div class="form-meta text-xs">Uploaded: {stamp(f.createdAt)}</div>{/if}
 					<div class="form-meta text-sm">
-						{(f.counter || 0).toLocaleString()} applications ·
-						<span class={label(f) === 'Active' ? 'form-active' : ''}>{label(f)}</span>
+						{#if stats[f.id]}
+							{stats[f.id].total.toLocaleString()} applications · {stats[f.id].done.toLocaleString()} done ·
+							<span class="form-active">{(stats[f.id].total - stats[f.id].done).toLocaleString()} active</span>
+							{#if label(f) !== 'Active'}· {label(f)}{/if}
+						{:else}
+							{(f.counter || 0).toLocaleString()} applications ·
+							<span class={label(f) === 'Active' ? 'form-active' : ''}>{label(f)}</span>
+						{/if}
 					</div>
 					</div>
 					<div class="flex shrink-0 flex-col items-center gap-1">
