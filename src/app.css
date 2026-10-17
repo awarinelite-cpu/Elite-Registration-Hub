@@ -379,3 +379,19 @@ html.dark .btn-danger { --fa: #8a3446; --fb: #5e2231; color: #ffe4e8; }
 html.dark .card, html.dark .card-pill { --fa: #34465f; --fb: #243349; }
 html.dark .card-pill.app-done { --fa: #3f7a60; --fb: #214536; }
 html.dark .input { border-color: #64748b; }
+
+/* Note view: use the full width of the phone screen (edge to edge) so the note has a wider reading area */
+.card-pill.note-pill { padding: 1.25rem 1.1rem 1.5rem; }
+@media (max-width: 639px) {
+	.card-pill.note-pill {
+		border-left-width: 0; border-right-width: 0; border-radius: 0;
+		padding: 1.1rem 0.75rem 1.4rem;
+	}
+	.card-pill.note-pill::before { left: 0; right: 0; border-radius: 0; }
+	.card-pill.note-pill.bleed-4 { margin-left: -1rem; margin-right: -1rem; }
+	.card-pill.note-pill.bleed-3 { margin-left: -0.75rem; margin-right: -0.75rem; }
+}
+@media (min-width: 640px) { .card-pill.note-pill { padding: 1.75rem 1.5rem 2rem; } }
+@media print {
+	.card-pill.note-pill, .card-pill.note-pill.bleed-4, .card-pill.note-pill.bleed-3 { margin: 0; padding: 0; border: 0; }
+}

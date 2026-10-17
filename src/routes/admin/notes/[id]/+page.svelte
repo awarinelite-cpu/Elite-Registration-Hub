@@ -87,7 +87,7 @@
 	{/if}
 	<p class="mb-2 text-sm font-medium text-slate-600 print:hidden">Uploaded: {stamp(note.createdAt)}{#if note.updatedAt && note.updatedAt - note.createdAt > 60000} · Last edited: {stamp(note.updatedAt)}{/if}</p>
 	<div class="mb-3"><NoteReader /></div>
-	<div class="card card-pill note-pill">
+	<div class="card card-pill note-pill bleed-4">
 		<NoteView {blocks} />
 	</div>
 {/if}

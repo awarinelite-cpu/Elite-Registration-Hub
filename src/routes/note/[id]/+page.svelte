@@ -17,7 +17,7 @@
 		<button class="btn-ghost shrink-0" onclick={() => window.print()}>Print</button>
 	</div>
 	<div class="mb-3"><NoteReader /></div>
-	<div class="card card-pill note-pill">
+	<div class="card card-pill note-pill bleed-3">
 		<NoteView {blocks} />
 	</div>
 </main>
