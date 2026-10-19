@@ -94,7 +94,7 @@ function fieldFromColonLine(line, section) {
  *                                         1. Passport           (numbered lines after an upload heading = file uploads)
  */
 export function parseFormText(text) {
-	let lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+	let lines = text.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 	const numbered = /^\(?\d+[.)\]]\s*(.+)$/;
 	const bullet = /^[-•*]\s+(.+)$/;
 
@@ -133,6 +133,14 @@ export function parseFormText(text) {
 		if (m) {
 			const { label, required } = cleanLabel(m[1]);
 			if (!label) return;
+			if (mode === 'fields' && !m[1].includes(':') && (RESULT_LOOSE.test(label) || /scratch\s*card/i.test(label))) {
+				if (!examAdded) {
+					examAdded = true;
+					fields.push({ id: SSCE_FIELD_ID, type: 'ssceexams', label: 'SSCE EXAM NUMBER', required: true, placeholder: '' });
+					fields.push({ id: SCRATCH_FIELD_ID, type: 'scratchcards', label: 'SCRATCH CARD INFO', required: true, placeholder: '' });
+				}
+				return;
+			}
 			if (mode === 'upload') {
 				softcopy.push(label.toUpperCase());
 				fields.push({ id: newFieldId(), type: /passport|photo/i.test(label) ? 'photo' : 'file', label: /passport/i.test(label) && !/photo/i.test(label) ? 'Passport photograph' : label, required, placeholder: '' });
@@ -187,6 +195,14 @@ export function parseFormText(text) {
 			fields.push({ id: newFieldId(), type: inferType(label), label, required, placeholder: '' });
 		}
 	});
+
+	// repeated labels (e.g. two "Town" lines) get a number so each stays its own field
+	const seen = {};
+	for (const f of fields) {
+		const k = String(f.label).toLowerCase();
+		seen[k] = (seen[k] || 0) + 1;
+		if (seen[k] > 1) f.label = `${f.label} (${seen[k]})`;
+	}
 
 	// the grouped exam fields replace any loose "Examination number" box from the list
 	if (examAdded) {
