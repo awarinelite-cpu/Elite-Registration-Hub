@@ -12,7 +12,8 @@ export function parsePasted(text) {
 		const line = raw.replace(/\u00a0/g, ' ').trim();
 		if (!line) continue;
 		const i = line.indexOf(':');
-		const key = (i === -1 ? line : line.slice(0, i)).trim();
+		// drop list numbering such as "5. Sex" / "12) Town" so labels match the form's field names
+		const key = (i === -1 ? line : line.slice(0, i)).replace(/^\(?\d+[.)\]]\s*/, '').trim();
 		const value = i === -1 ? '' : line.slice(i + 1).trim();
 		if (!value) {
 			// header line, e.g. "WAEC SCRATCH CARD"
@@ -184,9 +185,10 @@ export function matchToFields(fields, text) {
 
 	for (const e of entries) {
 		const key = canon(e.label);
+		// exact label first (so "Home address" doesn't land on "Residential address"), then keyword match
 		let field =
-			(key && fields.find((f) => !used.has(f.id) && canon(f.label) === key)) ||
 			fields.find((f) => !used.has(f.id) && norm(f.label) === norm(e.label)) ||
+			(key && fields.find((f) => !used.has(f.id) && canon(f.label) === key)) ||
 			null;
 		if (!field) {
 			unmatched.push(e.label);
@@ -238,7 +240,8 @@ export function extractScratch(text) {
 		const line = raw.replace(/\u00a0/g, ' ').trim();
 		if (!line) continue;
 		const i = line.indexOf(':');
-		const key = (i === -1 ? line : line.slice(0, i)).trim();
+		// drop list numbering such as "5. Sex" / "12) Town" so labels match the form's field names
+		const key = (i === -1 ? line : line.slice(0, i)).replace(/^\(?\d+[.)\]]\s*/, '').trim();
 		const value = i === -1 ? '' : line.slice(i + 1).trim();
 		const kb = boardOf(key);
 
@@ -311,7 +314,8 @@ export function extractSittings(text) {
 		const line = raw.replace(/\u00a0/g, ' ').trim();
 		if (!line) continue;
 		const i = line.indexOf(':');
-		const key = (i === -1 ? line : line.slice(0, i)).trim();
+		// drop list numbering such as "5. Sex" / "12) Town" so labels match the form's field names
+		const key = (i === -1 ? line : line.slice(0, i)).replace(/^\(?\d+[.)\]]\s*/, '').trim();
 		const value = i === -1 ? '' : line.slice(i + 1).trim();
 		const kb = boardOf(key);
 
