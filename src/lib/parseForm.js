@@ -32,7 +32,7 @@ function defaultOptions(label) {
 const QUALIFIER = /\(\s*(optional|if applicable|if any|where applicable|personnel only|for personnel only)\s*\)/gi;
 
 function cleanLabel(raw) {
-	let label = raw.replace(/\s+/g, ' ').trim().replace(/[:\s_.-]+$/, '').trim();
+	let label = raw.replace(/\s+/g, ' ').trim().replace(/[:\s_.,;-]+$/, '').trim();
 	let required = true;
 	let note = '';
 	label = label.replace(QUALIFIER, (_, q) => {
@@ -40,7 +40,7 @@ function cleanLabel(raw) {
 		if (!note && !/^optional$/i.test(q)) note = /personnel/i.test(q) ? 'Personnel only' : 'If applicable';
 		return '';
 	});
-	label = label.replace(/\s+/g, ' ').replace(/[:\s_.-]+$/, '').trim();
+	label = label.replace(/\s+/g, ' ').replace(/[:\s_.,;-]+$/, '').trim();
 	return { label, required, note };
 }
 
@@ -121,6 +121,7 @@ export function parseFormText(text) {
 
 	let title = '';
 	let titleExtended = false;
+	let description = '';
 	let section = '';
 	let mode = 'fields';
 	const fields = [];
@@ -187,6 +188,9 @@ export function parseFormText(text) {
 			if (title && !fields.length && !titleExtended && /application|registration/i.test(line) && !/\d/.test(line)) {
 				title = `${title} ${line.replace(/[.:\s]+$/, '')}`;
 				titleExtended = true;
+			} else if (title && !fields.length && !description && !titleExtended && !/personal|information|details|section|instruction/i.test(line)) {
+				// e.g. "MYHOUNG BARRACKS, YABA, LAGOS" between the name and "APPLICATION FORM"
+				description = line.replace(/[.:\s]+$/, '');
 			} else if (fields.length || title) {
 				section = line.replace(/[.:\s]+$/, '');
 			}
@@ -218,6 +222,7 @@ export function parseFormText(text) {
 		slug: slugify(base) || 'registration',
 		prefix: acronym ? acronym.toUpperCase() : slugify(base).toUpperCase().slice(0, 24) || 'REG',
 		fields,
-		softcopy
+		softcopy,
+		description
 	};
 }

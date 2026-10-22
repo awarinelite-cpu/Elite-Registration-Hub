@@ -98,6 +98,8 @@
 	<div class="flex gap-2">
 		<a href="/admin" class="btn-ghost">Back</a>
 		<a href="/admin/forms/new" class="btn">+ New</a>
+		{#if kind === 'registration'}<a href="/admin/forms/import" class="btn-ghost">📋 Paste to create</a>{/if}
+		{#if kind === 'quiz'}<a href="/admin/forms/import-quiz" class="btn-ghost">📋 Paste quiz</a>{/if}
 	</div>
 </div>
 
