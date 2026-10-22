@@ -5,7 +5,7 @@
 	import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
 	import { adminFetch } from '$lib/adminSession.svelte.js';
-	import { FIELD_TYPES, FORM_KINDS, OPTION_TYPES, newFieldId, slugify, MATRIC_FIELD_ID, STUDENT_NAME_ID, IDENT_MODES, matricField, nameField, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
+	import { fieldTypes, FORM_KINDS, OPTION_TYPES, newFieldId, slugify, MATRIC_FIELD_ID, STUDENT_NAME_ID, IDENT_MODES, matricField, nameField, SCRATCH_FIELD_ID, SSCE_FIELD_ID, ensureUploadFields } from '$lib/forms.js';
 
 	let { id = null } = $props();
 	const isNew = !id; // eslint-disable-line
@@ -304,7 +304,7 @@
 				<div>
 					<label class="label" for="ty{f.id}">Field type</label>
 					<select class="input" id="ty{f.id}" bind:value={f.type}>
-						{#each FIELD_TYPES as t}<option value={t.value}>{t.label}</option>{/each}
+						{#each fieldTypes() as t}<option value={t.value}>{t.label}</option>{/each}
 					</select>
 				</div>
 				<div class="flex items-end gap-1">

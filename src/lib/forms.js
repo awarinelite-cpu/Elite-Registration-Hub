@@ -1,11 +1,13 @@
 // Shared (client + server) form helpers.
 
-// Passport photo / document uploads need Firebase Storage (Blaze plan). While this is false, upload fields are
-// never added to forms, are hidden from every form that already has them, and can't be picked in the form editor.
-// Set to true once a storage bucket is available.
-export const UPLOADS_ENABLED = false;
+import { cloudinaryReady } from '$lib/cloudinary.js';
 
-export const FIELD_TYPES = [
+// Passport photo / document uploads go straight to Cloudinary (free plan); only the link is stored in Firestore.
+// They switch on once PUBLIC_CLOUDINARY_CLOUD_NAME and PUBLIC_CLOUDINARY_UPLOAD_PRESET are set. Until then upload
+// fields are never added to forms, are hidden from every form that already has them, and can't be picked in the editor.
+export const uploadsEnabled = () => cloudinaryReady();
+
+const ALL_FIELD_TYPES = [
 	{ value: 'text', label: 'Short text' },
 	{ value: 'textarea', label: 'Long text' },
 	{ value: 'number', label: 'Number' },
@@ -23,7 +25,8 @@ export const FIELD_TYPES = [
 	{ value: 'photo', label: 'Passport photograph' },
 	{ value: 'scratchcards', label: 'Scratch card info (WAEC/NECO, up to 2 sittings)' },
 	{ value: 'ssceexams', label: 'SSCE exam number (WAEC/NECO, up to 2 sittings)' }
-].filter((t) => UPLOADS_ENABLED || (t.value !== 'file' && t.value !== 'photo'));
+];
+export const fieldTypes = () => ALL_FIELD_TYPES.filter((t) => uploadsEnabled() || (t.value !== 'file' && t.value !== 'photo'));
 
 export const FORM_KINDS = [
 	{ value: 'registration', label: 'Registration form' },
@@ -78,7 +81,7 @@ export function scoreForm(fields, values, quiz = {}, asked = null) {
 export const OPTION_TYPES = ['select', 'radio', 'checkbox'];
 export const FILE_TYPES = ['file', 'photo'];
 /** Drop every upload field (passport photo, documents) while uploads are switched off. */
-export const withoutUploads = (fields) => (Array.isArray(fields) ? fields : []).filter((f) => UPLOADS_ENABLED || !FILE_TYPES.includes(f.type));
+export const withoutUploads = (fields) => (Array.isArray(fields) ? fields : []).filter((f) => uploadsEnabled() || !FILE_TYPES.includes(f.type));
 
 export const SCRATCH_BOARDS = ['WAEC', 'NECO'];
 export const SSCE_BOARDS = ['WAEC', 'NECO', 'WAEC GCE', 'NECO GCE', 'NABTEB'];
@@ -111,7 +114,7 @@ export const DOC_FIELDS = [
 
 /** Make sure a form has a passport photograph and the three softcopy document uploads (added at the end if missing). */
 export function ensureUploadFields(fields, { required = true, uploads = true } = {}) {
-	if (!UPLOADS_ENABLED) return withoutUploads(fields);
+	if (!uploadsEnabled()) return withoutUploads(fields);
 	if (!uploads) return Array.isArray(fields) ? fields : []; // quizzes / questionnaires have no passport photo or documents
 	const list = (Array.isArray(fields) ? fields : []).filter((f) => f.id !== DOCS_FIELD_ID);
 	if (!list.some((f) => f.type === 'photo')) {
@@ -403,7 +406,7 @@ export function buildDetailItems(fields, data) {
 const isEmptyVal = (v) => v == null || v === '' || (Array.isArray(v) && !v.length);
 const sameVal = (a, b) => {
 	if (isEmptyVal(a) && isEmptyVal(b)) return true;
-	const norm = (v) => (v && typeof v === 'object' && !Array.isArray(v) && v.path ? `file:${v.path}` : JSON.stringify(v));
+	const norm = (v) => (v && typeof v === 'object' && !Array.isArray(v) && (v.path || v.url) ? `file:${v.path || v.url}` : JSON.stringify(v));
 	return norm(a) === norm(b);
 };
 const showVal = (v) => {

@@ -7,6 +7,7 @@
 	import RetryQuiz from '$lib/RetryQuiz.svelte';
 	import TopicBreakdown from '$lib/TopicBreakdown.svelte';
 	import { buildDetailItems } from '$lib/forms.js';
+	import { downloadUrl } from '$lib/cloudinary.js';
 	let { data, form } = $props();
 
 	// if this login was remembered on this device, add the form + name so the home page can list it properly
@@ -24,6 +25,7 @@
 		return res.blob();
 	}
 	async function openFile(file) {
+		if (file.url) return void window.open(file.url, '_blank', 'noopener');
 		try {
 			window.open(URL.createObjectURL(await fetchFile(file)), '_blank');
 		} catch {
@@ -31,6 +33,7 @@
 		}
 	}
 	async function downloadFile(file, fieldId) {
+		if (file.url) return void window.open(downloadUrl(file.url, `${data.applicationNumber}_${file.name}`), '_self');
 		downloading = fieldId;
 		try {
 			const url = URL.createObjectURL(await fetchFile(file));

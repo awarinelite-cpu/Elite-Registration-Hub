@@ -1,5 +1,6 @@
 <script>
-	import { STATES, pairedStateField, imageSrc, UPLOADS_ENABLED } from '$lib/forms.js';
+	import { STATES, pairedStateField, imageSrc, uploadsEnabled } from '$lib/forms.js';
+	import { uploadToCloudinary } from '$lib/cloudinary.js';
 	import { lgasFor } from '$lib/lgas.js';
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
 	import StarButton from '$lib/StarButton.svelte';
@@ -31,26 +32,40 @@
 	const ssceF = $derived(fields.find((x) => x.type === 'ssceexams'));
 	const scratchF = $derived(fields.find((x) => x.type === 'scratchcards'));
 	const examGroup = $derived(ssceF && scratchF ? (fields.indexOf(ssceF) < fields.indexOf(scratchF) ? ssceF.id : scratchF.id) : null);
-	// auto-convert picked images to JPG (PDFs untouched); result is put back into the file input
+	// A picked file is converted (photos -> JPG), uploaded straight to Cloudinary, and only its link goes with the form.
 	let fileNote = $state({});
+	let uploaded = $state({}); // fieldId -> JSON string {name,url,size,type} posted in a hidden input
+	let progress = $state({});
 	async function onPick(e, f) {
 		const input = e.currentTarget;
 		const picked = input.files?.[0];
-		if (!picked) { fileNote[f.id] = null; return; }
+		input.setCustomValidity('');
+		if (!picked) { fileNote[f.id] = null; uploaded[f.id] = ''; return; }
+		uploaded[f.id] = '';
 		fileNote[f.id] = { ok: true, text: 'Processing…' };
+		input.setCustomValidity('Please wait for the upload to finish.');
 		const r = await prepareUpload(picked);
-		if (r.file !== picked) {
-			try {
-				const dt = new DataTransfer();
-				dt.items.add(r.file);
-				input.files = dt.files;
-			} catch {
-				r.ok = false;
-				r.note = 'Could not process this file here. Please pick a JPG or PNG under 1.5 MB.';
-			}
+		if (!r.ok) {
+			input.value = '';
+			input.setCustomValidity('');
+			fileNote[f.id] = { ok: false, text: r.note };
+			return;
 		}
-		if (!r.ok) input.value = '';
-		fileNote[f.id] = r.note ? { ok: r.ok, text: r.note } : null;
+		try {
+			fileNote[f.id] = { ok: true, text: 'Uploading… 0%' };
+			const res = await uploadToCloudinary(r.file, {
+				folder: `elitereg/${formId || 'forms'}`,
+				onProgress: (p) => { progress[f.id] = p; fileNote[f.id] = { ok: true, text: `Uploading… ${p}%` }; }
+			});
+			uploaded[f.id] = JSON.stringify({ name: res.name, url: res.url, size: res.size, type: res.type });
+			fileNote[f.id] = { ok: true, text: `Uploaded ✓ ${r.note}`.trim() };
+			input.setCustomValidity('');
+		} catch (err) {
+			input.value = '';
+			input.setCustomValidity('');
+			uploaded[f.id] = '';
+			fileNote[f.id] = { ok: false, text: err.message || 'Upload failed. Please try again.' };
+		}
 	}
 	const LET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	const val = (f) => values?.[f.id] ?? (f.type === 'checkbox' ? [] : '');
@@ -137,10 +152,10 @@
 				class="input file:mr-3 file:rounded file:border-0 file:bg-teal-50 file:px-3 file:py-1 file:text-teal-800"
 				type="file"
 				id={`f_${f.id}`}
-				name={`f_${f.id}`}
 				accept={f.type === 'photo' ? 'image/*' : 'image/*,application/pdf'}
 				onchange={(e) => onPick(e, f)}
 			/>
+			<input type="hidden" name={`f_${f.id}`} value={uploaded[f.id] || ''} />
 			{#if fileNote[f.id]}
 				<p class="mt-1 text-xs {fileNote[f.id].ok ? 'text-teal-700' : 'text-red-600'}">{fileNote[f.id].text}</p>
 			{/if}
@@ -171,7 +186,7 @@
 	{/if}
 {/each}
 
-{#if softcopyNote && !UPLOADS_ENABLED}
+{#if softcopyNote && !uploadsEnabled()}
 	<div class="rounded-xl border border-slate-300 bg-slate-50 p-4">
 		<p class="font-bold tracking-wide text-slate-800">SEND THE SOFTCOPY OF:</p>
 		<ol class="mt-2 list-decimal space-y-1 pl-6 font-medium text-slate-700">

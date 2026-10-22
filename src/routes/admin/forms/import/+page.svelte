@@ -1,7 +1,7 @@
 <script>
 	import { parseFormText } from '$lib/parseForm.js';
 	import { createForm } from '$lib/createForm.js';
-	import { FIELD_TYPES, OPTION_TYPES, slugify } from '$lib/forms.js';
+	import { fieldTypes, OPTION_TYPES, slugify } from '$lib/forms.js';
 
 	let text = $state('');
 	let parsed = $state(null);
@@ -100,7 +100,7 @@
 				<span class="w-6 text-xs text-slate-400">{i + 1}</span>
 				<input class="input min-w-0 flex-1" bind:value={f.label} aria-label="Label" />
 				<select class="input !w-auto" bind:value={f.type} aria-label="Type">
-					{#each FIELD_TYPES as t}<option value={t.value}>{t.label}</option>{/each}
+					{#each fieldTypes() as t}<option value={t.value}>{t.label}</option>{/each}
 				</select>
 				<label class="flex items-center gap-1 text-xs"><input type="checkbox" bind:checked={f.required} class="accent-teal-700" /> Req.</label>
 				<button class="btn-danger !px-2 !py-1" onclick={() => parsed.fields.splice(i, 1)} aria-label="Remove">✕</button>

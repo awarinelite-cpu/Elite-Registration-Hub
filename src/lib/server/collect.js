@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { bucket } from './firebase.js';
 import { lgasFor } from '$lib/lgas.js';
+import { isOurUrl } from '$lib/cloudinary.js';
 import { FILE_TYPES, MAX_FILE_BYTES, MAX_TOTAL_BYTES, parseScratch, parseSsce, validateValue, pairedStateField } from '$lib/forms.js';
 
 const SAFE_NAME = (n) => n.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-80);
@@ -21,7 +22,15 @@ export function collect(fields, fd, existing = {}) {
 		const key = `f_${f.id}`;
 		if (FILE_TYPES.includes(f.type)) {
 			const file = fd.get(key);
-			if (file && typeof file !== 'string' && file.size > 0) {
+			// Cloudinary: the browser already uploaded the file and posts { name, url, size, type } as JSON
+			if (typeof file === 'string' && file.trim()) {
+				let meta = null;
+				try { meta = JSON.parse(file); } catch {}
+				if (!meta || !isOurUrl(meta.url) || !ALLOWED_MIME.includes(meta.type)) errors[f.id] = 'Upload not recognised. Please choose the file again.';
+				else if (Number(meta.size) > MAX_FILE_BYTES) errors[f.id] = 'File is too large (max 1.5 MB).';
+				else if (f.type === 'photo' && !String(meta.type).startsWith('image/')) errors[f.id] = 'Passport photo must be an image.';
+				else values[f.id] = { name: String(meta.name || 'file').slice(0, 120), url: String(meta.url), size: Number(meta.size) || 0, type: String(meta.type) };
+			} else if (file && typeof file !== 'string' && file.size > 0) {
 				if (file.size > MAX_FILE_BYTES) errors[f.id] = 'File is too large (max 1.5 MB).';
 				else if (!ALLOWED_MIME.includes(file.type)) errors[f.id] = 'Only JPG, PNG, WebP or PDF files are allowed.';
 				else if (f.type === 'photo' && !file.type.startsWith('image/')) errors[f.id] = 'Passport photo must be an image.';

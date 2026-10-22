@@ -8,6 +8,7 @@
 	import ApplicationView from '$lib/ApplicationView.svelte';
 	import { downloadCsv } from '$lib/csv.js';
 	import { stamp } from '$lib/dateFmt.js';
+	import { downloadUrl } from '$lib/cloudinary.js';
 
 	const formId = page.params.id;
 	let form = $state(null);
@@ -131,6 +132,8 @@
 	let downloading = $state('');
 	// saves the file straight to the device, named with the application number so files from different applicants don't clash
 	async function downloadFile(file, fieldId) {
+		// Cloudinary links download straight from Cloudinary
+		if (file.url) return void window.open(downloadUrl(file.url, `${selected?.applicationNumber || 'application'}_${file.name}`), '_self');
 		downloading = fieldId;
 		try {
 			const token = await auth.currentUser.getIdToken();
@@ -150,6 +153,7 @@
 	}
 
 	async function openFile(file) {
+		if (file.url) return void window.open(file.url, '_blank', 'noopener');
 		const token = await auth.currentUser.getIdToken();
 		const res = await fetch(`/api/admin/file?path=${encodeURIComponent(file.path)}`, { headers: { authorization: `Bearer ${token}` } });
 		if (!res.ok) return alert('Could not load file.');
