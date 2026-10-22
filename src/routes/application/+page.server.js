@@ -17,7 +17,7 @@ async function current(cookies) {
 	if (app.data?.[SCRATCH_FIELD_ID]) form.fields = migrateScratchFields(form.fields);
 	if (app.data?.[SSCE_FIELD_ID]) form.fields = migrateSsceFields(form.fields);
 	// every applicant can add a passport photograph / softcopy documents after submitting (optional here, so old applications can still be edited)
-	if (isRegistration(form)) form.fields = ensureUploadFields(form.fields, { required: false });
+	if (isRegistration(form)) form.fields = ensureUploadFields(form.fields, { required: false, softcopy: form.softcopy });
 	return { appRef, app, form };
 }
 

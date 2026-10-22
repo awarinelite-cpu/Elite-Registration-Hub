@@ -27,7 +27,7 @@
 			if (!s.exists()) loadError = 'Form not found.';
 			else {
 				const d = s.data();
-				form = { id: s.id, ...d, fields: migrateFormFields(d.fields, { uploads: isRegistration(d) }) };
+				form = { id: s.id, ...d, fields: migrateFormFields(d.fields, { uploads: isRegistration(d), softcopy: d.softcopy }) };
 			}
 		} catch (e) {
 			loadError = 'Could not load form: ' + (e?.message || e);

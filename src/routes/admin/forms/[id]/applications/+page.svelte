@@ -28,7 +28,7 @@
 			return;
 		}
 		const d = fs.data();
-		form = { id: fs.id, ...d, fields: migrateFormFields(d.fields, { keepLegacy: true, uploads: isRegistration(d) }) };
+		form = { id: fs.id, ...d, fields: migrateFormFields(d.fields, { keepLegacy: true, uploads: isRegistration(d), softcopy: d.softcopy }) };
 		const snap = await getDocs(query(collection(firestore, 'applications'), where('formId', '==', formId)));
 		apps = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => b.submittedAt - a.submittedAt);
 		loading = false;

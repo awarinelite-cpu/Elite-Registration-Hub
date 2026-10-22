@@ -8,7 +8,7 @@ async function getForm(slug) {
 	const snap = await db().collection('forms').doc(slug).get();
 	if (!snap.exists) error(404, 'Form not found');
 	const { title, description, status, startDate, closingDate, fields, prefix, counter, kind = 'registration', quiz = null, softcopy = [] } = snap.data();
-	return { id: slug, title, description, status, startDate, closingDate, kind, quiz: quiz || {}, softcopy: Array.isArray(softcopy) ? softcopy : [], fields: migrateFormFields(fields, { uploads: isRegistration({ kind }) }), prefix, counter };
+	return { id: slug, title, description, status, startDate, closingDate, kind, quiz: quiz || {}, softcopy: Array.isArray(softcopy) ? softcopy : [], fields: migrateFormFields(fields, { uploads: isRegistration({ kind }), softcopy }), prefix, counter };
 }
 
 export async function load({ params }) {

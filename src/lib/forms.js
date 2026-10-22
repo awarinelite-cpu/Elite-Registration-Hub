@@ -113,7 +113,7 @@ export const DOC_FIELDS = [
 ];
 
 /** Make sure a form has a passport photograph and the three softcopy document uploads (added at the end if missing). */
-export function ensureUploadFields(fields, { required = true, uploads = true } = {}) {
+export function ensureUploadFields(fields, { required = true, uploads = true, softcopy = [] } = {}) {
 	if (!uploadsEnabled()) return withoutUploads(fields);
 	if (!uploads) return Array.isArray(fields) ? fields : []; // quizzes / questionnaires have no passport photo or documents
 	const list = (Array.isArray(fields) ? fields : []).filter((f) => f.id !== DOCS_FIELD_ID);
@@ -123,7 +123,13 @@ export function ensureUploadFields(fields, { required = true, uploads = true } =
 	const ours = DOC_FIELDS.map((d) => d.id);
 	// forms that already have their own document upload fields are left alone
 	if (!list.some((f) => f.type === 'file' && !ours.includes(f.id))) {
-		for (const d of DOC_FIELDS) {
+		// the form's own "SEND THE SOFTCOPY OF" list (except the passport, which has its own photo box) becomes one upload box per document
+		const wanted = (Array.isArray(softcopy) ? softcopy : [])
+			.map((s) => String(s || '').trim())
+			.filter((s) => s && !/passport|photo/i.test(s))
+			.map((label) => ({ id: `doc_${slugify(label).replace(/-/g, '_').slice(0, 40)}`, label }))
+			.filter((d, i, a) => d.id !== 'doc_' && a.findIndex((x) => x.id === d.id) === i);
+		for (const d of wanted.length ? wanted : DOC_FIELDS) {
 			if (!list.some((f) => f.id === d.id)) list.push({ id: d.id, type: 'file', label: d.label, required: false, placeholder: '' });
 		}
 	}
