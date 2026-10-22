@@ -2,8 +2,9 @@
 // Set in Vercel -> Settings -> Environment Variables:
 //   PUBLIC_CLOUDINARY_CLOUD_NAME     e.g. dxxxxxxxx
 //   PUBLIC_CLOUDINARY_UPLOAD_PRESET  name of an UNSIGNED upload preset
-import { env } from '$env/dynamic/public';
+import * as env from '$app/env/public';
 
+// read lazily (at call time): dynamic public values arrive in the browser after this module loads
 export const cloudName = () => (env.PUBLIC_CLOUDINARY_CLOUD_NAME || '').trim();
 export const uploadPreset = () => (env.PUBLIC_CLOUDINARY_UPLOAD_PRESET || '').trim();
 /** True once both env vars are set. Upload fields only appear on forms when this is true. */
