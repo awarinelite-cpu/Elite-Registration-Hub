@@ -130,23 +130,44 @@
 	}
 
 	let downloading = $state('');
-	// saves the file straight to the device, named with the application number so files from different applicants don't clash
+
+	// "<student name> <document column>.<ext>", e.g. "Awarin Elite PASSPORT PHOTOGRAPH.jpg"
+	function downloadName(file, fieldId) {
+		const ext = (String(file.name || '').match(/\.([A-Za-z0-9]{2,5})$/)?.[1] || ({ 'application/pdf': 'pdf', 'image/png': 'png', 'image/webp': 'webp' }[file.type] || 'jpg')).toLowerCase();
+		const column = form.fields.find((f) => f.id === fieldId)?.label || 'document';
+		const who = (selected && nameOf(selected)) || selected?.applicationNumber || 'application';
+		const base = `${who} ${column}`.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+		return `${base}.${ext}`;
+	}
+	function saveBlob(blob, name) {
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = name;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		setTimeout(() => URL.revokeObjectURL(url), 10000);
+	}
+	// saves the file straight to the device, named after the student and the document column
 	async function downloadFile(file, fieldId) {
-		// Cloudinary links download straight from Cloudinary
-		if (file.url) return void window.open(downloadUrl(file.url, `${selected?.applicationNumber || 'application'}_${file.name}`), '_self');
+		const name = downloadName(file, fieldId);
 		downloading = fieldId;
 		try {
+			if (file.url) {
+				// Cloudinary link: fetch it so the saved file gets the exact name above; if the browser blocks that, fall back to a plain download
+				try {
+					const res = await fetch(file.url);
+					if (!res.ok) throw new Error('bad');
+					return saveBlob(await res.blob(), name);
+				} catch {
+					return void window.open(downloadUrl(file.url, name), '_self');
+				}
+			}
 			const token = await auth.currentUser.getIdToken();
 			const res = await fetch(`/api/admin/file?path=${encodeURIComponent(file.path)}`, { headers: { authorization: `Bearer ${token}` } });
 			if (!res.ok) return alert('Could not download file.');
-			const url = URL.createObjectURL(await res.blob());
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = `${selected?.applicationNumber || 'application'}_${file.name}`;
-			document.body.appendChild(a);
-			a.click();
-			a.remove();
-			setTimeout(() => URL.revokeObjectURL(url), 10000);
+			saveBlob(await res.blob(), name);
 		} finally {
 			downloading = '';
 		}
