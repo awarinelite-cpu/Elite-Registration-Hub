@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/firebase.js';
 import { collect, storeUploads } from '$lib/server/collect.js';
-import { hashPin, newPin } from '$lib/server/security.js';
+import { hashPin, newPin, encryptPin } from '$lib/server/security.js';
 import { closedReason, migrateFormFields, studentName, isRegistration, publicFields, scoreForm, MANAGED_QUIZ_FIELDS } from '$lib/forms.js';
 
 async function getForm(slug) {
@@ -48,6 +48,7 @@ export const actions = {
 		const result = scored ? { score: scored.score, total: scored.total, pct: scored.pct, passed: scored.passed, answered: scored.answered, questions: scored.questions } : null;
 		const pin = newPin();
 		const pinHash = hashPin(pin);
+		const pinEnc = encryptPin(pin);
 		const formRef = db().collection('forms').doc(form.id);
 
 		const applicationNumber = await db().runTransaction(async (t) => {
@@ -61,6 +62,7 @@ export const actions = {
 				formId: form.id,
 				applicationNumber: num,
 				pinHash,
+				pinEnc,
 				status: 'submitted',
 				submittedAt: Date.now(),
 				updatedAt: Date.now(),
@@ -73,7 +75,7 @@ export const actions = {
 			return num;
 		});
 
-		// PIN is shown exactly once and never stored in plain text.
+		// PIN is shown exactly once and stored only hashed (login) + encrypted (admin can re-send it).
 		const show = form.quiz?.showResult || 'answers';
 		return {
 			success: true,

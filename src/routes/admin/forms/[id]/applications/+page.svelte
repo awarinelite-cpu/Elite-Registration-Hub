@@ -81,6 +81,35 @@
 
 	let copiedId = $state('');
 
+	// Access PIN of the open application (fetched from the server, admin-only)
+	let pin = $state(null); // null = loading, '' = not recoverable, else the PIN
+	let pinBusy = $state(false);
+	let shownFor = '';
+	async function pinCall(method, body) {
+		const token = await auth.currentUser.getIdToken();
+		const res = await fetch(method === 'GET' ? `/api/admin/pin?id=${encodeURIComponent(selected.id)}` : '/api/admin/pin', {
+			method,
+			headers: { authorization: `Bearer ${token}`, ...(body ? { 'content-type': 'application/json' } : {}) },
+			body: body ? JSON.stringify(body) : undefined
+		});
+		if (!res.ok) throw new Error('failed');
+		return (await res.json()).pin || '';
+	}
+	$effect(() => {
+		const id = selected?.id;
+		if (!id) { shownFor = ''; return; }
+		if (shownFor === id) return;
+		shownFor = id;
+		pin = null;
+		pinCall('GET').then((p) => shownFor === id && (pin = p)).catch(() => shownFor === id && (pin = ''));
+	});
+	async function resetPin() {
+		if (!confirm(`Issue a new PIN for ${selected.applicationNumber}? The old PIN will stop working.`)) return;
+		pinBusy = true;
+		try { pin = await pinCall('POST', { id: selected.id }); } catch { alert('Could not reset the PIN.'); }
+		pinBusy = false;
+	}
+
 	const detailItems = $derived.by(() => {
 		if (!selected || !form) return [];
 		let items = buildDetailItems(form.fields, selected.data);
@@ -283,6 +312,26 @@
 						{/if}
 					</button>
 					<button class="btn-3d-ghost btn-3d-lg md:!px-6 md:!py-3 md:!text-lg" onclick={() => { selected = null; showEdits = false; }}>Close</button>
+				</div>
+			</div>
+			<div class="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 md:mb-6 md:p-5">
+				<div class="text-sm font-semibold uppercase tracking-wide text-slate-600 md:text-base">Student login (to resend if forgotten)</div>
+				<div class="mt-2 flex items-center justify-between gap-2 rounded-lg bg-white/70 px-3 py-2">
+					<div class="min-w-0"><div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Application number</div><div class="break-all font-mono text-lg font-semibold text-slate-900 md:text-2xl">{selected.applicationNumber}</div></div>
+					<button type="button" class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700 md:p-2.5" aria-label="Copy application number" onclick={() => copyValue('lg-n', selected.applicationNumber)}>{copiedId === 'lg-n' ? '✓' : '⧉'}</button>
+				</div>
+				<div class="mt-2 flex items-center justify-between gap-2 rounded-lg bg-white/70 px-3 py-2">
+					<div class="min-w-0">
+						<div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Access PIN</div>
+						{#if pin === null}<div class="text-slate-500">Loading…</div>
+						{:else if pin}<div class="font-mono text-lg font-semibold text-slate-900 md:text-2xl">{pin}</div>
+						{:else}<div class="text-sm text-slate-600">Not stored for this older application.</div>{/if}
+					</div>
+					{#if pin}<button type="button" class="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700 md:p-2.5" aria-label="Copy PIN" onclick={() => copyValue('lg-p', pin)}>{copiedId === 'lg-p' ? '✓' : '⧉'}</button>{/if}
+				</div>
+				<div class="mt-2 flex flex-wrap gap-2">
+					{#if pin}<button type="button" class="btn-3d-ghost" onclick={() => copyValue('lg-b', `Application Number: ${selected.applicationNumber}\nAccess PIN: ${pin}`)}>{copiedId === 'lg-b' ? 'Copied ✓' : 'Copy number + PIN'}</button>{/if}
+					{#if pin !== null}<button type="button" class="btn-3d-ghost" disabled={pinBusy} onclick={resetPin}>{pin ? 'Reset PIN' : 'Generate new PIN'}</button>{/if}
 				</div>
 			</div>
 			<ApplicationView items={detailItems} {openFile} {downloadFile} {downloading} />
