@@ -395,3 +395,57 @@ html.dark .input { border-color: #64748b; }
 @media print {
 	.card-pill.note-pill, .card-pill.note-pill.bleed-4, .card-pill.note-pill.bleed-3 { margin: 0; padding: 0; border: 0; }
 }
+
+/* ======================================================================
+   FOREST & GOLD THEME — third look after light and dark.
+   Deep green page, gold buttons and accents, cream pills and text.
+   It is dark mode plus these overrides (<html class="dark forest">), so everything dark mode
+   already handles keeps working. Delete this block (and 'forest' in ThemeToggle) to remove it.
+   ====================================================================== */
+html.dark.forest {
+	color-scheme: dark;
+	--color-slate-50: #0f2623;   /* page */
+	--color-slate-100: #173836;
+	--color-slate-200: #214a45;
+	--color-slate-300: #5b7d63;  /* borders */
+	--color-slate-400: #9db3a4;
+	--color-slate-500: #b6c7b4;
+	--color-slate-600: #e8e1c3;
+	--color-slate-700: #f1ebd0;
+	--color-slate-800: #f7f1da;
+	--color-slate-900: #fbf7e8;
+	--color-slate-950: #fbf7e8;
+	--color-teal-50: #1b3d36;
+	--color-teal-100: #25503f;
+	--color-teal-200: #3b6b45;
+	--color-teal-300: #6f8f3a;
+	--color-teal-400: #d9a82e;
+	--color-teal-500: #e7b232;
+	--color-teal-600: #f2b83a;   /* focus rings / accents */
+	--color-teal-700: #f2b83a;
+	--color-teal-800: #f5c765;
+	--color-teal-900: #f8d98f;
+	--rim: linear-gradient(145deg, #f7ecc0 0%, #d4bf78 30%, #8f7d3c 66%, #eadb9a 100%);
+	--glass-drop: 0 10px 16px -6px rgba(0,0,0,.85);
+	--ring: 0 0 0 1px rgba(242,184,58,.55);
+}
+html.dark.forest .bg-white { background-color: #143533; }
+html.dark.forest .bg-white\/70 { background-color: rgb(20 53 51 / 0.7); }
+html.dark.forest .text-teal-700,
+html.dark.forest .text-teal-800,
+html.dark.forest .text-teal-900 { color: #f2b83a; }
+html.dark.forest .input { background-color: #0f2d2b; color: #f1ebd0; border-color: #8d8a52; }
+html.dark.forest .input::placeholder { color: #8fa89a; }
+html.dark.forest .input:focus { border-color: #f2b83a; }
+/* gold primary buttons, cream secondary pills (dark-green text on both) */
+html.dark.forest .btn, html.dark.forest .btn-3d { --fa: #f7c852; --fb: #dfa01c; color: #12292a; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+html.dark.forest .btn-ghost, html.dark.forest .btn-3d-ghost { --fa: #f6edcf; --fb: #dccf9f; color: #17382f; text-shadow: none; }
+html.dark.forest .btn-danger { --fa: #5a2f27; --fb: #3d201b; color: #ffd9c9; }
+/* green cards with a gold-cream outline */
+html.dark.forest .card, html.dark.forest .card-pill { --fa: #1f4846; --fb: #143230; }
+html.dark.forest .card-pill.app-done { --fa: #44713f; --fb: #21401f; }
+html.dark.forest .form-title { color: #fbf7e8; }
+html.dark.forest .form-code { color: #f2b83a; }
+html.dark.forest .form-meta { color: #d9d2b0; }
+html.dark.forest .form-active { color: #b9c94f; }
+html.dark.forest .optletter { background: #f2b83a; color: #12292a; }

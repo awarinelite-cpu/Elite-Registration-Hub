@@ -14,7 +14,12 @@
 		<script>
 			try {
 				var t = localStorage.getItem('elitereg_theme');
-				if (t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark');
+				var c = document.documentElement.classList;
+				if (t ? t === 'dark' || t === 'forest' : matchMedia('(prefers-color-scheme: dark)').matches) c.add('dark');
+				if (t === 'forest') {
+					c.add('forest');
+					document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f2623');
+				}
 			} catch (e) {}
 		</script>
 		%sveltekit.head%
