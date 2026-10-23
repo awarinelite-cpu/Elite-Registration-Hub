@@ -68,6 +68,10 @@
 		<span class="text-slate-500">Submitted {new Date(data.submittedAt).toLocaleString()}</span>
 	</div>
 
+	{#if data.kind === 'quiz' && !editing}
+		<a class="btn mb-4 block w-full text-center" href="/register/{data.formId}?new=1" data-sveltekit-reload>🔄 Retake exam</a>
+	{/if}
+
 	{#if form?.saved && !editing}<div class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">Changes saved.</div>{/if}
 	{#if form?.message}<div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{form.message}</div>{/if}
 
