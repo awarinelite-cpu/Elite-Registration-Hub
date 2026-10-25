@@ -5,6 +5,8 @@ import { checkPin, makeSession, SESSION_COOKIE, SESSION_SECONDS } from '$lib/ser
 const MAX_ATTEMPTS = 5;
 const LOCK_MS = 15 * 60 * 1000;
 const GENERIC = 'Invalid application number or PIN.';
+// screens a successful login may continue to (anything else goes to My Application)
+const NEXT = ['/application', '/application?edit=1', '/status', '/more', '/notifications', '/documents'];
 
 export const actions = {
 	default: async ({ request, cookies }) => {
@@ -36,6 +38,7 @@ export const actions = {
 			secure: true,
 			maxAge: SESSION_SECONDS
 		});
-		redirect(303, '/application');
+		const next = String(fd.get('next') || '');
+		redirect(303, NEXT.includes(next) ? next : '/application');
 	}
 };

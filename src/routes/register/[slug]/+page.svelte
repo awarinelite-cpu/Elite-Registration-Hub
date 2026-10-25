@@ -10,6 +10,8 @@
 	import TopicBreakdown from '$lib/TopicBreakdown.svelte';
 	import ProgressChart from '$lib/ProgressChart.svelte';
 	import StarButton from '$lib/StarButton.svelte';
+	import ThemeToggle from '$lib/ThemeToggle.svelte';
+	import RegPage from '$lib/ui/RegPage.svelte';
 	import { loadStars, starredIds } from '$lib/bookmarks.svelte.js';
 	import { addAttempt, topicStats } from '$lib/history.js';
 	import { shuffle } from '$lib/shuffle.js';
@@ -268,6 +270,10 @@
 
 <noscript><style>.pre-ready { visibility: visible !important; }</style></noscript>
 
+{#if isReg}
+	<div class="pre-ready {ready ? '' : 'invisible'}"><RegPage {data} {form} /></div>
+{:else}
+<div class="flex justify-end px-4 pt-3 print:hidden"><ThemeToggle /></div>
 <main class="pre-ready mx-auto px-4 py-8 {isReg ? 'max-w-2xl' : 'max-w-2xl lg:max-w-none lg:px-10 xl:px-16'} {ready ? '' : 'invisible'}">
 	{#if form?.success}
 		<div class="card text-center">
@@ -451,3 +457,4 @@
 
 	{/if}
 </main>
+{/if}

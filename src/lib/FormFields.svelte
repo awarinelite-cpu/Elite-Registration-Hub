@@ -8,8 +8,22 @@
 	import SsceExams from '$lib/SsceExams.svelte';
 	import ExamInfo from '$lib/ExamInfo.svelte';
 	import { prepareUpload } from '$lib/imageConvert.js';
+	import Icon from '$lib/ui/Icon.svelte';
 	// fields: form field defs; values: {id: value}; errors: {id: msg}; existingFiles: {id: {name}}
-	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false, softcopyNote = false, formId = '' } = $props();
+	let { fields, values = {}, errors = {}, existingFiles = {}, reading = false, answers = null, big = false, softcopyNote = false, formId = '', only = null, icons = false } = $props();
+	// only: render just these field ids (the app wizard shows one step at a time); icons: small icon beside each field
+	const shown = (f) => !only || only.includes(f.id);
+	function iconFor(f) {
+		const l = f.label || '';
+		if (f.type === 'state' || f.type === 'lga') return 'shield';
+		if (f.type === 'phone') return 'phone';
+		if (f.type === 'email') return 'mail';
+		if (f.type === 'date') return 'calendar';
+		if (f.type === 'nin') return 'id-card';
+		if (/address|town|city|residen/i.test(l)) return 'map-pin';
+		if (/programme|course|department|school|level/i.test(l)) return 'graduation';
+		return 'user';
+	}
 	const qNo = (f) => fields.filter((x) => x.scored).findIndex((x) => x.id === f.id) + 1;
 
 	function inputType(t) {
@@ -72,7 +86,9 @@
 </script>
 
 {#each fields as f (f.id)}
-	{#if f.id === 'doc_ssce_2' && !showSecond}
+	{#if !shown(f)}
+		<!-- belongs to another step -->
+	{:else if f.id === 'doc_ssce_2' && !showSecond}
 		<!-- hidden until Add SSCE -->
 	{:else if f.scored && reading && answers}
 		<ReadingQuestion {big} {formId} field={f} number={qNo(f)} answer={answers[f.id]} value={values?.[f.id]} error={errors?.[f.id]} />
@@ -85,7 +101,9 @@
 	{:else if f.type === 'ssceexams'}
 		<SsceExams field={f} value={values?.[f.id]} error={errors?.[f.id]} />
 	{:else}
-	<div class={big ? 'qbig' : ''}>
+	<div class="{big ? 'qbig' : ''} {icons ? 'sv-fr' : ''}">
+		{#if icons}<span class="sv-fi"><Icon name={iconFor(f)} size={16} /></span>{/if}
+		<div class="sv-fc">
 		<div class="flex items-start justify-between gap-2">
 			<label class="label {big ? 'qtext' : ''}" for={`f_${f.id}`}>
 				{#if f.scored}{qNo(f)}. {/if}{f.label}{#if f.required}<span class="text-red-600"> *</span>{/if}
@@ -98,7 +116,7 @@
 			<textarea class="input" rows="4" id={`f_${f.id}`} name={`f_${f.id}`} placeholder={f.placeholder} value={val(f)}></textarea>
 		{:else if f.type === 'state'}
 			<select class="input" id={`f_${f.id}`} name={`f_${f.id}`} bind:value={stateVals[f.id]} onchange={() => stateChanged(f.id)}>
-				<option value="">Select…</option>
+				<option value="">Select state</option>
 				{#each STATES as o}
 					<option value={o}>{o}</option>
 				{/each}
@@ -182,6 +200,7 @@
 		{/if}
 
 		{#if errors?.[f.id]}<p class="mt-1 text-sm text-red-600">{errors[f.id]}</p>{/if}
+		</div>
 	</div>
 	{/if}
 {/each}

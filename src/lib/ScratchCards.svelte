@@ -23,7 +23,7 @@
 </script>
 
 <div bind:this={root} {id} class="space-y-4">
-	<h3 class="text-base font-bold tracking-wide text-slate-800">
+	<h3 class="exam-h3 text-base font-bold tracking-wide text-slate-800">
 		{field.label}{#if field.required}<span class="text-red-600"> *</span>{/if}
 	</h3>
 
