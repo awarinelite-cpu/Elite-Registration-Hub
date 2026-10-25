@@ -6,7 +6,7 @@ import { diffData, studentName, SCRATCH_FIELD_ID, SSCE_FIELD_ID, migrateScratchF
 
 async function current(cookies) {
 	const number = readSession(cookies.get(SESSION_COOKIE));
-	if (!number) redirect(303, '/login?next=/application');
+	if (!number) redirect(303, '/login');
 	const appRef = db().collection('applications').doc(number);
 	const appSnap = await appRef.get();
 	if (!appSnap.exists) redirect(303, '/login');

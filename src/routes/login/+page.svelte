@@ -1,11 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/state';
-	import Screen from '$lib/ui/Screen.svelte';
-	import Icon from '$lib/ui/Icon.svelte';
-	import Crest from '$lib/ui/Crest.svelte';
-	import { BRAND } from '$lib/brand.js';
 	import { addSaved, getSaved, removeSaved, clearSaved } from '$lib/savedLogins.js';
 	let { form } = $props();
 	let busy = $state(false);
@@ -13,7 +8,6 @@
 	let pin = $state('');
 	let saved = $state([]);
 	let picking = $state(false);
-	const next = $derived(page.url.searchParams.get('next') || '');
 
 	onMount(() => (saved = getSaved()));
 
@@ -43,28 +37,18 @@
 	}
 </script>
 
-<svelte:head><title>Log in — {BRAND.name}</title></svelte:head>
+<svelte:head><title>My application — EliteReg</title></svelte:head>
 
-<Screen nav={null} sheet>
-	{#snippet header()}
-		<header class="sv-login-head">
-			<div class="brandrow">
-				<a href="/home" aria-label="Home"><Crest size={40} /></a>
-				<div>
-					<b>{BRAND.name}</b>
-					<span>{BRAND.tagline}</span>
-				</div>
-			</div>
-			<div>
-				<h1>View or edit your application</h1>
-				<p>Log in with your Application Number and PIN.</p>
-			</div>
-		</header>
-	{/snippet}
-
+<main class="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 px-4 py-8">
+	<div class="relative flex items-center justify-center">
+		<a href="/admin" aria-label="Back to admin login" title="Back to admin login" class="btn-3d-ghost btn-3d-lg !absolute left-0 !px-3 !text-teal-800">
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+		</a>
+		<div class="text-xl font-extrabold text-teal-700">EliteReg</div>
+	</div>
 	<form
 		method="POST"
-		class="sv-fields"
+		class="card space-y-4"
 		use:enhance={({ formData }) => {
 			busy = true;
 			const n = String(formData.get('number') || '').trim().toUpperCase();
@@ -77,20 +61,30 @@
 			};
 		}}
 	>
-		<input type="hidden" name="next" value={next} />
-		{#if form?.message}<div class="sv-note err"><Icon name="info" size={18} class="ico" /><span>{form.message}</span></div>{/if}
-		<div style="position:relative">
+		<h1 class="text-lg font-bold">View or edit your application</h1>
+		{#if form?.message}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">{form.message}</div>{/if}
+		<div class="relative">
 			<label class="label" for="number">Application Number</label>
-			<input class="input" style="font-family:ui-monospace,monospace;text-transform:uppercase" id="number" name="number" placeholder="SVIEHT-2025-00483" bind:value={number} onfocus={tapNumber} onclick={tapNumber} autocomplete="off" required />
+			<input
+				class="input font-mono uppercase"
+				id="number"
+				name="number"
+				placeholder="FUOYE-2026-0001"
+				bind:value={number}
+				onfocus={tapNumber}
+				onclick={tapNumber}
+				autocomplete="off"
+				required
+			/>
 			{#if picking}
-				<div class="sv-list" style="position:absolute;left:0;right:0;z-index:10;margin-top:4px;box-shadow:0 10px 24px rgba(11,37,84,.18)">
+				<div class="absolute left-0 right-0 z-10 mt-1 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
 					{#each saved as s (s.number)}
-						<div class="sv-li" style="cursor:default">
-							<button type="button" style="flex:1;min-width:0;text-align:left;background:none;border:0;font:inherit;cursor:pointer" onclick={() => choose(s)}>
-								<b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{s.name || s.number}</b>
-								<span class="sv-sub" style="font-family:ui-monospace,monospace">{s.number}</span>
+						<div class="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-2 last:border-0">
+							<button type="button" class="min-w-0 flex-1 text-left" onclick={() => choose(s)}>
+								<div class="truncate text-sm font-semibold">{s.name || s.number}</div>
+								<div class="truncate font-mono text-xs text-slate-500">{s.number}</div>
 							</button>
-							<button type="button" class="sv-redtxt" style="background:none;border:0;font-size:12px;cursor:pointer" onclick={() => forget(s.number)}>Forget</button>
+							<button type="button" class="shrink-0 text-xs text-red-600 hover:underline" onclick={() => forget(s.number)}>Forget</button>
 						</div>
 					{/each}
 				</div>
@@ -98,23 +92,19 @@
 		</div>
 		<div>
 			<label class="label" for="pin">Access PIN</label>
-			<input class="input" style="font-family:ui-monospace,monospace" id="pin" name="pin" type="password" inputmode="numeric" maxlength="6" placeholder="6-digit PIN" bind:value={pin} autocomplete="off" required />
+			<input class="input font-mono" id="pin" name="pin" type="password" inputmode="numeric" maxlength="6" placeholder="6-digit PIN" bind:value={pin} autocomplete="off" required />
 		</div>
-		<button class="sv-btn" disabled={busy}>{busy ? 'Checking…' : 'Continue'}{#if !busy}<Icon name="arrow-right" size={16} />{/if}</button>
+		<button class="btn w-full" disabled={busy}>{busy ? 'Checking…' : 'Continue'}</button>
 	</form>
 
 	{#if forms.length}
-		<div class="sv-card" style="display:flex;flex-direction:column;gap:10px">
-			<b>Submit another application</b>
-			<p class="sv-sub">Applying for someone else? Start a new form below.</p>
+		<div class="card space-y-3">
+			<h2 class="font-bold">Submit another application</h2>
+			<p class="text-sm text-slate-600">Applying for someone else? Start a new form below.</p>
 			{#each forms as [id, title] (id)}
-				<a class="sv-btn ghost" href="/register/{id}?new=1" data-sveltekit-reload>{title}</a>
+				<a class="btn-ghost block text-center" href="/register/{id}?new=1" data-sveltekit-reload>{title}</a>
 			{/each}
-			<button type="button" class="sv-sub" style="background:none;border:0;text-decoration:underline;cursor:pointer;text-align:left" onclick={forgetAll}>Forget saved logins on this device</button>
+			<button type="button" class="text-xs text-slate-500 underline" onclick={forgetAll}>Forget saved logins on this device</button>
 		</div>
 	{/if}
-
-	<p class="sv-sub" style="text-align:center">
-		<a href="/home" style="text-decoration:underline">Back to home</a> &nbsp;·&nbsp; <a href="/admin" style="text-decoration:underline">Admin login</a>
-	</p>
-</Screen>
+</main>

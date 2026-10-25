@@ -61,11 +61,6 @@
 		}
 	});
 
-	// exam year choices: this year back to 1990 (an older year already saved or pasted is kept as an extra choice)
-	const thisYear = new Date().getFullYear();
-	const YEARS = Array.from({ length: thisYear - 1989 }, (_, k) => String(thisYear - k));
-	const yearsFor = (y) => (y && !YEARS.includes(String(y)) ? [...YEARS, String(y)] : YEARS);
-
 	const eid = $derived(`f_${ssceField.id}`);
 	const cid = $derived(`f_${scratchField.id}`);
 	const required = $derived(ssceField.required || scratchField.required);
@@ -80,7 +75,7 @@
 </script>
 
 <div bind:this={rootE} id={eid} class="space-y-4">
-	<h3 class="exam-h3 text-base font-bold tracking-wide text-slate-800">
+	<h3 class="text-base font-bold tracking-wide text-slate-800">
 		EXAM INFORMATION{#if required}<span class="text-red-600"> *</span>{/if}
 	</h3>
 	<!-- anchor so BulkFill can find the scratch card part -->
@@ -99,32 +94,35 @@
 			{/if}
 
 			<div>
-				<label class="label" for={`${eid}_b${i}`}>WAEC/NECO Exam Type{#if ssceField.required && i === 0}<span class="text-red-600"> *</span>{/if}</label>
+				<label class="label" for={`${eid}_b${i}`}>Exam type</label>
 				<select class="input" id={`${eid}_b${i}`} bind:value={e.board}>
-					<option value="">Select exam type</option>
+					<option value="">Select…</option>
 					{#each SSCE_BOARDS as b}<option value={b}>{b}</option>{/each}
 				</select>
 			</div>
 			<div>
-				<label class="label" for={`${cid}_p${i}`}>Scratch Card Number{#if scratchField.required && i === 0}<span class="text-red-600"> *</span>{/if}</label>
-				<input class="input" id={`${cid}_p${i}`} bind:value={c.pin} autocomplete="off" inputmode="numeric" placeholder="Enter 10 or 12 digits" />
+				<label class="label" for={`${eid}_n${i}`}>
+					{ssceField.label}{#if ssceField.required && i === 0}<span class="text-red-600"> *</span>{/if}
+				</label>
+				<input class="input" id={`${eid}_n${i}`} bind:value={e.number} autocomplete="off" />
 			</div>
-			{#if boardOf(e.board) === 'WAEC'}
+			<div>
+				<label class="label" for={`${eid}_y${i}`}>Exam year</label>
+				<input class="input" id={`${eid}_y${i}`} bind:value={e.year} inputmode="numeric" maxlength="4" placeholder="e.g. 2012" />
+			</div>
+
+			<div class="space-y-3 border-t border-slate-200 pt-3">
+				<p class="text-sm font-semibold text-slate-700">Scratch card</p>
 				<div>
-					<label class="label" for={`${cid}_s${i}`}>Serial Number</label>
-					<input class="input" id={`${cid}_s${i}`} bind:value={c.serial} autocomplete="off" placeholder="Enter serial number" />
+					<label class="label" for={`${cid}_p${i}`}>Scratch card PIN</label>
+					<input class="input" id={`${cid}_p${i}`} bind:value={c.pin} autocomplete="off" />
 				</div>
-			{/if}
-			<div>
-				<label class="label" for={`${eid}_y${i}`}>Year of Examination{#if ssceField.required && i === 0}<span class="text-red-600"> *</span>{/if}</label>
-				<select class="input" id={`${eid}_y${i}`} bind:value={e.year}>
-					<option value="">Select year</option>
-					{#each yearsFor(e.year) as y}<option value={y}>{y}</option>{/each}
-				</select>
-			</div>
-			<div>
-				<label class="label" for={`${eid}_n${i}`}>Index Number{#if ssceField.required && i === 0}<span class="text-red-600"> *</span>{/if}</label>
-				<input class="input" id={`${eid}_n${i}`} bind:value={e.number} autocomplete="off" placeholder="Enter your index number" />
+				{#if boardOf(e.board) === 'WAEC'}
+					<div>
+						<label class="label" for={`${cid}_s${i}`}>Serial number</label>
+						<input class="input" id={`${cid}_s${i}`} bind:value={c.serial} autocomplete="off" />
+					</div>
+				{/if}
 			</div>
 		</div>
 	{/each}

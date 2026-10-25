@@ -30,8 +30,3 @@ The main admin (an `admins/<uid>` doc with no `role: "sub"`) opens **Team** in t
 ## Notes
 - LGA is a free-text field for now (full state→LGA dataset can be added later).
 - Application numbers use the form's prefix; prefixes must be unique across forms.
-
-## Applicant app screens
-The applicant side is a mobile-app style flow (navy & gold), in `src/routes` + `src/lib/ui`:
-`/` splash → `/home` · `/apply` (picks the open form) → `/register/<slug>` (4-step wizard: Personal, Academic, Contact, Review & Submit) · `/login` · `/status` · `/application` (My Application, edit) · `/documents` · `/more` (+ `/notifications`, `/more/password`, `/help`, `/about`, `/privacy`, `/terms`).
-Branding (name, school, links, support email) is in `src/lib/brand.js`; colours and component styles are in `src/mobile.css`. Form fields are grouped into steps automatically from their type/label (`src/lib/sections.js`). Quiz and survey links keep their original look.
