@@ -14,6 +14,7 @@
 	let error = $state('');
 	let busy = $state(false);
 	let checkError = $state('');
+	let menuOpen = $state(false);
 
 	onMount(() =>
 		onAuthStateChanged(auth, async (u) => {
@@ -79,16 +80,64 @@
 		</div>
 	</main>
 {:else}
-	<header class="border-b border-slate-200 bg-white">
-		<div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-			<a href="/admin" class="text-lg font-extrabold text-teal-700">EliteReg <span class="text-xs font-medium text-slate-500">{session.role === 'sub' ? 'Sub-admin' : 'Admin'}</span></a>
-			<div class="flex items-center gap-3 text-sm">
-				{#if session.role === 'owner'}<a href="/admin/team" class="font-medium text-teal-700 hover:underline">Team</a>{/if}
-				<span class="hidden text-slate-500 sm:inline">{user?.email}</span>
-				<ThemeToggle />
-				<button class="btn-3d-ghost btn-3d-lg" onclick={() => signOut(auth)}>Sign out</button>
-			</div>
-		</div>
+	<header class="admin-head">
+		<button type="button" class="head-menu" aria-label="Open menu" onclick={() => (menuOpen = true)}>
+			<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+		</button>
+		<a href="/admin" class="head-brand" aria-label="EliteReg dashboard">
+			<svg viewBox="0 0 40 34" width="42" height="36" aria-hidden="true">
+				<path d="M12 1.5h27l-4.6 8.6H7.4z" fill="#0f8f86" />
+				<path d="M7.5 12.7h22l-4.6 8.6H2.9z" fill="#0b6f69" />
+				<path d="M3.1 23.9h27.4l-4.6 8.6H-1.5z" fill="#0f8f86" />
+			</svg>
+			<span class="head-name">EliteReg</span>
+		</a>
+		<span class="head-role">{session.role === 'sub' ? 'Sub-admin' : 'Admin'}</span>
 	</header>
-	<main class="mx-auto max-w-5xl px-4 py-6">{@render children()}</main>
+
+	{#if menuOpen}
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+		<div class="drawer-back" onclick={() => (menuOpen = false)}></div>
+		<aside class="drawer" role="dialog" aria-modal="true" aria-label="Menu">
+			<div class="drawer-top">
+				<span class="head-name">EliteReg</span>
+				<button type="button" class="head-menu" aria-label="Close menu" onclick={() => (menuOpen = false)}>✕</button>
+			</div>
+			<div class="drawer-user">{user?.email}</div>
+			<a href="/admin" class="drawer-link" onclick={() => (menuOpen = false)}>Dashboard</a>
+			{#if session.role === 'owner'}<a href="/admin/team" class="drawer-link" onclick={() => (menuOpen = false)}>Team</a>{/if}
+			<div class="drawer-row"><span>Theme</span><ThemeToggle /></div>
+			<button class="drawer-out" onclick={() => signOut(auth)}>Sign out</button>
+		</aside>
+	{/if}
+	<main class="mx-auto max-w-5xl px-4 pb-10 pt-5">{@render children()}</main>
 {/if}
+
+<svelte:window onkeydown={(e) => { if (menuOpen && e.key === 'Escape') menuOpen = false; }} />
+
+<style>
+	.admin-head {
+		position: sticky; top: 0; z-index: 30;
+		display: flex; align-items: center; justify-content: center; gap: .7rem;
+		padding: .85rem 1rem;
+		background: var(--hd-bg, #fff);
+		box-shadow: 0 2px 10px rgba(15, 27, 61, .08);
+	}
+	.head-menu { position: absolute; left: .6rem; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: .75rem; color: var(--hd-text, #0f1b3d); background: transparent; border: 0; font-size: 1.2rem; cursor: pointer; }
+	.head-brand { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
+	.head-name { font-size: 1.75rem; font-weight: 800; letter-spacing: -.01em; color: var(--hd-text, #0f1b3d); line-height: 1; }
+	.head-role { padding: .4rem .95rem; border-radius: 9999px; background: #d9f1ee; color: #0b7d76; font-size: 1.02rem; font-weight: 600; }
+	.drawer-back { position: fixed; inset: 0; z-index: 40; background: rgba(15, 27, 61, .45); }
+	.drawer { position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(19rem, 86vw); display: flex; flex-direction: column; gap: .35rem; padding: 1rem; background: var(--hd-bg, #fff); box-shadow: 8px 0 30px rgba(15, 27, 61, .25); }
+	.drawer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+	.drawer-top .head-menu { position: static; }
+	.drawer-user { margin-bottom: .6rem; padding-bottom: .8rem; border-bottom: 1px solid rgba(100, 116, 139, .25); font-size: .85rem; color: #64748b; word-break: break-all; }
+	.drawer-link { padding: .75rem .9rem; border-radius: .75rem; font-weight: 600; color: var(--hd-text, #0f1b3d); text-decoration: none; }
+	.drawer-link:hover { background: rgba(13, 148, 136, .1); }
+	.drawer-row { display: flex; align-items: center; justify-content: space-between; padding: .5rem .9rem; font-weight: 600; color: var(--hd-text, #0f1b3d); }
+	.drawer-out { margin-top: auto; padding: .8rem; border-radius: .75rem; border: 1px solid rgba(100, 116, 139, .4); background: transparent; font-weight: 700; color: var(--hd-text, #0f1b3d); cursor: pointer; }
+	:global(html.dark) { --hd-bg: #0f172a; --hd-text: #f1f5f9; }
+	:global(html.dark) .head-role { background: rgba(94, 234, 212, .16); color: #5eead4; }
+	:global(html.dark.forest) { --hd-bg: #143533; --hd-text: #fbf7e8; }
+	:global(html.dark.forest) .head-role { background: rgba(242, 184, 58, .18); color: #f2b83a; }
+</style>
