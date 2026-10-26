@@ -5,6 +5,7 @@
 	import { auth, firestore } from '$lib/firebase.js';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
 	import { session } from '$lib/adminSession.svelte.js';
+	import { page } from '$app/state';
 
 	let { children } = $props();
 	let state = $state('loading'); // loading | signedout | denied | ok
@@ -110,7 +111,24 @@
 			<button class="drawer-out" onclick={() => signOut(auth)}>Sign out</button>
 		</aside>
 	{/if}
-	<main class="mx-auto max-w-5xl px-4 pb-10 pt-5">{@render children()}</main>
+	<main class="mx-auto max-w-5xl px-4 pb-28 pt-5">{@render children()}</main>
+
+	<nav class="botnav" aria-label="Main">
+		<a href="/admin" class:on={page.url.pathname === '/admin'}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7.5 9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg>Home
+		</a>
+		<a href="/admin/notes" class:on={page.url.pathname.startsWith('/admin/notes')}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>Notes
+		</a>
+		{#if session.role === 'owner'}
+			<a href="/admin/team" class:on={page.url.pathname.startsWith('/admin/team')}>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17.5" cy="9" r="2.4"/><path d="M17 14.6c2.4.2 4 1.9 4 4.4"/></svg>Team
+			</a>
+		{/if}
+		<button type="button" onclick={() => (menuOpen = true)}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu
+		</button>
+	</nav>
 {/if}
 
 <svelte:window onkeydown={(e) => { if (menuOpen && e.key === 'Escape') menuOpen = false; }} />
@@ -127,6 +145,12 @@
 	.head-brand { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
 	.head-name { font-size: 1.75rem; font-weight: 800; letter-spacing: -.01em; color: var(--hd-text, #0f1b3d); line-height: 1; }
 	.head-role { padding: .4rem .95rem; border-radius: 9999px; background: #d9f1ee; color: #0b7d76; font-size: 1.02rem; font-weight: 600; }
+	.botnav { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; padding: .5rem .5rem calc(.55rem + env(safe-area-inset-bottom, 0px)); background: var(--hd-bg, #fff); box-shadow: 0 -4px 18px rgba(15, 27, 61, .1); }
+	.botnav a, .botnav button { display: flex; flex-direction: column; align-items: center; gap: .2rem; flex: 1; padding: .3rem 0; border: 0; background: transparent; color: #7b8aa6; font-size: .78rem; font-weight: 600; text-decoration: none; cursor: pointer; }
+	.botnav svg { width: 1.6rem; height: 1.6rem; }
+	.botnav .on { color: #0e8f8c; }
+	:global(html.dark) .botnav .on { color: #5eead4; }
+	:global(html.dark.forest) .botnav .on { color: #f2b83a; }
 	.drawer-back { position: fixed; inset: 0; z-index: 40; background: rgba(15, 27, 61, .45); }
 	.drawer { position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(19rem, 86vw); display: flex; flex-direction: column; gap: .35rem; padding: 1rem; background: var(--hd-bg, #fff); box-shadow: 8px 0 30px rgba(15, 27, 61, .25); }
 	.drawer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }

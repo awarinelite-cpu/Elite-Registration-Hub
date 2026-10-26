@@ -164,23 +164,20 @@
 	{#if loading}
 		<p class="muted">Loading…</p>
 	{:else}
-		<div class="stats">
-			<div class="stat" style="--tone:#0f9a8e">
-				<span class="stat-ic">{@render ic('doc')}</span>
-				<div><div class="stat-label">Total forms</div><div class="stat-num">{forms.length}</div><div class="stat-sub"><i class="dot"></i>All forms</div></div>
+		<div class="hero">
+			<span class="hero-ic">{@render ic('users')}</span>
+			<div class="hero-txt">
+				<div class="hero-label">Applications</div>
+				<div class="hero-num">{total.toLocaleString()}</div>
+				<div class="hero-sub" class:down={trendDown}>{trendText}</div>
 			</div>
-			<div class="stat" style="--tone:#1f9d6b">
-				<span class="stat-ic">{@render ic('users')}</span>
-				<div><div class="stat-label">Applications</div><div class="stat-num">{total.toLocaleString()}</div><div class="stat-sub trend" class:down={trendDown}>{trendText}</div></div>
-			</div>
-			<div class="stat" style="--tone:#0f9a8e">
-				<span class="stat-ic">{@render ic('toggle')}</span>
-				<div><div class="stat-label">Active forms</div><div class="stat-num">{activeCount}</div><div class="stat-sub"><i class="dot"></i>Live now</div></div>
-			</div>
-			<div class="stat" style="--tone:#7050c8">
-				<span class="stat-ic">{@render ic('note')}</span>
-				<div><div class="stat-label">Notes</div><div class="stat-num">{noteCount ?? '–'}</div><div class="stat-sub"><i class="dot" style="background:#7b55d0"></i>Private notes</div></div>
-			</div>
+			<svg class="hero-spark" viewBox="0 0 120 60" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 52 L30 38 L50 44 L78 22 L96 28 L116 8" stroke="#5eead4" stroke-width="3.2" /><path d="M104 8 H116 V20" stroke="#5eead4" stroke-width="3.2" /></svg>
+		</div>
+
+		<div class="stats3">
+			<div class="stat3" style="--tone:#0f9a8e"><span class="stat-ic">{@render ic('doc')}</span><div class="stat3-label">Total forms</div><div class="stat3-num">{forms.length}</div><div class="stat3-sub">All forms</div></div>
+			<div class="stat3" style="--tone:#1f9d6b"><span class="stat-ic">{@render ic('toggle')}</span><div class="stat3-label">Active forms</div><div class="stat3-num">{activeCount}</div><div class="stat3-sub">Live now</div></div>
+			<div class="stat3" style="--tone:#7050c8"><span class="stat-ic">{@render ic('note')}</span><div class="stat3-label">Notes</div><div class="stat3-num">{noteCount ?? '–'}</div><div class="stat3-sub">Private notes</div></div>
 		</div>
 
 		<h2>Quick actions</h2>
@@ -399,6 +396,44 @@
 	.qa:active, .create-btn:active { transform: translateY(1px) scale(.98); }
 	.qa:hover, .col:hover, .res-row:hover { border-color: transparent; }
 	@media (prefers-reduced-motion: reduce) { .stat, .qa, .search, .col, .res-row, .create-btn { transition: none; } }
+
+	/* ===== layout from the NurseShift-style home screen ===== */
+	.hero { position: relative; overflow: hidden; display: flex; align-items: center; gap: 1rem; padding: 1.15rem 1.2rem; border-radius: 1.4rem; color: #fff;
+		background: radial-gradient(circle at 90% 0%, rgba(94,234,212,.28), transparent 50%), linear-gradient(145deg, #0b4f4a 0%, #063633 60%, #052b29 100%);
+		border: 3px solid transparent; background-clip: padding-box, border-box;
+		box-shadow: inset 0 0 0 1px rgba(255,255,255,.28), inset 0 0 12px rgba(94,234,212,.22), var(--glass-drop); }
+	.hero::before { content: ''; position: absolute; pointer-events: none; top: 2px; left: 3px; right: 3px; height: 38%; border-radius: 1.2rem 1.2rem 55% 55% / 1.2rem 1.2rem 1rem 1rem; background: linear-gradient(to bottom, rgba(255,255,255,.2), rgba(255,255,255,.02)); }
+	.hero > * { position: relative; }
+	.hero-ic { flex: none; width: 3.6rem; height: 3.6rem; padding: .85rem; border-radius: 50%; background: rgba(45,212,191,.22); border: 1px solid rgba(94,234,212,.5); color: #5eead4; }
+	.hero-ic :global(svg) { width: 100%; height: 100%; }
+	.hero-label { font-size: 1rem; opacity: .85; }
+	.hero-num { font-size: 2.5rem; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
+	.hero-sub { font-size: .98rem; color: #5eead4; font-weight: 500; }
+	.hero-sub.down { color: #fda4af; }
+	.hero-spark { margin-left: auto; flex: none; width: 6.5rem; height: 3.4rem; }
+	:global(html.dark.forest) .hero { background: radial-gradient(circle at 90% 0%, rgba(242,184,58,.25), transparent 50%), linear-gradient(145deg, #1d4a46, #0f2d2b); }
+
+	.stats3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-top: .85rem; }
+	.stat3 { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: .15rem; padding: .85rem .8rem; border-radius: 1.25rem; border: 4px solid transparent; color: var(--text);
+		background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
+		box-shadow: inset 0 0 7px 1px rgba(255,255,255,.55), inset 0 -3px 5px rgba(0,0,0,.14), var(--ring), var(--glass-drop); }
+	:global(html.dark) .stat3 { box-shadow: inset 0 0 7px 1px rgba(255,255,255,.2), inset 0 -3px 5px rgba(0,0,0,.4), var(--ring), var(--glass-drop); }
+	.stat3::before { content: ''; position: absolute; pointer-events: none; top: 2px; left: 3px; right: 3px; height: 30%; border-radius: 1rem 1rem 55% 55% / 1rem 1rem .8rem .8rem; background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.06)); }
+	:global(html.dark) .stat3::before { background: linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,.03)); }
+	.stat3 > * { position: relative; z-index: 1; }
+	.stat3 .stat-ic { width: 2.9rem; height: 2.9rem; padding: .65rem; margin-bottom: .35rem; }
+	.stat3-label { font-size: .98rem; line-height: 1.2; color: var(--sub); }
+	.stat3-num { font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+	.stat3-sub { font-size: .82rem; color: var(--sub); }
+
+	/* quick actions: round icon bubble above a centred label */
+	.qa { align-items: center; justify-content: center; text-align: center; gap: .45rem; min-height: 5.6rem; }
+	.qa-ic { width: 2.9rem; height: 2.9rem; padding: .65rem; border-radius: 50%; color: #0f8f86; background: linear-gradient(to bottom, #d9f6f1, #aee7de); box-shadow: inset 0 0 5px rgba(255,255,255,.8), 0 3px 6px -3px rgba(15,60,70,.5); }
+	.qa-ic.word { color: #2563c9; background: linear-gradient(to bottom, #e0ebff, #b9d0fb); }
+	:global(html.dark) .qa-ic { background: linear-gradient(to bottom, rgba(94,234,212,.35), rgba(94,234,212,.15)); color: #99f6e4; }
+	:global(html.dark) .qa-ic.word { background: linear-gradient(to bottom, rgba(96,165,250,.4), rgba(96,165,250,.18)); color: #bfdbfe; }
+	.qa { font-size: .95rem; font-weight: 600; }
+	@media (min-width: 720px) { .stats3 { max-width: 40rem; } }
 
 	@media (min-width: 720px) {
 		.stats { grid-template-columns: repeat(4, 1fr); }
