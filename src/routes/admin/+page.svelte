@@ -293,12 +293,7 @@
 	.create-ic { display: inline-flex; width: 1.65rem; height: 1.65rem; }
 	.create-ic :global(svg), .qa-ic :global(svg), .col-ic :global(svg), .stat-ic :global(svg), .search-ic :global(svg), .col-chev :global(svg) { width: 100%; height: 100%; }
 
-	.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: .8rem; }
-	.stat { display: flex; align-items: center; gap: .9rem; padding: .95rem; border: 1px solid var(--line); border-radius: 1.1rem; background: var(--card); box-shadow: var(--shadow); }
 	.stat-ic { flex: none; display: grid; place-items: center; width: 3.7rem; height: 3.7rem; padding: .85rem; border-radius: 1rem; color: var(--tone); background: color-mix(in srgb, var(--tone) 14%, var(--card)); }
-	.stat-label { font-size: 1.02rem; font-weight: 500; }
-	.stat-num { font-size: 2.2rem; font-weight: 800; line-height: 1.1; }
-	.stat-sub { display: flex; align-items: center; gap: .4rem; font-size: .98rem; color: var(--sub); }
 	.dot { width: .55rem; height: .55rem; border-radius: 50%; background: #0f9a8e; display: inline-block; }
 	.trend { color: #0f9a8e; font-weight: 500; }
 	.trend.down { color: #d9534f; }
@@ -339,19 +334,16 @@
 	.muted { color: var(--sub); }
 
 	/* ===== glass-bubble finish (same recipe as the app-wide theme: clear rim + solid centre + gloss) ===== */
-	.dash { --fa: #ffffff; --fb: #e3eaf3; }
-	:global(html.dark) .dash { --fa: #34465f; --fb: #243349; }
+	.dash { --fa: #ffffff; --fb: #e3eaf3; --glow: rgba(255,255,255,.55); --glow-b: rgba(0,0,0,.14); --gloss-a: rgba(255,255,255,.6); --gloss-b: rgba(255,255,255,.06); }
+	:global(html.dark) .dash { --fa: #34465f; --fb: #243349; --glow: rgba(255,255,255,.2); --glow-b: rgba(0,0,0,.4); --gloss-a: rgba(255,255,255,.22); --gloss-b: rgba(255,255,255,.03); }
 	:global(html.dark.forest) .dash { --fa: #1f4846; --fb: #143230; }
 
 	.stat, .qa, .search, .col, .res-row, .create-btn {
 		position: relative; overflow: hidden;
 		border: 4px solid transparent;
 		background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-		box-shadow: inset 0 0 7px 1px rgba(255,255,255,.55), inset 0 -3px 5px rgba(0,0,0,.14), var(--ring), var(--glass-drop);
+		box-shadow: inset 0 0 7px 1px var(--glow), inset 0 -3px 5px var(--glow-b), var(--ring), var(--glass-drop);
 		transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-	}
-	:global(html.dark) .stat, :global(html.dark) .qa, :global(html.dark) .search, :global(html.dark) .col, :global(html.dark) .res-row, :global(html.dark) .create-btn {
-		box-shadow: inset 0 0 7px 1px rgba(255,255,255,.2), inset 0 -3px 5px rgba(0,0,0,.4), var(--ring), var(--glass-drop);
 	}
 	.stat, .col { border-radius: 1.5rem; }
 	.qa, .search, .res-row { border-radius: 1.25rem; }
@@ -363,9 +355,8 @@
 		content: ''; position: absolute; pointer-events: none; z-index: 0;
 		top: 2px; left: 3px; right: 3px; height: 42%;
 		border-radius: 1.1rem 1.1rem 55% 55% / 1.1rem 1.1rem 1rem 1rem;
-		background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.06));
+		background: linear-gradient(to bottom, var(--gloss-a), var(--gloss-b));
 	}
-	:global(html.dark) .stat::before, :global(html.dark) .qa::before, :global(html.dark) .search::before, :global(html.dark) .col::before, :global(html.dark) .res-row::before { background: linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,.03)); }
 	.stat::before, .col::before { height: 34%; }
 	.stat > *, .qa > :not(.tag), .search > *, .col > *, .res-row > *, .create-btn > * { position: relative; z-index: 1; }
 	.tag { z-index: 1; }
@@ -416,10 +407,9 @@
 	.stats3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-top: .85rem; }
 	.stat3 { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: .15rem; padding: .85rem .8rem; border-radius: 1.25rem; border: 4px solid transparent; color: var(--text);
 		background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-		box-shadow: inset 0 0 7px 1px rgba(255,255,255,.55), inset 0 -3px 5px rgba(0,0,0,.14), var(--ring), var(--glass-drop); }
+		box-shadow: inset 0 0 7px 1px var(--glow), inset 0 -3px 5px var(--glow-b), var(--ring), var(--glass-drop); }
 	:global(html.dark) .stat3 { box-shadow: inset 0 0 7px 1px rgba(255,255,255,.2), inset 0 -3px 5px rgba(0,0,0,.4), var(--ring), var(--glass-drop); }
-	.stat3::before { content: ''; position: absolute; pointer-events: none; top: 2px; left: 3px; right: 3px; height: 30%; border-radius: 1rem 1rem 55% 55% / 1rem 1rem .8rem .8rem; background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.06)); }
-	:global(html.dark) .stat3::before { background: linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,.03)); }
+	.stat3::before { content: ''; position: absolute; pointer-events: none; top: 2px; left: 3px; right: 3px; height: 30%; border-radius: 1rem 1rem 55% 55% / 1rem 1rem .8rem .8rem; background: linear-gradient(to bottom, var(--gloss-a), var(--gloss-b)); }
 	.stat3 > * { position: relative; z-index: 1; }
 	.stat3 .stat-ic { width: 2.9rem; height: 2.9rem; padding: .65rem; margin-bottom: .35rem; }
 	.stat3-label { font-size: .98rem; line-height: 1.2; color: var(--sub); }
@@ -436,15 +426,13 @@
 	@media (min-width: 720px) { .stats3 { max-width: 40rem; } }
 
 	@media (min-width: 720px) {
-		.stats { grid-template-columns: repeat(4, 1fr); }
-		.quick { grid-template-columns: repeat(6, 1fr); }
+			.quick { grid-template-columns: repeat(6, 1fr); }
 		.cols { grid-template-columns: repeat(2, 1fr); }
 		h1 { font-size: 2.4rem; }
 	}
 	@media (max-width: 380px) {
 		h1 { font-size: 1.8rem; }
 		.create-btn { padding: .75rem .9rem; font-size: .98rem; }
-		.stat-num { font-size: 1.9rem; }
-		.stat-ic { width: 3rem; height: 3rem; padding: .7rem; }
+			.stat-ic { width: 3rem; height: 3rem; padding: .7rem; }
 	}
 </style>
