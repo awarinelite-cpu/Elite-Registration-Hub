@@ -341,6 +341,65 @@
 	.mono { font-family: ui-monospace, monospace; }
 	.muted { color: var(--sub); }
 
+	/* ===== glass-bubble finish (same recipe as the app-wide theme: clear rim + solid centre + gloss) ===== */
+	.dash { --fa: #ffffff; --fb: #e3eaf3; }
+	:global(html.dark) .dash { --fa: #34465f; --fb: #243349; }
+	:global(html.dark.forest) .dash { --fa: #1f4846; --fb: #143230; }
+
+	.stat, .qa, .search, .col, .res-row, .create-btn {
+		position: relative; overflow: hidden;
+		border: 4px solid transparent;
+		background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
+		box-shadow: inset 0 0 7px 1px rgba(255,255,255,.55), inset 0 -3px 5px rgba(0,0,0,.14), var(--ring), var(--glass-drop);
+		transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+	}
+	:global(html.dark) .stat, :global(html.dark) .qa, :global(html.dark) .search, :global(html.dark) .col, :global(html.dark) .res-row, :global(html.dark) .create-btn {
+		box-shadow: inset 0 0 7px 1px rgba(255,255,255,.2), inset 0 -3px 5px rgba(0,0,0,.4), var(--ring), var(--glass-drop);
+	}
+	.stat, .col { border-radius: 1.5rem; }
+	.qa, .search, .res-row { border-radius: 1.25rem; }
+	.create-btn { border-radius: 1.1rem; --fa: #14b8a6; --fb: #0f766e; color: #fff; text-shadow: 0 1px 1px rgba(4,47,46,.55); font-weight: 700; }
+	:global(html.dark.forest) .create-btn { --fa: #f7c852; --fb: #dfa01c; color: #12292a; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+
+	/* clear-coat gloss across the top of each bubble */
+	.stat::before, .qa::before, .search::before, .col::before, .res-row::before, .create-btn::before {
+		content: ''; position: absolute; pointer-events: none; z-index: 0;
+		top: 2px; left: 3px; right: 3px; height: 42%;
+		border-radius: 1.1rem 1.1rem 55% 55% / 1.1rem 1.1rem 1rem 1rem;
+		background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.06));
+	}
+	:global(html.dark) .stat::before, :global(html.dark) .qa::before, :global(html.dark) .search::before, :global(html.dark) .col::before, :global(html.dark) .res-row::before { background: linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,.03)); }
+	.stat::before, .col::before { height: 34%; }
+	.stat > *, .qa > :not(.tag), .search > *, .col > *, .res-row > *, .create-btn > * { position: relative; z-index: 1; }
+	.tag { z-index: 1; }
+
+	/* coloured centres for the collection rows, with a rim tinted to match */
+	.col {
+		--fa: color-mix(in srgb, var(--tone) 10%, white); --fb: color-mix(in srgb, var(--tone) 30%, white);
+		--rim: linear-gradient(145deg, #ffffff 0%, color-mix(in srgb, var(--tone) 45%, white) 30%, var(--tone) 66%, color-mix(in srgb, var(--tone) 35%, white) 100%);
+		border-color: transparent;
+	}
+	:global(html.dark) .col { --fa: color-mix(in srgb, var(--tone) 38%, #243349); --fb: color-mix(in srgb, var(--tone) 22%, #1b2740); }
+
+	/* icon tiles: small glass bubbles too */
+	.stat-ic, .col-ic {
+		position: relative; overflow: hidden;
+		box-shadow: inset 0 0 6px 1px rgba(255,255,255,.5), inset 0 -3px 4px rgba(0,0,0,.18), 0 5px 8px -4px rgba(15,27,61,.45);
+	}
+	.stat-ic { background: linear-gradient(to bottom, color-mix(in srgb, var(--tone) 22%, white), color-mix(in srgb, var(--tone) 42%, white)); border: 2px solid color-mix(in srgb, var(--tone) 55%, white); }
+	:global(html.dark) .stat-ic { background: linear-gradient(to bottom, color-mix(in srgb, var(--tone) 55%, #243349), color-mix(in srgb, var(--tone) 30%, #1b2740)); color: #fff; }
+	.col-ic { background: linear-gradient(to bottom, color-mix(in srgb, var(--tone) 70%, white), var(--tone)); border: 2px solid color-mix(in srgb, var(--tone) 45%, white); }
+	.stat-ic::before, .col-ic::before { content: ''; position: absolute; inset: 2px 3px auto 3px; height: 42%; border-radius: 9999px; background: linear-gradient(to bottom, rgba(255,255,255,.65), rgba(255,255,255,.05)); pointer-events: none; }
+	.stat-ic :global(svg), .col-ic :global(svg) { position: relative; z-index: 1; }
+
+	@media (hover: hover) {
+		.stat:hover, .qa:hover, .col:hover, .res-row:hover, .search:focus-within { transform: translateY(-3px); }
+		.create-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+	}
+	.qa:active, .create-btn:active { transform: translateY(1px) scale(.98); }
+	.qa:hover, .col:hover, .res-row:hover { border-color: transparent; }
+	@media (prefers-reduced-motion: reduce) { .stat, .qa, .search, .col, .res-row, .create-btn { transition: none; } }
+
 	@media (min-width: 720px) {
 		.stats { grid-template-columns: repeat(4, 1fr); }
 		.quick { grid-template-columns: repeat(6, 1fr); }
