@@ -132,5 +132,13 @@
 	.land::before { content: ''; position: absolute; z-index: -1; right: -3.5rem; top: 5.5rem; width: 15rem; height: 15rem; border-radius: 50%; border: 2px solid rgba(94, 234, 212, .22); box-shadow: 0 0 0 2.2rem rgba(94, 234, 212, .05), 0 0 0 4.4rem rgba(94, 234, 212, .03); }
 	.land-mark { display: grid; place-items: center; width: 6rem; height: 6rem; border-radius: 1.75rem; background: linear-gradient(145deg, rgba(255,255,255,.2), rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.35); box-shadow: inset 0 0 14px rgba(255,255,255,.2), 0 18px 30px -12px rgba(0,0,0,.6); }
 	.land-name { font-size: 2.2rem; font-weight: 800; letter-spacing: -.01em; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.35); }
-	.land :global(.btn) { --fa: #22d3b4; --fb: #0f9f8c; padding-top: .8rem; padding-bottom: .8rem; font-size: 1.05rem; }
+	/* flat cards and buttons on the landing page */
+	.land :global(.card) { border: 0; border-radius: 1.4rem; background: #ffffff; box-shadow: 0 18px 36px -16px rgba(0,0,0,.55); }
+	:global(html.dark) .land :global(.card) { background: #12303a; color: #e6f6f4; }
+	.land :global(.card::before), .land :global(.btn::before), .land :global(.btn::after), .land :global(.btn-ghost::before), .land :global(.btn-ghost::after) { display: none; }
+	.land :global(.btn) { border: 0; border-radius: 1rem; background: #14b8a6; color: #fff; text-shadow: none; box-shadow: 0 8px 16px -8px rgba(0,0,0,.55); padding-top: .85rem; padding-bottom: .85rem; font-size: 1.05rem; }
+	.land :global(.btn:hover) { background: #0fa896; }
+	.land :global(.btn-ghost) { border: 1px solid #cbd5e1; border-radius: 1rem; background: #f8fafc; color: #0f766e; box-shadow: none; }
+	:global(html.dark) .land :global(.btn-ghost) { background: #0f2730; border-color: #2c5560; color: #99f6e4; }
+	.land-mark { box-shadow: 0 18px 30px -12px rgba(0,0,0,.6); }
 </style>

@@ -333,67 +333,32 @@
 	.mono { font-family: ui-monospace, monospace; }
 	.muted { color: var(--sub); }
 
-	/* ===== glass-bubble finish (same recipe as the app-wide theme: clear rim + solid centre + gloss) ===== */
-	.dash { --fa: #ffffff; --fb: #e3eaf3; --glow: rgba(255,255,255,.55); --glow-b: rgba(0,0,0,.14); --gloss-a: rgba(255,255,255,.6); --gloss-b: rgba(255,255,255,.06); }
-	:global(html.dark) .dash { --fa: #34465f; --fb: #243349; --glow: rgba(255,255,255,.2); --glow-b: rgba(0,0,0,.4); --gloss-a: rgba(255,255,255,.22); --gloss-b: rgba(255,255,255,.03); }
-	:global(html.dark.forest) .dash { --fa: #1f4846; --fb: #143230; }
-
-	.stat, .qa, .search, .col, .res-row, .create-btn {
-		position: relative; overflow: hidden;
-		border: 4px solid transparent;
-		background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-		box-shadow: inset 0 0 7px 1px var(--glow), inset 0 -3px 5px var(--glow-b), var(--ring), var(--glass-drop);
-		transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+	/* ===== flat finish ===== */
+	.stat3, .qa, .search, .col, .res-row {
+		border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow);
+		transition: transform .15s ease, border-color .15s ease;
 	}
-	.stat, .col { border-radius: 1.5rem; }
-	.qa, .search, .res-row { border-radius: 1.25rem; }
-	.create-btn { border-radius: 1.1rem; --fa: #14b8a6; --fb: #0f766e; color: #fff; text-shadow: 0 1px 1px rgba(4,47,46,.55); font-weight: 700; }
-	:global(html.dark.forest) .create-btn { --fa: #f7c852; --fb: #dfa01c; color: #12292a; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
-
-	/* clear-coat gloss across the top of each bubble */
-	.stat::before, .qa::before, .search::before, .col::before, .res-row::before, .create-btn::before {
-		content: ''; position: absolute; pointer-events: none; z-index: 0;
-		top: 2px; left: 3px; right: 3px; height: 42%;
-		border-radius: 1.1rem 1.1rem 55% 55% / 1.1rem 1.1rem 1rem 1rem;
-		background: linear-gradient(to bottom, var(--gloss-a), var(--gloss-b));
-	}
-	.stat::before, .col::before { height: 34%; }
-	.stat > *, .qa > :not(.tag), .search > *, .col > *, .res-row > *, .create-btn > * { position: relative; z-index: 1; }
-	.tag { z-index: 1; }
-
-	/* coloured centres for the collection rows, with a rim tinted to match */
-	.col {
-		--fa: color-mix(in srgb, var(--tone) 10%, white); --fb: color-mix(in srgb, var(--tone) 30%, white);
-		--rim: linear-gradient(145deg, #ffffff 0%, color-mix(in srgb, var(--tone) 45%, white) 30%, var(--tone) 66%, color-mix(in srgb, var(--tone) 35%, white) 100%);
-		border-color: transparent;
-	}
-	:global(html.dark) .col { --fa: color-mix(in srgb, var(--tone) 38%, #243349); --fb: color-mix(in srgb, var(--tone) 22%, #1b2740); }
-
-	/* icon tiles: small glass bubbles too */
-	.stat-ic, .col-ic {
-		position: relative; overflow: hidden;
-		box-shadow: inset 0 0 6px 1px rgba(255,255,255,.5), inset 0 -3px 4px rgba(0,0,0,.18), 0 5px 8px -4px rgba(15,27,61,.45);
-	}
-	.stat-ic { background: linear-gradient(to bottom, color-mix(in srgb, var(--tone) 22%, white), color-mix(in srgb, var(--tone) 42%, white)); border: 2px solid color-mix(in srgb, var(--tone) 55%, white); }
-	:global(html.dark) .stat-ic { background: linear-gradient(to bottom, color-mix(in srgb, var(--tone) 55%, #243349), color-mix(in srgb, var(--tone) 30%, #1b2740)); color: #fff; }
-	.col-ic { background: linear-gradient(to bottom, color-mix(in srgb, var(--tone) 70%, white), var(--tone)); border: 2px solid color-mix(in srgb, var(--tone) 45%, white); }
-	.stat-ic::before, .col-ic::before { content: ''; position: absolute; inset: 2px 3px auto 3px; height: 42%; border-radius: 9999px; background: linear-gradient(to bottom, rgba(255,255,255,.65), rgba(255,255,255,.05)); pointer-events: none; }
-	.stat-ic :global(svg), .col-ic :global(svg) { position: relative; z-index: 1; }
-
+	.stat3, .col { border-radius: 1.1rem; }
+	.qa, .search, .res-row { border-radius: .95rem; }
+	.create-btn { border: 0; background: var(--accent); color: var(--accent-text); text-shadow: none; box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--accent) 70%, black); transition: filter .15s ease, transform .15s ease; }
+	.col { background: color-mix(in srgb, var(--tone) 9%, var(--card)); border-color: color-mix(in srgb, var(--tone) 28%, var(--card)); box-shadow: none; }
+	.stat-ic { background: color-mix(in srgb, var(--tone) 14%, var(--card)); color: var(--tone); }
+	:global(html.dark) .stat-ic { color: color-mix(in srgb, var(--tone) 55%, white); }
+	.col-ic { background: var(--tone); color: #fff; }
+	.stat3, .qa, .search, .col, .res-row { position: relative; }
 	@media (hover: hover) {
-		.stat:hover, .qa:hover, .col:hover, .res-row:hover, .search:focus-within { transform: translateY(-3px); }
-		.create-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+		.qa:hover, .col:hover, .res-row:hover { border-color: var(--tone, var(--accent)); }
+		.create-btn:hover { filter: brightness(1.07); }
 	}
-	.qa:active, .create-btn:active { transform: translateY(1px) scale(.98); }
-	.qa:hover, .col:hover, .res-row:hover { border-color: transparent; }
-	@media (prefers-reduced-motion: reduce) { .stat, .qa, .search, .col, .res-row, .create-btn { transition: none; } }
+	.qa:active, .create-btn:active { transform: scale(.98); }
+	.qa-ic { background: color-mix(in srgb, #0f8f86 14%, var(--card)); box-shadow: none; }
+	.qa-ic.word { background: color-mix(in srgb, #2563c9 14%, var(--card)); }
+	@media (prefers-reduced-motion: reduce) { .stat3, .qa, .col, .create-btn { transition: none; } }
 
 	/* ===== layout from the NurseShift-style home screen ===== */
 	.hero { position: relative; overflow: hidden; display: flex; align-items: center; gap: 1rem; padding: 1.15rem 1.2rem; border-radius: 1.4rem; color: #fff;
 		background: radial-gradient(circle at 90% 0%, rgba(94,234,212,.28), transparent 50%), linear-gradient(145deg, #0b4f4a 0%, #063633 60%, #052b29 100%);
-		border: 3px solid transparent; background-clip: padding-box, border-box;
-		box-shadow: inset 0 0 0 1px rgba(255,255,255,.28), inset 0 0 12px rgba(94,234,212,.22), var(--glass-drop); }
-	.hero::before { content: ''; position: absolute; pointer-events: none; top: 2px; left: 3px; right: 3px; height: 38%; border-radius: 1.2rem 1.2rem 55% 55% / 1.2rem 1.2rem 1rem 1rem; background: linear-gradient(to bottom, rgba(255,255,255,.2), rgba(255,255,255,.02)); }
+		box-shadow: var(--shadow); }
 	.hero > * { position: relative; }
 	.hero-ic { flex: none; width: 3.6rem; height: 3.6rem; padding: .85rem; border-radius: 50%; background: rgba(45,212,191,.22); border: 1px solid rgba(94,234,212,.5); color: #5eead4; }
 	.hero-ic :global(svg) { width: 100%; height: 100%; }
@@ -405,12 +370,7 @@
 	:global(html.dark.forest) .hero { background: radial-gradient(circle at 90% 0%, rgba(242,184,58,.25), transparent 50%), linear-gradient(145deg, #1d4a46, #0f2d2b); }
 
 	.stats3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-top: .85rem; }
-	.stat3 { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: .15rem; padding: .85rem .8rem; border-radius: 1.25rem; border: 4px solid transparent; color: var(--text);
-		background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-		box-shadow: inset 0 0 7px 1px var(--glow), inset 0 -3px 5px var(--glow-b), var(--ring), var(--glass-drop); }
-	:global(html.dark) .stat3 { box-shadow: inset 0 0 7px 1px rgba(255,255,255,.2), inset 0 -3px 5px rgba(0,0,0,.4), var(--ring), var(--glass-drop); }
-	.stat3::before { content: ''; position: absolute; pointer-events: none; top: 2px; left: 3px; right: 3px; height: 30%; border-radius: 1rem 1rem 55% 55% / 1rem 1rem .8rem .8rem; background: linear-gradient(to bottom, var(--gloss-a), var(--gloss-b)); }
-	.stat3 > * { position: relative; z-index: 1; }
+	.stat3 { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: .15rem; padding: .85rem .8rem; color: var(--text); }
 	.stat3 .stat-ic { width: 2.9rem; height: 2.9rem; padding: .65rem; margin-bottom: .35rem; }
 	.stat3-label { font-size: .98rem; line-height: 1.2; color: var(--sub); }
 	.stat3-num { font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
