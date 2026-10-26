@@ -1,105 +1,68 @@
 @import 'tailwindcss';
 
+/* ======================================================================
+   FLAT DESIGN SYSTEM — white cards, thin borders, soft shadows, teal accent.
+   (Replaces the old glass-bubble / 3D / capsule styles.)
+   ====================================================================== */
+:root {
+	--ink: #0f1b3d; --sub: #5b6785;
+	--surface: #ffffff; --surface-2: #f1f5f9; --edge: #e2e8f0;
+	--accent: #0e8f8c; --accent-hover: #0b7a77; --accent-text: #ffffff;
+	--card-shadow: 0 1px 2px rgba(15, 27, 61, .05), 0 6px 18px -8px rgba(15, 27, 61, .14);
+	--radius: 1.1rem;
+}
+html.dark {
+	--ink: #f1f5f9; --sub: #a5b4cc;
+	--surface: #1b2740; --surface-2: #243349; --edge: #2c3a56;
+	--accent: #14a39d; --accent-hover: #1bb8b1;
+	--card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px -8px rgba(0,0,0,.6);
+}
+html.dark.forest {
+	--ink: #fbf7e8; --sub: #c9c7a6;
+	--surface: #184240; --surface-2: #1f4846; --edge: #2f5c55;
+	--accent: #f2b83a; --accent-hover: #f7c852; --accent-text: #12292a;
+}
+
 @layer base {
 	body { @apply bg-slate-50 text-slate-800 antialiased; }
 }
 @layer components {
-	.btn { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50; }
-	.btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50; }
-	.btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50; }
-	.input { @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20; }
+	.btn, .btn-3d {
+		@apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+		background: var(--accent); color: var(--accent-text); border: 0; box-shadow: 0 6px 14px -8px color-mix(in srgb, var(--accent) 80%, black);
+	}
+	.btn:hover, .btn-3d:hover { background: var(--accent-hover); }
+	.btn:active, .btn-3d:active, .btn-ghost:active, .btn-3d-ghost:active, .btn-danger:active { transform: scale(.98); }
+	.btn-ghost, .btn-3d-ghost {
+		@apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition disabled:opacity-50;
+		background: var(--surface); color: var(--ink); border: 1px solid var(--edge); box-shadow: none;
+	}
+	.btn-ghost:hover, .btn-3d-ghost:hover { background: var(--surface-2); }
+	.btn-danger {
+		@apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition;
+		background: var(--surface); color: #dc2626; border: 1px solid color-mix(in srgb, #dc2626 35%, var(--edge));
+	}
+	.btn-danger:hover { background: color-mix(in srgb, #dc2626 8%, var(--surface)); }
+	.btn-3d, .btn-3d-ghost { @apply whitespace-nowrap px-3 py-1.5 text-xs font-bold; }
+	.btn-3d-lg { @apply px-4 py-2 text-sm; }
+	.input { @apply w-full rounded-xl border px-3 py-2 text-sm outline-none transition focus:ring-2; border-color: #cbd5e1; background: var(--surface); color: var(--ink); }
+	.input:focus { border-color: var(--accent); --tw-ring-color: color-mix(in srgb, var(--accent) 25%, transparent); }
 	.label { @apply mb-1 block text-sm font-medium text-slate-700; }
-	.card {
-		@apply rounded-xl p-5 transition duration-150;
-		border: 2px solid #94a3b8;
-		border-bottom: 6px solid #64748b;
-		background: #ffffff;
-		box-shadow: 0 2px 0 rgba(15, 23, 42, 0.12), 0 10px 14px -8px rgba(15, 23, 42, 0.4);
+	.card, .card-pill {
+		position: relative; border-radius: var(--radius); padding: 1.25rem;
+		background: var(--surface); border: 1px solid var(--edge); box-shadow: var(--card-shadow); color: var(--ink);
+		transition: border-color .15s ease;
 	}
-	@media (hover: hover) {
-		.card:hover {
-			transform: translateY(-2px);
-			box-shadow: 0 4px 0 rgba(15, 23, 42, 0.14), 0 14px 18px -8px rgba(15, 23, 42, 0.45);
-		}
-	}
-	/* plain (uncolored) capsule dashboard cards */
-	/* real capsule-tablet surface: rounded cylinder shading, top highlight, soft shadow underneath (no colors) */
-	.card-pill {
-		position: relative; overflow: hidden;
-		border: 1px solid #c3ccd8; border-radius: 9999px; padding: 1.1rem 2rem;
-		background: linear-gradient(to bottom, #ffffff 0%, #f6f8fb 28%, #e6ebf2 62%, #cdd6e2 100%);
-		box-shadow:
-			inset 0 3px 3px rgba(255,255,255,.95),
-			inset 0 -12px 16px rgba(71,85,105,.30),
-			inset 14px 0 18px -10px rgba(71,85,105,.22),
-			inset -14px 0 18px -10px rgba(71,85,105,.22),
-			0 14px 16px -9px rgba(15,23,42,.5);
-	}
-	/* glossy highlight band along the top of the capsule */
-	.card-pill::before {
-		content: ''; position: absolute; pointer-events: none;
-		top: 6%; left: 6%; right: 6%; height: 36%; border-radius: 9999px;
-		background: linear-gradient(to bottom, rgba(255,255,255,.95), rgba(255,255,255,.15));
-	}
-	.card-pill > * { position: relative; z-index: 1; }
-	@media (hover: hover) {
-		.card.card-pill:hover {
-			transform: translateY(-2px);
-			box-shadow: inset 0 3px 3px rgba(255,255,255,.95), inset 0 -12px 16px rgba(71,85,105,.30), inset 14px 0 18px -10px rgba(71,85,105,.22), inset -14px 0 18px -10px rgba(71,85,105,.22), 0 18px 20px -9px rgba(15,23,42,.5);
-		}
-	}
-	/* solid capsule dashboard cards */
-	.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
-		border-radius: 9999px; border: 0; border-bottom: 5px solid; color: #fff;
-		padding: 1.1rem 1.75rem;
-	}
+	.card-pill { padding: 1.1rem 1.25rem; }
+	.card-pill.card-tall { padding: 1.25rem 1.4rem; }
+	.card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--edge)); }
+	.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal { border: 0; color: #fff; box-shadow: var(--card-shadow); }
 	.card-blue .text-slate-500, .card-violet .text-slate-500, .card-green .text-slate-500,
 	.card-amber .text-slate-500, .card-rose .text-slate-500, .card-teal .text-slate-500,
 	.card-blue .text-slate-400, .card-violet .text-slate-400, .card-green .text-slate-400,
 	.card-amber .text-slate-400, .card-rose .text-slate-400, .card-teal .text-slate-400 { color: rgba(255,255,255,.85); }
-	.card-blue { background-color: #2563eb; border-bottom-color: #1e40af; }
-	.card-violet { background-color: #7c3aed; border-bottom-color: #5b21b6; }
-	.card-green { background-color: #16a34a; border-bottom-color: #166534; }
-	.card-amber { background-color: #d97706; border-bottom-color: #92400e; }
-	.card-rose { background-color: #e11d48; border-bottom-color: #9f1239; }
-	.card-teal { background-color: #0d9488; border-bottom-color: #115e59; }
-	/* glossy shine */
-	.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
-		position: relative; overflow: hidden;
-		background-image:
-			radial-gradient(ellipse 60% 70% at 18% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 70%),
-			linear-gradient(to bottom, rgba(255,255,255,.34) 0%, rgba(255,255,255,.12) 48%, rgba(255,255,255,0) 50%, rgba(0,0,0,.10) 100%);
-		box-shadow: inset 0 2px 1px rgba(255,255,255,.65), inset 0 -10px 14px rgba(0,0,0,.14), 0 10px 14px -8px rgba(15,23,42,.45);
-	}
-	.card-blue::after, .card-violet::after, .card-green::after, .card-amber::after, .card-rose::after, .card-teal::after {
-		content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; pointer-events: none;
-		background: linear-gradient(105deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));
-		transform: skewX(-20deg); animation: card-sheen 5s ease-in-out infinite;
-	}
-	@keyframes card-sheen { 0%, 55% { left: -60%; } 100% { left: 130%; } }
-	@media (prefers-reduced-motion: reduce) { .card-blue::after, .card-violet::after, .card-green::after, .card-amber::after, .card-rose::after, .card-teal::after { animation: none; display: none; } }
-	.btn-3d, .btn-3d-ghost {
-		@apply inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition duration-100;
-		border-bottom-width: 4px;
-	}
-	.btn-3d {
-		@apply border border-teal-900 text-white;
-		border-bottom-color: #042f2e;
-		background: linear-gradient(180deg, #14b8a6 0%, #0f766e 100%);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 8px -1px rgba(15, 23, 42, 0.35);
-	}
-	.btn-3d-ghost {
-		@apply border border-slate-300 text-slate-700;
-		border-bottom-color: #94a3b8;
-		background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
-		box-shadow: inset 0 1px 0 #ffffff, 0 4px 8px -1px rgba(15, 23, 42, 0.25);
-	}
-	.btn-3d:active, .btn-3d-ghost:active {
-		transform: translateY(3px);
-		border-bottom-width: 1px;
-		box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.3);
-	}
-	.btn-3d-lg { @apply px-4 py-2 text-sm; }
+	.card-blue { background: #2563eb; } .card-violet { background: #7c3aed; } .card-green { background: #16a34a; }
+	.card-amber { background: #d97706; } .card-rose { background: #e11d48; } .card-teal { background: #0d9488; }
 	.badge { @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold; }
 }
 
@@ -163,42 +126,9 @@ html.dark .bg-white\/70 { background-color: rgb(15 23 42 / 0.7); }
 html.dark .text-teal-700,
 html.dark .text-teal-800,
 html.dark .text-teal-900 { color: #5eead4; }
-html.dark .input,
-html.dark .btn-ghost,
-html.dark .btn-danger { background-color: #0f172a; color: #e2e8f0; }
+html.dark .input { border-color: #475569; }
 html.dark .input::placeholder { color: #64748b; }
-html.dark .btn-ghost:hover { background-color: #1e293b; }
-html.dark .card {
-	border-color: #475569;
-	border-bottom-color: #020617;
-	background: #1e293b;
-	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 10px 14px -8px rgba(0, 0, 0, 0.7);
-}
-html.dark .card-pill {
-	border-color: #475569;
-	background: linear-gradient(to bottom, #475569 0%, #334155 30%, #1e293b 65%, #0f172a 100%);
-	box-shadow: inset 0 3px 3px rgba(255,255,255,.28), inset 0 -12px 16px rgba(0,0,0,.45), inset 14px 0 18px -10px rgba(0,0,0,.4), inset -14px 0 18px -10px rgba(0,0,0,.4), 0 14px 16px -9px rgba(0,0,0,.75);
-}
-html.dark .card-pill::before { background: linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,.03)); }
-html.dark .card-blue, html.dark .card-violet, html.dark .card-green, html.dark .card-amber, html.dark .card-rose, html.dark .card-teal {
-	background-image:
-		radial-gradient(ellipse 60% 70% at 18% 0%, rgba(255,255,255,.4), rgba(255,255,255,0) 70%),
-		linear-gradient(to bottom, rgba(255,255,255,.26) 0%, rgba(255,255,255,.09) 48%, rgba(255,255,255,0) 50%, rgba(0,0,0,.14) 100%);
-	box-shadow: inset 0 2px 1px rgba(255,255,255,.45), inset 0 -10px 14px rgba(0,0,0,.25), 0 10px 14px -8px rgba(0,0,0,.7);
-}
-html.dark .card-blue { background-color: #1d4ed8; border-bottom-color: #1e3a8a; }
-html.dark .card-violet { background-color: #6d28d9; border-bottom-color: #4c1d95; }
-html.dark .card-green { background-color: #15803d; border-bottom-color: #14532d; }
-html.dark .card-amber { background-color: #b45309; border-bottom-color: #78350f; }
-html.dark .card-rose { background-color: #be123c; border-bottom-color: #881337; }
-html.dark .card-teal { background-color: #0f766e; border-bottom-color: #134e4a; }
-html.dark .btn-3d-ghost {
-	color: #e2e8f0;
-	border-color: #475569;
-	border-bottom-color: #020617;
-	background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 8px -1px rgba(0, 0, 0, 0.5);
-}
+html.dark .btn-danger { color: #fda4af; }
 @media print {
 	html.dark { color-scheme: light; }
 }
@@ -221,187 +151,32 @@ html.dark .btn-3d-ghost {
 /* quiz option letter badge (A, B, C...) */
 .optletter { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 0.4rem; background: #ccfbf1; color: #115e59; font-weight: 700; font-size: 0.85rem; line-height: 1; }
 
-/* form cards in the folders: tall capsule tablet with clearly readable titles */
-.card-pill.card-tall { border-radius: 2.5rem; padding: 1.25rem 1.6rem 1.4rem; }
-.card-pill.card-tall::before { border-radius: 2rem; height: 22%; }
-.form-title { font-size: 1.2rem; font-weight: 800; line-height: 1.3; color: #0f172a; text-shadow: 0 1px 0 rgba(255,255,255,.9); overflow-wrap: anywhere; }
+/* form cards in the folders */
+.form-title { font-size: 1.2rem; font-weight: 800; line-height: 1.3; color: var(--ink); overflow-wrap: anywhere; }
 .form-code { margin-top: .15rem; font-family: ui-monospace, monospace; font-size: .78rem; font-weight: 700; letter-spacing: .04em; color: #0f766e; }
-.form-meta { margin-top: .2rem; font-weight: 600; color: #334155; }
+.form-meta { margin-top: .2rem; font-weight: 600; color: var(--sub); }
 .form-active { color: #15803d; font-weight: 700; }
-html.dark .form-title { color: #f8fafc; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 html.dark .form-code { color: #5eead4; }
-html.dark .form-meta { color: #cbd5e1; }
 html.dark .form-active { color: #4ade80; }
 
-/* application cards: finished ones stay fully readable, just tinted green */
-.card-pill.app-done { border-color: #86c9a8; background: linear-gradient(to bottom, #ffffff 0%, #f0faf4 28%, #d8f0e2 62%, #b7dfc8 100%); }
-html.dark .card-pill.app-done { border-color: #2f7a57; background: linear-gradient(to bottom, #3d6b57 0%, #2b4f40 30%, #1c372c 65%, #10241c 100%); }
+/* application cards: finished ones stay readable, just tinted green */
+.card-pill.app-done { background: color-mix(in srgb, #16a34a 10%, var(--surface)); border-color: color-mix(in srgb, #16a34a 38%, var(--edge)); }
 
-/* long note card: same capsule-tablet surface as the other cards, with a small fixed gloss band
-   (the 22% band used on short cards would cover a big part of a long note) */
-.card-pill.note-pill { border-radius: 2.5rem; padding: 1.5rem 1.6rem 1.75rem; }
-@media (min-width: 640px) { .card-pill.note-pill { padding: 2rem 2.25rem 2.25rem; } }
-.card-pill.note-pill::before { border-radius: 2rem; height: 3.5rem; }
-@media print {
-	.card-pill.note-pill { border: 0; border-radius: 0; background: #fff; box-shadow: none; padding: 0; }
-	.card-pill.note-pill::before { display: none; }
-}
-
-/* ======================================================================
-   GLASS-BUBBLE ICON THEME — solid "felt" centre sealed under a clear glass shell:
-   thick transparent rim + glossy clear coat on top (like the glass app icons).
-   Unlayered on purpose so it overrides the component styles above; delete this block to go back.
-   No backdrop-filter (it blacks out some Android phones).
-   ====================================================================== */
-:root {
-	--rim: linear-gradient(145deg, rgba(255,255,255,.95) 0%, rgba(190,232,228,.75) 32%, rgba(120,190,186,.65) 66%, rgba(238,251,245,.95) 100%);
-	--glass-drop: 0 9px 14px -6px rgba(15,60,70,.4);
-	--fa: #ffffff; --fb: #e2e8f0;
-}
-html.dark {
-	--rim: linear-gradient(145deg, rgba(255,255,255,.45) 0%, rgba(120,200,195,.5) 35%, rgba(70,140,135,.55) 68%, rgba(210,240,238,.5) 100%);
-	--glass-drop: 0 9px 14px -6px rgba(0,0,0,.75);
-}
-
-/* ---- shared glass shell: transparent rim around a solid centre ---- */
-.btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost, .card {
-	position: relative;
-	border: 3px solid transparent; border-radius: 1.15rem;
-	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-	box-shadow:
-		inset 0 0 7px 1px rgba(255,255,255,.55),   /* glow where the glass meets the centre */
-		inset 0 -3px 5px rgba(0,0,0,.12),            /* depth of the centre */
-		var(--glass-drop);
-	transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-}
-/* clear-coat gloss over the whole bubble */
-.btn::before, .btn-ghost::before, .btn-danger::before, .btn-3d::before, .btn-3d-ghost::before, .card::before {
-	content: ''; position: absolute; pointer-events: none;
-	top: 2px; left: 3px; right: 3px; height: 44%;
-	border-radius: 1rem 1rem 55% 55% / 1rem 1rem 1.1rem 1.1rem;
-	background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.06));
-}
-/* little reflected-light dash at the bottom corner */
-.btn::after, .btn-ghost::after, .btn-danger::after, .btn-3d::after, .btn-3d-ghost::after {
-	content: ''; position: absolute; pointer-events: none;
-	right: 7px; bottom: 2px; width: 22%; height: 3px; border-radius: 9999px; background: rgba(255,255,255,.55);
-}
-
-/* ---- colours of the centre (the "icon" under the glass) ---- */
-.btn, .btn-3d { --fa: #14b8a6; --fb: #0f766e; color: #fff; text-shadow: 0 1px 1px rgba(4,47,46,.55); }
-.btn-ghost, .btn-3d-ghost { --fa: #ffffff; --fb: #e2e8f0; color: #334155; }
-.btn-danger { --fa: #ffffff; --fb: #fde8ea; color: #dc2626; }
-
-/* ---- cards ---- */
-.card { border-width: 5px; border-radius: 1.75rem; --fa: #ffffff; --fb: #f1f5f9; }
-.card::before { top: 3px; left: 5px; right: 5px; height: 18%; border-radius: 1.4rem 1.4rem 55% 55% / 1.4rem 1.4rem 1rem 1rem; }
-.card > * { position: relative; z-index: 1; }
-.card-pill, .card.card-pill { border-width: 5px; border-color: transparent; border-radius: 2rem; }
-.card-pill.card-tall, .card-pill.note-pill { border-radius: 2.5rem; }
-.card-pill.app-done { --fa: #f0faf4; --fb: #b7dfc8; border-color: transparent;
-	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box; }
-/* coloured dashboard cards: solid colour centre under the same glass */
-.card-blue, .card-violet, .card-green, .card-amber, .card-rose, .card-teal {
-	border: 5px solid transparent; border-radius: 2rem; color: #fff;
-	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-}
-.card-blue { --fa: #3b74ee; --fb: #1f4fc0; }
-.card-violet { --fa: #8b5cf0; --fb: #6330c8; }
-.card-green { --fa: #2fb760; --fb: #17803f; }
-.card-amber { --fa: #e8891c; --fb: #b45f0c; }
-.card-rose { --fa: #ee3a64; --fb: #bb1840; }
-.card-teal { --fa: #17a699; --fb: #0e7a70; }
-
-/* ---- hover / press ---- */
-@media (hover: hover) {
-	.btn:hover, .btn-3d:hover { filter: brightness(1.08); transform: translateY(-1px); }
-	.btn-ghost:hover, .btn-3d-ghost:hover, .btn-danger:hover { filter: brightness(1.03); transform: translateY(-1px); }
-	.card:hover { transform: translateY(-3px); }
-}
-.btn:active, .btn-ghost:active, .btn-danger:active, .btn-3d:active, .btn-3d-ghost:active {
-	transform: translateY(1px) scale(.98);
-	border-bottom-width: 3px;
-}
-
-/* ---- dark mode: same bubble, darker centre ---- */
-html.dark .btn, html.dark .btn-3d { --fa: #14a395; --fb: #0f766e; }
-html.dark .btn-ghost, html.dark .btn-3d-ghost { --fa: #334155; --fb: #1e293b; color: #e2e8f0; }
-html.dark .btn-danger { --fa: #3b1d27; --fb: #2a1219; color: #fda4b4; }
-html.dark .card, html.dark .card-pill { --fa: #273449; --fb: #1e293b; }
-html.dark .card-pill.app-done { --fa: #3d6b57; --fb: #1c372c; }
-html.dark .btn, html.dark .btn-ghost, html.dark .btn-danger, html.dark .btn-3d, html.dark .btn-3d-ghost,
-html.dark .card, html.dark .card-pill, html.dark .card-pill.app-done {
-	border-color: transparent;
-	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-	box-shadow: inset 0 0 7px 1px rgba(255,255,255,.18), inset 0 -3px 5px rgba(0,0,0,.35), var(--glass-drop);
-}
-html.dark .card-blue, html.dark .card-violet, html.dark .card-green, html.dark .card-amber, html.dark .card-rose, html.dark .card-teal {
-	border-color: transparent;
-	background: linear-gradient(to bottom, var(--fa), var(--fb)) padding-box, var(--rim) border-box;
-}
-@media (prefers-reduced-motion: reduce) { .btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost, .card { transition: none; } }
-
-/* ======================================================================
-   VISIBILITY BOOST — stronger rims, shadows and contrast so buttons, cards and text stand out
-   ====================================================================== */
-:root {
-	--rim: linear-gradient(145deg, #f4fffd 0%, #6cc9bf 28%, #1f8f86 64%, #9fdcd5 100%);
-	--glass-drop: 0 10px 16px -6px rgba(8,50,60,.6);
-	--ring: 0 0 0 1px rgba(13,101,95,.7);                 /* thin dark outline around the glass edge */
-}
-html.dark {
-	--rim: linear-gradient(145deg, rgba(255,255,255,.85) 0%, rgba(120,215,205,.8) 30%, rgba(60,160,150,.8) 66%, rgba(200,245,240,.8) 100%);
-	--glass-drop: 0 10px 16px -6px rgba(0,0,0,.9);
-	--ring: 0 0 0 1px rgba(150,230,220,.55);
-}
-.btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost, .card {
-	box-shadow: inset 0 0 7px 1px rgba(255,255,255,.6), inset 0 -3px 5px rgba(0,0,0,.18), var(--ring), var(--glass-drop);
-}
-html.dark .btn, html.dark .btn-ghost, html.dark .btn-danger, html.dark .btn-3d, html.dark .btn-3d-ghost,
-html.dark .card, html.dark .card-pill, html.dark .card-pill.app-done {
-	box-shadow: inset 0 0 7px 1px rgba(255,255,255,.22), inset 0 -3px 5px rgba(0,0,0,.4), var(--ring), var(--glass-drop);
-}
-.btn, .btn-ghost, .btn-danger, .btn-3d, .btn-3d-ghost { border-width: 4px; font-weight: 700; }
-
-/* light mode: centres that separate from the white page */
-.btn-ghost, .btn-3d-ghost { --fa: #f1f5f9; --fb: #c5d0de; color: #0f172a; }
-.btn-danger { --fa: #fff1f2; --fb: #fbc4cb; color: #b91c1c; }
-.card, .card-pill { --fa: #ffffff; --fb: #e3eaf3; }
-.card-pill.app-done { --fa: #eafaf1; --fb: #a9dcc0; }
-/* light mode: darker secondary text and clearer input borders */
-:where(html:not(.dark)) .text-slate-500 { color: #475569; }
-:where(html:not(.dark)) .text-slate-400 { color: #64748b; }
-html:not(.dark) .input { border-color: #94a3b8; }
-
-/* dark mode: lighter centres so cards and buttons stand out from the near-black page */
-html.dark .btn-ghost, html.dark .btn-3d-ghost { --fa: #475a75; --fb: #2e3d56; color: #f8fafc; }
-html.dark .btn-danger { --fa: #8a3446; --fb: #5e2231; color: #ffe4e8; }
-html.dark .card, html.dark .card-pill { --fa: #34465f; --fb: #243349; }
-html.dark .card-pill.app-done { --fa: #3f7a60; --fb: #214536; }
-html.dark .input { border-color: #64748b; }
-
-/* Note view: nearly full width on phones (a thin gap keeps the glass edges visible) so the note has a wider reading area */
+/* long note card: same flat surface, a little more room for reading */
 .card-pill.note-pill { padding: 1.25rem 1.1rem 1.5rem; }
+@media (min-width: 640px) { .card-pill.note-pill { padding: 1.75rem 1.5rem 2rem; } }
 @media (max-width: 639px) {
-	.card-pill.note-pill {
-		border-width: 4px; border-radius: 1.75rem;
-		padding: 1.1rem 0.7rem 1.4rem;
-	}
-	.card-pill.note-pill::before { left: 4%; right: 4%; border-radius: 1.5rem; }
 	.card-pill.note-pill.bleed-4 { margin-left: -0.75rem; margin-right: -0.75rem; }
 	.card-pill.note-pill.bleed-3 { margin-left: -0.5rem; margin-right: -0.5rem; }
 }
-@media (min-width: 640px) { .card-pill.note-pill { padding: 1.75rem 1.5rem 2rem; } }
 @media print {
-	.card-pill.note-pill, .card-pill.note-pill.bleed-4, .card-pill.note-pill.bleed-3 { margin: 0; padding: 0; border: 0; }
+	.card-pill.note-pill, .card-pill.note-pill.bleed-4, .card-pill.note-pill.bleed-3 { margin: 0; padding: 0; border: 0; border-radius: 0; background: #fff; box-shadow: none; }
 }
 
-/* ======================================================================
-   FOREST & GOLD THEME — third look after light and dark.
-   Deep green page, gold buttons and accents, cream pills and text.
-   It is dark mode plus these overrides (<html class="dark forest">), so everything dark mode
-   already handles keeps working. Delete this block (and 'forest' in ThemeToggle) to remove it.
-   ====================================================================== */
+/* light mode: darker secondary text and clearer input borders */
+:where(html:not(.dark)) .text-slate-500 { color: #475569; }
+:where(html:not(.dark)) .text-slate-400 { color: #64748b; }
+
 html.dark.forest {
 	color-scheme: dark;
 	--color-slate-50: #0f2623;   /* page */
@@ -425,9 +200,6 @@ html.dark.forest {
 	--color-teal-700: #f2b83a;
 	--color-teal-800: #f5c765;
 	--color-teal-900: #f8d98f;
-	--rim: linear-gradient(145deg, #f7ecc0 0%, #d4bf78 30%, #8f7d3c 66%, #eadb9a 100%);
-	--glass-drop: 0 10px 16px -6px rgba(0,0,0,.85);
-	--ring: 0 0 0 1px rgba(242,184,58,.55);
 }
 html.dark.forest .bg-white { background-color: #143533; }
 html.dark.forest .bg-white\/70 { background-color: rgb(20 53 51 / 0.7); }
@@ -437,14 +209,6 @@ html.dark.forest .text-teal-900 { color: #f2b83a; }
 html.dark.forest .input { background-color: #0f2d2b; color: #f1ebd0; border-color: #8d8a52; }
 html.dark.forest .input::placeholder { color: #8fa89a; }
 html.dark.forest .input:focus { border-color: #f2b83a; }
-/* gold primary buttons, cream secondary pills (dark-green text on both) */
-html.dark.forest .btn, html.dark.forest .btn-3d { --fa: #f7c852; --fb: #dfa01c; color: #12292a; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
-html.dark.forest .btn-ghost, html.dark.forest .btn-3d-ghost { --fa: #f6edcf; --fb: #dccf9f; color: #17382f; text-shadow: none; }
-html.dark.forest .btn-danger { --fa: #5a2f27; --fb: #3d201b; color: #ffd9c9; }
-/* green cards with a gold-cream outline */
-html.dark.forest .card, html.dark.forest .card-pill { --fa: #1f4846; --fb: #143230; }
-html.dark.forest .card-pill.app-done { --fa: #44713f; --fb: #21401f; }
-html.dark.forest .form-title { color: #fbf7e8; }
 html.dark.forest .form-code { color: #f2b83a; }
 html.dark.forest .form-meta { color: #d9d2b0; }
 html.dark.forest .form-active { color: #b9c94f; }
