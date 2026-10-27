@@ -9,6 +9,7 @@
 	import { closedReason, migrateFormFields, isRegistration } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import BulkFill from '$lib/BulkFill.svelte';
+	import PaymentNote from '$lib/PaymentNote.svelte';
 
 	const formId = page.params.id;
 	let form = $state(null);
@@ -104,6 +105,7 @@
 				>
 					{#if fail?.message}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">{fail.message}</div>{/if}
 					<FormFields fields={form.fields} errors={fail?.errors} softcopyNote={isRegistration(form)} />
+					<PaymentNote {form} />
 					<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : 'SUBMIT APPLICATION'}</button>
 				</form>
 			{/key}

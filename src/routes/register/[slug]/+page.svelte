@@ -1,5 +1,6 @@
 <script>
 	import { onMount, onDestroy, tick } from 'svelte';
+	import PaymentNote from '$lib/PaymentNote.svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -444,6 +445,7 @@
 					{/if}
 				{:else}
 					<FormFields big={!isReg} fields={data.form.fields} values={form?.values} errors={form?.errors} softcopyNote={isReg ? (data.form.softcopy?.length ? data.form.softcopy : true) : false} />
+					<PaymentNote form={data.form} />
 					<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 				{/if}
 			</form>
