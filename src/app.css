@@ -162,6 +162,11 @@ html.dark .form-active { color: #4ade80; }
 /* application cards: finished ones stay readable, just tinted green */
 .card-pill.app-done { background: color-mix(in srgb, #16a34a 10%, var(--surface)); border-color: color-mix(in srgb, #16a34a 38%, var(--edge)); }
 
+/* form list status: completed = green, inactive = grey, active = unchanged */
+.card-pill.form-completed { background: color-mix(in srgb, #16a34a 12%, var(--surface)); border-color: color-mix(in srgb, #16a34a 42%, var(--edge)); }
+.card-pill.form-inactive { background: color-mix(in srgb, #64748b 14%, var(--surface)); border-color: color-mix(in srgb, #64748b 30%, var(--edge)); filter: grayscale(1); opacity: .7; }
+.status-select { appearance: auto; cursor: pointer; padding-right: .5rem; }
+
 /* long note card: same flat surface, a little more room for reading */
 .card-pill.note-pill { padding: 1.25rem 1.1rem 1.5rem; }
 @media (min-width: 640px) { .card-pill.note-pill { padding: 1.75rem 1.5rem 2rem; } }

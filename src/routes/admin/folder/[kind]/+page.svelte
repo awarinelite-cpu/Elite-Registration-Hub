@@ -16,6 +16,7 @@
 	const kind = $derived(META[page.params.kind] ? page.params.kind : 'registration');
 	const kindOf = (f) => (f.kind === 'quiz' || f.kind === 'survey' ? f.kind : 'registration');
 
+	const listStatus = (f) => (f.listStatus === 'completed' || f.listStatus === 'inactive' ? f.listStatus : 'active');
 	let forms = $state([]);
 	let loading = $state(true);
 	let copiedId = $state('');
@@ -23,7 +24,12 @@
 
 	const shownForms = $derived.by(() => {
 		const q = formSearch.trim().toLowerCase();
-		return forms.filter((f) => kindOf(f) === kind && (!q || (f.title || '').toLowerCase().includes(q) || String(f.id).toLowerCase().includes(q)));
+		const rank = { active: 0, completed: 1, inactive: 2 };
+		return forms
+			.filter((f) => kindOf(f) === kind && (!q || (f.title || '').toLowerCase().includes(q) || String(f.id).toLowerCase().includes(q)))
+			.map((f, i) => [f, i])
+			.sort((a, b) => (rank[listStatus(a[0])] - rank[listStatus(b[0])]) || a[1] - b[1])
+			.map((x) => x[0]);
 	});
 
 	// per registration form: how many applications are marked "done" (attended to) out of the total
@@ -86,8 +92,18 @@
 			alert('Could not save: ' + (e?.message || e));
 		}
 	}
+	async function setListStatus(f, next) {
+		const prev = f.listStatus;
+		f.listStatus = next;
+		try {
+			await updateDoc(doc(firestore, 'forms', f.id), { listStatus: next });
+		} catch (e) {
+			f.listStatus = prev;
+			alert('Could not save status: ' + (e?.message || e));
+		}
+	}
 	const openApps = (e, f) => {
-		if (e.target.closest('a,button')) return;
+		if (e.target.closest('a,button,select')) return;
 		goto(`/admin/forms/${f.id}/applications`);
 	};
 	const label = (f) => (closedReason(f) ? (f.status === 'draft' ? 'Draft' : 'Closed') : 'Active');
@@ -110,7 +126,7 @@
 	<div class="mb-8 space-y-3">
 		{#each shownForms as f (f.id)}
 			<div
-				class="card card-pill card-tall flex cursor-pointer flex-wrap items-center justify-between gap-3"
+				class="card card-pill card-tall flex cursor-pointer flex-wrap items-center justify-between gap-3 {listStatus(f) === 'completed' ? 'form-completed' : listStatus(f) === 'inactive' ? 'form-inactive' : ''}"
 				role="link"
 				tabindex="0"
 				onclick={(e) => openApps(e, f)}
@@ -163,6 +179,16 @@
 					{:else}
 						<a class="btn-ghost" href="/admin/forms/{f.id}/applications">View applications</a>
 					{/if}
+					<select
+						class="btn-ghost status-select status-{listStatus(f)}"
+						aria-label="Form status"
+						value={listStatus(f)}
+						onchange={(e) => setListStatus(f, e.currentTarget.value)}
+					>
+						<option value="active">🟢 Active</option>
+						<option value="completed">✅ Completed</option>
+						<option value="inactive">⚪ Inactive</option>
+					</select>
 					<button class="btn-ghost" onclick={() => copyLink(f.id)}>{copiedId === f.id ? 'Copied ✓' : 'Copy link'}</button>
 				</div>
 			</div>
