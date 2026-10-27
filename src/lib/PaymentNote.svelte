@@ -1,7 +1,7 @@
 <script>
 	let { form } = $props();
 	const PAY_PREFIXES = ['NMCN-REQUIREMENTS'];
-	const show = $derived(PAY_PREFIXES.includes(String(form?.prefix || '').toUpperCase()));
+	const show = $derived(PAY_PREFIXES.includes(String(form?.prefix || '').trim().toUpperCase()));
 	let copied = $state(false);
 	async function copy() {
 		try {

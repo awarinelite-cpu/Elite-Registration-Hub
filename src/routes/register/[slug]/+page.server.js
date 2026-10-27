@@ -15,7 +15,7 @@ export async function load({ params }) {
 	const form = await getForm(params.slug);
 	if (form.status === 'draft') error(404, 'Form not found');
 	return {
-		form: { id: form.id, title: form.title, description: form.description, kind: form.kind, softcopy: form.kind === 'registration' ? form.softcopy : [], timeLimit: form.kind === 'quiz' ? Number(form.quiz.timeLimit) || 0 : 0, modes: form.kind === 'quiz' ? form.quiz.modes || 'both' : 'exam', fields: publicFields(form.fields) },
+		form: { id: form.id, prefix: form.prefix, title: form.title, description: form.description, kind: form.kind, softcopy: form.kind === 'registration' ? form.softcopy : [], timeLimit: form.kind === 'quiz' ? Number(form.quiz.timeLimit) || 0 : 0, modes: form.kind === 'quiz' ? form.quiz.modes || 'both' : 'exam', fields: publicFields(form.fields) },
 		closed: closedReason(form)
 	};
 }
