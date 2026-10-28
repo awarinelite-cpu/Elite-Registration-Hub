@@ -245,6 +245,37 @@
 			draftMsg = { ok: false, text: 'Could not save on this device. Check that browser storage is allowed.' };
 		}
 	}
+	// automatic save: when the student leaves (switches app, closes the tab, goes home) and shortly after they stop typing
+	const hasContent = (v) => (Array.isArray(v) ? v.some(hasContent) : v && typeof v === 'object' ? Object.values(v).some(hasContent) : String(v ?? '').trim() !== '');
+	function autoSave() {
+		if (isQuiz || !ready || !formEl || form?.success) return;
+		try {
+			const vals = snapshot();
+			if (hasContent(vals)) localStorage.setItem(RKEY, JSON.stringify({ t: Date.now(), vals }));
+			else localStorage.removeItem(RKEY);
+		} catch {}
+	}
+	let autoTimer;
+	function queueAuto() {
+		clearTimeout(autoTimer);
+		autoTimer = setTimeout(autoSave, 1200);
+	}
+	const onHide = () => { if (document.visibilityState === 'hidden') autoSave(); };
+	$effect(() => {
+		if (!formEl || isQuiz) return;
+		const el = formEl;
+		el.addEventListener('input', queueAuto);
+		el.addEventListener('change', queueAuto);
+		document.addEventListener('visibilitychange', onHide);
+		window.addEventListener('pagehide', autoSave);
+		return () => {
+			clearTimeout(autoTimer);
+			el.removeEventListener('input', queueAuto);
+			el.removeEventListener('change', queueAuto);
+			document.removeEventListener('visibilitychange', onHide);
+			window.removeEventListener('pagehide', autoSave);
+		};
+	});
 	function loadRegDraft() {
 		if (isQuiz || form?.success) return;
 		let d = null;
@@ -258,6 +289,9 @@
 		draftKey += 1;
 	}
 	function discardDraft() {
+		clearTimeout(autoTimer);
+		window.removeEventListener('pagehide', autoSave);
+		document.removeEventListener('visibilitychange', onHide);
 		try { localStorage.removeItem(RKEY); } catch {}
 		location.reload();
 	}
@@ -517,7 +551,7 @@
 						<button class="btn flex-1" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 					</div>
 					{#if draftMsg.text}<p class="text-center text-sm {draftMsg.ok ? 'text-teal-700' : 'text-red-600'}" role="status">{draftMsg.text}</p>
-					{:else}<p class="text-center text-xs text-slate-500">Not ready to submit? Press Save to keep what you have filled in on this device and finish later. Nothing is sent until you submit.</p>{/if}
+					{:else}<p class="text-center text-xs text-slate-500">Your progress is saved on this device automatically when you leave this page, so you can finish later. Press Save to save right now. Nothing is sent until you submit.</p>{/if}
 				{/if}
 			</form>
 		{/if}
