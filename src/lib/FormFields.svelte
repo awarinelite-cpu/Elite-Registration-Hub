@@ -1,5 +1,5 @@
 <script>
-	import { STATES, pairedStateField, imageSrc, uploadsEnabled } from '$lib/forms.js';
+	import { STATES, pairedStateField, imageSrc, uploadsEnabled, FILE_TYPES } from '$lib/forms.js';
 	import { uploadToCloudinary } from '$lib/cloudinary.js';
 	import { lgasFor } from '$lib/lgas.js';
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
@@ -16,7 +16,7 @@
 		return { number: 'number', phone: 'tel', email: 'email', date: 'date' }[t] || 'text';
 	}
 	// second SSCE picture stays hidden until "Add SSCE" is tapped (or one was already uploaded)
-	let showSecond = $state(!!existingFiles?.doc_ssce_2);
+	let showSecond = $state(!!existingFiles?.doc_ssce_2 || !!values?.doc_ssce_2?.url);
 	const hasSecond = $derived(fields.some((x) => x.id === 'doc_ssce_2'));
 	// live state / LGA choices so the LGA list follows the selected state
 	let stateVals = $state(Object.fromEntries(fields.filter((x) => x.type === 'state').map((x) => [x.id, values?.[x.id] ?? ''])));
@@ -33,8 +33,10 @@
 	const scratchF = $derived(fields.find((x) => x.type === 'scratchcards'));
 	const examGroup = $derived(ssceF && scratchF ? (fields.indexOf(ssceF) < fields.indexOf(scratchF) ? ssceF.id : scratchF.id) : null);
 	// A picked file is converted (photos -> JPG), uploaded straight to Cloudinary, and only its link goes with the form.
-	let fileNote = $state({});
-	let uploaded = $state({}); // fieldId -> JSON string {name,url,size,type} posted in a hidden input
+	// files already uploaded (a saved draft, or the values sent back after an error) start out as uploaded
+	const back = (x) => (FILE_TYPES.includes(x.type) && !existingFiles?.[x.id] && typeof values?.[x.id]?.url === 'string' ? values[x.id] : null);
+	let fileNote = $state(Object.fromEntries(fields.filter((x) => back(x)).map((x) => [x.id, { ok: true, text: `Uploaded ✓ ${back(x).name || ''}`.trim() }])));
+	let uploaded = $state(Object.fromEntries(fields.filter((x) => back(x)).map((x) => [x.id, JSON.stringify({ name: back(x).name, url: back(x).url, size: back(x).size, type: back(x).type })]))); // fieldId -> JSON string {name,url,size,type} posted in a hidden input
 	let progress = $state({});
 	async function onPick(e, f) {
 		const input = e.currentTarget;

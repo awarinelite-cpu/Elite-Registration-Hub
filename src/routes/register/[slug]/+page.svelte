@@ -4,7 +4,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { MANAGED_QUIZ_FIELDS } from '$lib/forms.js';
+	import { MANAGED_QUIZ_FIELDS, FILE_TYPES } from '$lib/forms.js';
 	import FormFields from '$lib/FormFields.svelte';
 	import VoiceReader from '$lib/VoiceReader.svelte';
 	import RetryQuiz from '$lib/RetryQuiz.svelte';
@@ -205,6 +205,62 @@
 		restoring = false;
 		saveDraft();
 	}
+	// ---- save for later (registration and survey forms): the half-filled form is kept on this device until it is submitted ----
+	const RKEY = `regDraft:${data.form.id}`;
+	let draft = $state(null); // saved values, in the same shape the server sends back after a failed submit
+	let draftKey = $state(0); // bumped after loading so the fields are rebuilt from the saved values
+	let draftRestored = $state(false);
+	let draftMsg = $state({ ok: true, text: '' });
+	function snapshot() {
+		const fd = new FormData(formEl);
+		const vals = {};
+		for (const f of data.form.fields) {
+			const k = `f_${f.id}`;
+			if (FILE_TYPES.includes(f.type)) {
+				const s = fd.getAll(k).find((v) => typeof v === 'string' && v.trim());
+				if (s) {
+					try { vals[f.id] = JSON.parse(s); } catch {}
+				}
+			} else if (f.type === 'scratchcards' || f.type === 'ssceexams') {
+				try {
+					const a = JSON.parse(String(fd.get(k) ?? '[]'));
+					if (Array.isArray(a)) vals[f.id] = a;
+				} catch {}
+			} else if (f.type === 'checkbox') vals[f.id] = fd.getAll(k).map(String);
+			else vals[f.id] = String(fd.get(k) ?? '');
+		}
+		return vals;
+	}
+	function saveForLater() {
+		if (!formEl || isQuiz) return;
+		if (formEl.querySelector('input[type="file"]:invalid')) {
+			draftMsg = { ok: false, text: 'A file is still uploading. Wait for it to finish, then press Save again.' };
+			return;
+		}
+		try {
+			localStorage.setItem(RKEY, JSON.stringify({ t: Date.now(), vals: snapshot() }));
+			const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+			draftMsg = { ok: true, text: `Saved on this device at ${time}. You can close this page and continue later.` };
+		} catch {
+			draftMsg = { ok: false, text: 'Could not save on this device. Check that browser storage is allowed.' };
+		}
+	}
+	function loadRegDraft() {
+		if (isQuiz || form?.success) return;
+		let d = null;
+		try { d = JSON.parse(localStorage.getItem(RKEY) || 'null'); } catch {}
+		if (!d?.vals || Date.now() - d.t > 30 * 86400000) {
+			try { localStorage.removeItem(RKEY); } catch {}
+			return;
+		}
+		draft = d.vals;
+		draftRestored = true;
+		draftKey += 1;
+	}
+	function discardDraft() {
+		try { localStorage.removeItem(RKEY); } catch {}
+		location.reload();
+	}
 	function startOver() {
 		restoring = true; // stops the page from re-saving while it reloads
 		clearTimeout(saveTimer);
@@ -229,6 +285,7 @@
 			return;
 		}
 		await restoreDraft();
+		loadRegDraft();
 		ready = true;
 	});
 
@@ -238,6 +295,7 @@
 			try {
 				localStorage.removeItem(`quizEnd:${data.form.id}`);
 				localStorage.removeItem(DKEY);
+				localStorage.removeItem(RKEY);
 			} catch {}
 		}
 	});
@@ -345,6 +403,12 @@
 			{:else if isQuiz && started && mode === 'reading'}
 				<div class="mb-3 rounded-xl border border-teal-300 bg-teal-50 px-4 py-2 text-center text-sm font-semibold text-teal-800">📖 Reading mode — each answer is shown as soon as you choose</div>
 			{/if}
+			{#if draftRestored}
+				<div class="mb-3 flex items-center justify-between gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900 print:hidden">
+					<span>Your saved progress was restored. Continue where you stopped.</span>
+					<button type="button" class="btn-ghost !px-3 !py-1 text-sm" onclick={discardDraft}>Start over</button>
+				</div>
+			{/if}
 			{#if restored}
 				<div class="mb-3 flex items-center justify-between gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900 print:hidden">
 					<span>Your earlier progress was restored. Continue where you stopped.</span>
@@ -444,9 +508,16 @@
 						<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
 					{/if}
 				{:else}
-					<FormFields big={!isReg} fields={data.form.fields} values={form?.values} errors={form?.errors} softcopyNote={isReg ? (data.form.softcopy?.length ? data.form.softcopy : true) : false} />
+					{#key draftKey}
+						<FormFields big={!isReg} fields={data.form.fields} values={form?.values ?? draft ?? {}} errors={form?.errors} softcopyNote={isReg ? (data.form.softcopy?.length ? data.form.softcopy : true) : false} />
+					{/key}
 					<PaymentNote form={data.form} />
-					<button class="btn w-full" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
+					<div class="flex gap-2">
+						<button type="button" class="btn-ghost shrink-0" onclick={saveForLater} disabled={busy}>SAVE</button>
+						<button class="btn flex-1" disabled={busy}>{busy ? 'Submitting…' : words.btn}</button>
+					</div>
+					{#if draftMsg.text}<p class="text-center text-sm {draftMsg.ok ? 'text-teal-700' : 'text-red-600'}" role="status">{draftMsg.text}</p>
+					{:else}<p class="text-center text-xs text-slate-500">Not ready to submit? Press Save to keep what you have filled in on this device and finish later. Nothing is sent until you submit.</p>{/if}
 				{/if}
 			</form>
 		{/if}
