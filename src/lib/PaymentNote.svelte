@@ -15,7 +15,7 @@
 {#if show}
 	<div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
 		<div class="mb-1 font-semibold">Payment details</div>
-		<div class="mb-2 text-base"><span class="font-semibold">Amount:</span> <span class="font-bold">₦3,000</span></div>
+		<div class="mb-2 text-base"><span class="font-semibold">Amount:</span> <span class="font-bold">₦2,000</span></div>
 		<div class="text-xs text-emerald-800">Account number</div>
 		<div class="flex items-center gap-2">
 			<span class="font-mono text-xl font-bold tracking-wide">9026985870</span>
