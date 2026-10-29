@@ -32,11 +32,12 @@ const toJpeg = (canvas, q) => new Promise((res) => canvas.toBlob(res, 'image/jpe
  * @returns {Promise<{file: File, note: string, ok: boolean}>}
  */
 export async function prepareUpload(file) {
-	const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+	const isPdf = /pdf/i.test(file.type) || /\.pdf$/i.test(file.name);
 	if (isPdf) {
-		return file.size > MAX_FILE_BYTES
-			? { file, ok: false, note: `PDF is ${kb(file.size)}. Max is 1.5 MB. Compress it or use a photo instead.` }
-			: { file, ok: true, note: '' };
+		if (file.size > MAX_FILE_BYTES) return { file, ok: false, note: `PDF is ${kb(file.size)}. Max is 1.5 MB. Compress it or use a photo instead.` };
+		// some phones/file managers report an empty or odd type (application/x-pdf): force the standard one
+		const pdf = file.type === 'application/pdf' ? file : new File([file], file.name, { type: 'application/pdf', lastModified: file.lastModified });
+		return { file: pdf, ok: true, note: '' };
 	}
 
 	const isJpeg = file.type === 'image/jpeg';

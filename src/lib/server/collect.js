@@ -26,6 +26,8 @@ export function collect(fields, fd, existing = {}) {
 			if (typeof file === 'string' && file.trim()) {
 				let meta = null;
 				try { meta = JSON.parse(file); } catch {}
+				// PDFs from some phones arrive with an empty/odd type: judge by type, file name or link
+				if (meta && !ALLOWED_MIME.includes(meta.type) && (/pdf/i.test(String(meta.type)) || /\.pdf$/i.test(String(meta.name || '')) || /\.pdf$/i.test(String(meta.url || '')))) meta.type = 'application/pdf';
 				if (!meta || !isOurUrl(meta.url) || !ALLOWED_MIME.includes(meta.type)) errors[f.id] = 'Upload not recognised. Please choose the file again.';
 				else if (Number(meta.size) > MAX_FILE_BYTES) errors[f.id] = 'File is too large (max 1.5 MB).';
 				else if (f.type === 'photo' && !String(meta.type).startsWith('image/')) errors[f.id] = 'Passport photo must be an image.';

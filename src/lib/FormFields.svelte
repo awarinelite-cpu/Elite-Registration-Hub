@@ -155,7 +155,7 @@
 				class="input file:mr-3 file:rounded file:border-0 file:bg-teal-50 file:px-3 file:py-1 file:text-teal-800"
 				type="file"
 				id={`f_${f.id}`}
-				accept={f.type === 'photo' ? 'image/*' : 'image/*,application/pdf'}
+				accept={f.type === 'photo' ? 'image/*' : 'image/*,application/pdf,.pdf'}
 				onchange={(e) => onPick(e, f)}
 			/>
 			<input type="hidden" name={`f_${f.id}`} value={uploaded[f.id] || ''} />
