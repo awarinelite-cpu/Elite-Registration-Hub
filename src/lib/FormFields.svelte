@@ -1,5 +1,5 @@
 <script>
-	import { STATES, pairedStateField, imageSrc, uploadsEnabled, FILE_TYPES } from '$lib/forms.js';
+	import { STATES, pairedStateField, imageSrc, uploadsEnabled, FILE_TYPES, isSsceDoc } from '$lib/forms.js';
 	import { uploadToCloudinary } from '$lib/cloudinary.js';
 	import { lgasFor } from '$lib/lgas.js';
 	import ReadingQuestion from '$lib/ReadingQuestion.svelte';
@@ -17,6 +17,7 @@
 	}
 	// second SSCE picture stays hidden until "Add SSCE" is tapped (or one was already uploaded)
 	let showSecond = $state(!!existingFiles?.doc_ssce_2 || !!values?.doc_ssce_2?.url);
+	const ssceDocId = $derived(fields.find(isSsceDoc)?.id);
 	const hasSecond = $derived(fields.some((x) => x.id === 'doc_ssce_2'));
 	// live state / LGA choices so the LGA list follows the selected state
 	let stateVals = $state(Object.fromEntries(fields.filter((x) => x.type === 'state').map((x) => [x.id, values?.[x.id] ?? ''])));
@@ -165,8 +166,8 @@
 				{f.type === 'photo' ? 'Any photo' : 'Any photo or PDF'} (photos are auto-converted to JPG), max 1.5 MB.
 				{#if existingFiles[f.id]}Current file: <strong>{existingFiles[f.id].name}</strong> (upload a new one to replace).{/if}
 			</p>
-			{#if f.id === 'doc_ssce' && hasSecond && !showSecond}
-				<button type="button" class="btn-ghost mt-2 !px-2 !py-1 text-[11px]" onclick={() => (showSecond = true)}>+ Add SSCE</button>
+			{#if f.id === ssceDocId && hasSecond && !showSecond}
+				<button type="button" class="btn-ghost mt-2 !px-2 !py-1 text-[11px]" onclick={() => (showSecond = true)}>+ Add second sitting</button>
 			{:else if f.id === 'doc_ssce_2' && !existingFiles[f.id]}
 				<button type="button" class="mt-1 text-xs font-medium text-red-600 hover:underline" onclick={() => (showSecond = false)}>Remove</button>
 			{/if}

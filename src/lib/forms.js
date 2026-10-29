@@ -105,6 +105,8 @@ export const isLegacySsce = (f) => f.type !== 'ssceexams' && (/ssce\s*exam\s*(nu
 
 export const PHOTO_FIELD_ID = 'passport_photo';
 export const SSCE2_FIELD_ID = 'doc_ssce_2'; // second SSCE picture, revealed by the "Add SSCE" button
+/** The form's main SSCE upload box (id doc_ssce, or a custom softcopy item such as "SSCE RESULT"). */
+export const isSsceDoc = (f) => f && f.type === 'file' && f.id !== SSCE2_FIELD_ID && (f.id === 'doc_ssce' || (/\b(ssce|waec|neco)\b/i.test(f.label || '') && !/second/i.test(f.label || '')));
 export const DOCS_FIELD_ID = 'other_documents'; // old single documents box, replaced by the three below
 export const DOC_FIELDS = [
 	{ id: 'doc_ssce', label: 'SSCE' },
@@ -134,7 +136,7 @@ export function ensureUploadFields(fields, { required = true, uploads = true, so
 		}
 	}
 	// a second SSCE upload (second sitting), shown only after "Add SSCE" is tapped
-	const si = list.findIndex((f) => f.id === 'doc_ssce');
+	const si = list.findIndex(isSsceDoc);
 	if (si >= 0 && !list.some((f) => f.id === SSCE2_FIELD_ID)) {
 		list.splice(si + 1, 0, { id: SSCE2_FIELD_ID, type: 'file', label: 'SSCE (SECOND SITTING)', required: false, placeholder: '' });
 	}
