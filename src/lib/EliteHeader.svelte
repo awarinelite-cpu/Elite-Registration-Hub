@@ -1,7 +1,7 @@
 <script>
 	import Logo from '$lib/Logo.svelte';
 	// bell/profile = admin extras; children = anything extra on the right (e.g. theme toggle)
-	let { bell = false, bellDot = false, bellHref = '/admin/applications?status=pending', profileHref = '', onprofile = null, home = '/', children } = $props();
+	let { bell = false, bellDot = false, bellHref = '/admin/applications?status=pending', profileHref = '', onprofile = null, photo = '', home = '/', children } = $props();
 </script>
 
 <header class="eh print:hidden">
@@ -21,14 +21,13 @@
 					{#if bellDot}<span class="eh-dot"></span>{/if}
 				</a>
 			{/if}
+			{#snippet face()}
+				{#if photo}<img src={photo} alt="" class="eh-photo" />{:else}<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6" /><path d="M5 20c.6-3.8 3.6-6 7-6s6.4 2.2 7 6" /></svg>{/if}
+			{/snippet}
 			{#if onprofile}
-				<button type="button" class="eh-btn eh-ring" aria-label="Open menu" onclick={onprofile}>
-					<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6" /><path d="M5 20c.6-3.8 3.6-6 7-6s6.4 2.2 7 6" /></svg>
-				</button>
+				<button type="button" class="eh-btn eh-ring" aria-label="Open menu" onclick={onprofile}>{@render face()}</button>
 			{:else if profileHref}
-				<a href={profileHref} class="eh-btn eh-ring" aria-label="Profile">
-					<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6" /><path d="M5 20c.6-3.8 3.6-6 7-6s6.4 2.2 7 6" /></svg>
-				</a>
+				<a href={profileHref} class="eh-btn eh-ring" aria-label="Profile">{@render face()}</a>
 			{/if}
 			{@render children?.()}
 		</div>
@@ -56,6 +55,8 @@
 	.eh-right { display: flex; align-items: center; gap: .6rem; flex: none; }
 	.eh-btn { background: transparent; border: 0; cursor: pointer; position: relative; display: grid; place-items: center; width: 2.7rem; height: 2.7rem; border-radius: 50%; color: #fff; text-decoration: none; }
 	.eh-ring { border: 1.6px solid rgba(255, 255, 255, .8); }
+	.eh-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+	.eh-ring { overflow: hidden; }
 	.eh-dot { position: absolute; top: .35rem; right: .45rem; width: .7rem; height: .7rem; border-radius: 50%; background: #ef4444; border: 2px solid #0c3320; }
 	.eh-curve { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 1.7rem; display: block; }
 	@media (max-width: 360px) { .eh-name { font-size: 1.7rem; } .eh-tag { font-size: .56rem; } }

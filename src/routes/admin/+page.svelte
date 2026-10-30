@@ -217,6 +217,8 @@
 			<label class="tile t-dark" class:busy={docBusy}><b class="tag tag-docx">DOCX</b><span class="t-ic">{@render ic('wordDoc')}</span><span class="t-txt"><b>{docBusy ? 'Reading…' : 'Word file'}</b><small>Import a document</small></span><span class="t-go">{@render ic('chevron')}</span>
 				<input type="file" class="sr-only" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange={onWordFile} disabled={docBusy} />
 			</label>
+			<a href="/admin/applications" class="tile t-cream"><span class="t-ic">{@render ic('users')}</span><span class="t-txt"><b>Applications</b><small>View all entries</small></span><span class="t-go">{@render ic('chevron')}</span></a>
+			<a href="/admin/payments" class="tile t-gold"><span class="t-ic">{@render ic('clipboard')}</span><span class="t-txt"><b>Payment &amp; Fees</b><small>Applicant payment info</small></span><span class="t-go">{@render ic('chevron')}</span></a>
 		</section>
 
 		<label class="search">
@@ -544,4 +546,45 @@
 	h2 { margin: 0; }
 	.clk { width: 1.9rem; height: 1.9rem; display: inline-flex; }
 	.st-link.down { color: #d9534f; }
+
+	/* ===== mobile-first: banner logo always visible; stats + actions 4 per row ===== */
+	.banner { grid-template-columns: 1fr 5rem; }
+	.b-mark { display: block; width: 5rem; height: 5rem; }
+	.b-quote { grid-column: 1 / -1; }
+	@media (min-width: 520px) {
+		.banner { grid-template-columns: 1fr 6.5rem 9rem; }
+		.b-mark { width: 6.5rem; height: 6.5rem; }
+		.b-quote { grid-column: auto; }
+	}
+
+	.stats { grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+	.stat { padding: .65rem .5rem .6rem; border-radius: .9rem; min-width: 0; }
+	.st-ic { width: 2.4rem; height: 2.4rem; padding: .55rem; margin-bottom: .15rem; }
+	.st-num { font-size: 1.5rem; }
+	.st-label { font-size: .78rem; line-height: 1.15; overflow-wrap: anywhere; }
+	.st-link { margin-top: .2rem; font-size: .66rem; line-height: 1.2; }
+	@media (min-width: 620px) {
+		.stats { gap: .7rem; }
+		.stat { padding: .9rem .9rem .8rem; }
+		.st-ic { width: 3.2rem; height: 3.2rem; padding: .8rem; }
+		.st-num { font-size: 2rem; }
+		.st-label { font-size: 1rem; }
+		.st-link { font-size: .85rem; }
+	}
+
+	.quick2, .quick2 { grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+	.tile { align-items: center; justify-content: center; text-align: center; gap: .4rem; min-height: 5.8rem; padding: .7rem .3rem .6rem; border-radius: .9rem; min-width: 0; }
+	.t-ic { width: 2.5rem; height: 2.5rem; padding: .6rem; }
+	.t-txt { padding-right: 0; align-items: center; }
+	.t-txt b { font-size: .78rem; line-height: 1.15; }
+	.t-txt small, .t-go { display: none; }
+	.tile .tag { top: .3rem; right: .3rem; padding: .05rem .3rem; font-size: .58rem; }
+	@media (min-width: 620px) {
+		.quick2 { gap: .7rem; }
+		.tile { min-height: 8.2rem; padding: .9rem .6rem; }
+		.t-ic { width: 3rem; height: 3rem; padding: .7rem; }
+		.t-txt b { font-size: 1rem; }
+		.t-txt small { display: block; font-size: .8rem; }
+		.tile .tag { font-size: .68rem; }
+	}
 </style>
