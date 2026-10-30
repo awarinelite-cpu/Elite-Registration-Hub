@@ -282,7 +282,13 @@
 {/if}
 
 {#if selected}
-	<div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-3 md:p-8" role="dialog" aria-modal="true">
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-3 md:p-8"
+		role="dialog"
+		aria-modal="true"
+		onclick={(e) => { if (e.target === e.currentTarget) { selected = null; showEdits = false; } }}
+	>
 		<div class="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl md:max-w-5xl md:p-10">
 			<div class="mb-5 flex items-start justify-between gap-3 border-b border-slate-200 pb-4 md:mb-8 md:pb-6">
 				<div>
@@ -343,7 +349,13 @@
 {/if}
 
 {#if selected && showEdits}
-	<div class="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true">
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+	<div
+		class="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4"
+		role="dialog"
+		aria-modal="true"
+		onclick={(e) => { if (e.target === e.currentTarget) showEdits = false; }}
+	>
 		<div class="max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl md:max-w-xl md:p-6">
 			<div class="mb-3 flex items-center justify-between gap-2">
 				<h3 class="font-bold md:text-xl">Edit history</h3>
