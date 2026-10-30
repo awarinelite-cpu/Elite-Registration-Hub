@@ -42,6 +42,9 @@
 <svelte:head><title>My application — EliteReg</title></svelte:head>
 
 <main class="mx-auto flex max-w-md flex-col gap-5 px-4 pb-10 pt-1">
+	<a href="/admin" aria-label="Back to admin login" title="Back to admin login" class="btn-3d-ghost btn-3d-lg self-start !px-3 !text-teal-800">
+		<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+	</a>
 	<section class="welcome">
 		<div>
 			<div class="w-hi">Welcome,</div>
