@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { page } from '$app/state';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
+	import EliteHeader from '$lib/EliteHeader.svelte';
 	import BackButton from '$lib/BackButton.svelte';
 	import { onMount } from 'svelte';
 	import { onAuthStateChanged } from 'firebase/auth';
@@ -19,8 +20,8 @@
 	</div>
 {/if}
 
-<!-- top-right corner of every page; the admin area puts it beside Sign out in its own header -->
+<!-- same green & gold header on every public page; the admin area draws its own (with bell + profile) -->
 {#if !page.url.pathname.startsWith('/admin')}
-	<div class="flex justify-end px-4 pt-3 print:hidden"><ThemeToggle /></div>
+	<EliteHeader home="/login"><ThemeToggle /></EliteHeader>
 {/if}
 {@render children()}

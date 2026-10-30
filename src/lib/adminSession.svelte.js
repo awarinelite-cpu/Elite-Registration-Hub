@@ -2,7 +2,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, firestore } from '$lib/firebase.js';
 
 // Set by the admin layout once the signed-in user is confirmed. role: 'owner' (main admin) | 'sub' (sub-admin)
-export const session = $state({ role: '', uid: '' });
+export const session = $state({ role: '', uid: '', name: '', email: '', pending: 0 });
 export const isOwner = () => session.role === 'owner';
 
 /** Forms this user may see: everything for the main admin, only their own for a sub-admin. */

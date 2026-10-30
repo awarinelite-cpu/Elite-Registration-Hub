@@ -4,10 +4,12 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { auth, firestore } from '$lib/firebase.js';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
+	import EliteHeader from '$lib/EliteHeader.svelte';
 	import { session } from '$lib/adminSession.svelte.js';
 	import { page } from '$app/state';
 
 	let { children } = $props();
+	const path = $derived(page.url.pathname);
 	let state = $state('loading'); // loading | signedout | denied | ok
 	let user = $state(null);
 	let email = $state('');
@@ -15,7 +17,6 @@
 	let error = $state('');
 	let busy = $state(false);
 	let checkError = $state('');
-	let menuOpen = $state(false);
 
 	onMount(() =>
 		onAuthStateChanged(auth, async (u) => {
@@ -25,6 +26,8 @@
 				const snap = await getDoc(doc(firestore, 'admins', u.uid));
 				if (snap.exists()) {
 					session.uid = u.uid;
+					session.email = u.email || '';
+					session.name = u.displayName || prettyName(u.email);
 					session.role = snap.data()?.role === 'sub' ? 'sub' : 'owner';
 				}
 				state = snap.exists() ? 'ok' : 'denied';
@@ -34,6 +37,12 @@
 			}
 		})
 	);
+
+	// "awarin.elite@x.com" -> "Awarin Elite"
+	function prettyName(email) {
+		const local = String(email || '').split('@')[0].replace(/[._\-+\d]+/g, ' ').trim();
+		return local ? local.replace(/\b\w/g, (c) => c.toUpperCase()) : 'Admin';
+	}
 
 	async function login(e) {
 		e.preventDefault();
@@ -51,13 +60,13 @@
 <svelte:head><title>Admin — EliteReg</title></svelte:head>
 
 {#if state !== 'ok'}
-	<div class="flex justify-end px-4 pt-3"><ThemeToggle /></div>
+	<EliteHeader home="/admin"><ThemeToggle /></EliteHeader>
 {/if}
 {#if state === 'loading'}
 	<div class="grid min-h-screen place-items-center text-slate-500">Loading…</div>
 {:else if state === 'signedout'}
-	<main class="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-4">
-		<div class="mb-4 text-center text-xl font-extrabold text-teal-700">EliteReg Admin</div>
+	<main class="mx-auto flex max-w-sm flex-col justify-center px-4 py-8">
+		<div class="mb-4 text-center text-xl font-extrabold text-teal-800">Admin sign in</div>
 		<form class="card space-y-4" onsubmit={login}>
 			{#if error}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>{/if}
 			<div><label class="label" for="em">Email</label><input class="input" id="em" type="email" bind:value={email} required /></div>
@@ -66,7 +75,7 @@
 		</form>
 	</main>
 {:else if state === 'denied'}
-	<main class="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
+	<main class="mx-auto flex max-w-md flex-col justify-center px-4 py-8">
 		<div class="card space-y-3">
 			<h1 class="text-lg font-bold">{checkError ? 'Could not check admin access' : 'Not authorised'}</h1>
 			{#if checkError}
@@ -81,87 +90,36 @@
 		</div>
 	</main>
 {:else}
-	<header class="admin-head">
-		<button type="button" class="head-menu" aria-label="Open menu" onclick={() => (menuOpen = true)}>
-			<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
-		</button>
-		<a href="/admin" class="head-brand" aria-label="EliteReg dashboard">
-			<svg viewBox="0 0 40 34" width="42" height="36" aria-hidden="true">
-				<path d="M12 1.5h27l-4.6 8.6H7.4z" fill="#0f8f86" />
-				<path d="M7.5 12.7h22l-4.6 8.6H2.9z" fill="#0b6f69" />
-				<path d="M3.1 23.9h27.4l-4.6 8.6H-1.5z" fill="#0f8f86" />
-			</svg>
-			<span class="head-name">EliteReg</span>
-		</a>
-		<span class="head-role">{session.role === 'sub' ? 'Sub-admin' : 'Admin'}</span>
-	</header>
+	<EliteHeader home="/admin" bell bellDot={session.pending > 0} profileHref="/admin/profile" />
 
-	{#if menuOpen}
-		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-		<div class="drawer-back" onclick={() => (menuOpen = false)}></div>
-		<aside class="drawer" role="dialog" aria-modal="true" aria-label="Menu">
-			<div class="drawer-top">
-				<span class="head-name">EliteReg</span>
-				<button type="button" class="head-menu" aria-label="Close menu" onclick={() => (menuOpen = false)}>✕</button>
-			</div>
-			<div class="drawer-user">{user?.email}</div>
-			<a href="/admin" class="drawer-link" onclick={() => (menuOpen = false)}>Dashboard</a>
-			{#if session.role === 'owner'}<a href="/admin/team" class="drawer-link" onclick={() => (menuOpen = false)}>Team</a>{/if}
-			<div class="drawer-row"><span>Theme</span><ThemeToggle /></div>
-			<button class="drawer-out" onclick={() => signOut(auth)}>Sign out</button>
-		</aside>
-	{/if}
-	<main class="mx-auto max-w-5xl px-4 pb-28 pt-5">{@render children()}</main>
+	<main class="mx-auto max-w-5xl px-4 pb-32 pt-1">{@render children()}</main>
 
-	<nav class="botnav" aria-label="Main">
-		<a href="/admin" class:on={page.url.pathname === '/admin'}>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7.5 9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg>Home
+	<nav class="botnav print:hidden" aria-label="Main">
+		<a href="/admin" class:on={path === '/admin'}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7.5 9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg><span>Home</span>
 		</a>
-		<a href="/admin/notes" class:on={page.url.pathname.startsWith('/admin/notes')}>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>Notes
+		<a href="/admin/applications" class:on={path.startsWith('/admin/applications') || /^\/admin\/forms\/[^/]+\/applications/.test(path)}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg><span>Applications</span>
 		</a>
-		{#if session.role === 'owner'}
-			<a href="/admin/team" class:on={page.url.pathname.startsWith('/admin/team')}>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17.5" cy="9" r="2.4"/><path d="M17 14.6c2.4.2 4 1.9 4 4.4"/></svg>Team
-			</a>
-		{/if}
-		<button type="button" onclick={() => (menuOpen = true)}>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu
-		</button>
+		<a href="/admin/forms/new" class="fab" aria-label="Create new form">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+		</a>
+		<a href="/admin/notes" class:on={path.startsWith('/admin/notes')}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 12h6M9 16h6"/></svg><span>Documents</span>
+		</a>
+		<a href="/admin/profile" class:on={path.startsWith('/admin/profile') || path.startsWith('/admin/team') || path.startsWith('/admin/support')}>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20.5c.6-4 3.6-6.2 7-6.2s6.4 2.2 7 6.2"/></svg><span>Profile</span>
+		</a>
 	</nav>
 {/if}
 
-<svelte:window onkeydown={(e) => { if (menuOpen && e.key === 'Escape') menuOpen = false; }} />
-
 <style>
-	.admin-head {
-		position: sticky; top: 0; z-index: 30;
-		display: flex; align-items: center; justify-content: center; gap: .7rem;
-		padding: .85rem 1rem;
-		background: var(--hd-bg, #fff);
-		box-shadow: 0 2px 10px rgba(15, 27, 61, .08);
-	}
-	.head-menu { position: absolute; left: .6rem; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: .75rem; color: var(--hd-text, #0f1b3d); background: transparent; border: 0; font-size: 1.2rem; cursor: pointer; }
-	.head-brand { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
-	.head-name { font-size: 1.75rem; font-weight: 800; letter-spacing: -.01em; color: var(--hd-text, #0f1b3d); line-height: 1; }
-	.head-role { padding: .4rem .95rem; border-radius: 9999px; background: #d9f1ee; color: #0b7d76; font-size: 1.02rem; font-weight: 600; }
-	.botnav { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; padding: .5rem .5rem calc(.55rem + env(safe-area-inset-bottom, 0px)); background: var(--hd-bg, #fff); box-shadow: 0 -4px 18px rgba(15, 27, 61, .1); }
-	.botnav a, .botnav button { display: flex; flex-direction: column; align-items: center; gap: .2rem; flex: 1; padding: .3rem 0; border: 0; background: transparent; color: #7b8aa6; font-size: .78rem; font-weight: 600; text-decoration: none; cursor: pointer; }
-	.botnav svg { width: 1.6rem; height: 1.6rem; }
-	.botnav .on { color: #0e8f8c; }
-	:global(html.dark) .botnav .on { color: #5eead4; }
-	:global(html.dark.forest) .botnav .on { color: #f2b83a; }
-	.drawer-back { position: fixed; inset: 0; z-index: 40; background: rgba(15, 27, 61, .45); }
-	.drawer { position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(19rem, 86vw); display: flex; flex-direction: column; gap: .35rem; padding: 1rem; background: var(--hd-bg, #fff); box-shadow: 8px 0 30px rgba(15, 27, 61, .25); }
-	.drawer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
-	.drawer-top .head-menu { position: static; }
-	.drawer-user { margin-bottom: .6rem; padding-bottom: .8rem; border-bottom: 1px solid rgba(100, 116, 139, .25); font-size: .85rem; color: #64748b; word-break: break-all; }
-	.drawer-link { padding: .75rem .9rem; border-radius: .75rem; font-weight: 600; color: var(--hd-text, #0f1b3d); text-decoration: none; }
-	.drawer-link:hover { background: rgba(13, 148, 136, .1); }
-	.drawer-row { display: flex; align-items: center; justify-content: space-between; padding: .5rem .9rem; font-weight: 600; color: var(--hd-text, #0f1b3d); }
-	.drawer-out { margin-top: auto; padding: .8rem; border-radius: .75rem; border: 1px solid rgba(100, 116, 139, .4); background: transparent; font-weight: 700; color: var(--hd-text, #0f1b3d); cursor: pointer; }
-	:global(html.dark) { --hd-bg: #0f172a; --hd-text: #f1f5f9; }
-	:global(html.dark) .head-role { background: rgba(94, 234, 212, .16); color: #5eead4; }
-	:global(html.dark.forest) { --hd-bg: #143533; --hd-text: #fbf7e8; }
-	:global(html.dark.forest) .head-role { background: rgba(242, 184, 58, .18); color: #f2b83a; }
+	.botnav { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-around; gap: .15rem; padding: .55rem .6rem calc(.6rem + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--edge); box-shadow: 0 -6px 22px rgba(14, 42, 26, .1); }
+	.botnav a:not(.fab) { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; flex: 1; max-width: 6.2rem; min-height: 3.5rem; padding: .3rem .4rem; border-radius: 1.2rem; color: #7d8a82; font-size: .8rem; font-weight: 600; text-decoration: none; }
+	.botnav a:not(.fab) svg { width: 1.6rem; height: 1.6rem; }
+	.botnav a.on { background: #0f4a2b; color: #fff; }
+	.fab { position: relative; flex: none; display: grid; place-items: center; width: 4.1rem; height: 4.1rem; margin: -2.1rem .2rem 0; border-radius: 50%; color: #fff; text-decoration: none; background: radial-gradient(circle at 35% 30%, #1f6a3f, #0c3320); border: 3px solid #d4af37; box-shadow: 0 0 0 4px var(--surface), 0 10px 20px -6px rgba(14, 42, 26, .6); }
+	.fab svg { width: 2rem; height: 2rem; }
+	:global(html.dark) .botnav a.on { background: #d4a937; color: #0a2e1b; }
+	@media (min-width: 900px) { .botnav { left: 50%; right: auto; width: 42rem; transform: translateX(-50%); border-radius: 1.4rem 1.4rem 0 0; border: 1px solid var(--edge); border-bottom: 0; } }
 </style>

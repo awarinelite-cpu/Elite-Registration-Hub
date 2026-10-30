@@ -5,7 +5,7 @@
 	const ICON = { light: '🌙', dark: '🌿', forest: '☀️' }; // shows what the next tap switches to
 	const NEXT = { light: 'dark', dark: 'forest', forest: 'light' };
 	const NAME = { light: 'Light mode', dark: 'Dark mode', forest: 'Forest mode' };
-	const BAR = { light: '#0f766e', dark: '#0f766e', forest: '#0f2623' }; // phone status-bar colour
+	const BAR = { light: '#0f3d24', dark: '#0f3d24', forest: '#0f2623' }; // phone status-bar colour
 
 	let mode = $state('light');
 

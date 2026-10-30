@@ -17,7 +17,7 @@
 	let busy = $state(false);
 	let downloading = $state('');
 	const items = $derived(buildDetailItems(data.fields, data.data));
-	const colors = { submitted: 'bg-blue-100 text-blue-800', reviewed: 'bg-amber-100 text-amber-800', approved: 'bg-green-100 text-green-800', rejected: 'bg-red-100 text-red-800', done: 'bg-slate-200 text-slate-700' };
+	const colors = { submitted: 'bg-amber-100 text-amber-800', reviewed: 'bg-teal-100 text-teal-800', approved: 'bg-green-100 text-green-800', rejected: 'bg-red-100 text-red-800', done: 'bg-slate-200 text-slate-700' };
 
 	async function fetchFile(file) {
 		const res = await fetch(`/api/file?path=${encodeURIComponent(file.path)}`);
@@ -54,7 +54,7 @@
 
 <svelte:head><title>My application — EliteReg</title></svelte:head>
 
-<main class="mx-auto max-w-2xl px-4 py-8">
+<main class="mx-auto max-w-2xl px-4 pb-10 pt-1">
 	<div class="mb-4 flex items-start justify-between gap-3">
 		<div>
 			<h1 class="text-xl font-bold">{data.title}</h1>
