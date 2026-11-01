@@ -76,13 +76,7 @@
 			<h1 class="text-xl font-extrabold">{REPORT_TITLE}</h1>
 			{#if saved}<p class="text-xs text-slate-500">Saved {saved}</p>{/if}
 		</div>
-		<div class="flex gap-2">
-			<a class="btn-ghost" href="/ihs/{id}/edit">Edit</a>
-			<button class="btn-danger" onclick={remove} disabled={busy}>Delete</button>
-		</div>
 	</div>
-
-	<p class="mb-2 text-sm text-slate-600">Tap the copy icon beside any value to copy it, then paste it into the IHS site.</p>
 
 	<div class="card !p-0 overflow-hidden">
 		<!-- Name of Site: part of the same sheet, centred on top, bigger than everything else, not numbered -->
@@ -112,6 +106,10 @@
 				{/each}
 			</tbody>
 		</table>
+	</div>
+	<div class="mt-4 grid grid-cols-2 gap-3">
+		<a class="btn-ghost !py-3 !text-base" href="/ihs/{id}/edit">Edit</a>
+		<button class="btn-danger !py-3 !text-base" onclick={remove} disabled={busy}>Delete</button>
 	</div>
 	<div class="sr-only" aria-live="polite">{copied ? 'Copied' : ''}</div>
 {/if}
