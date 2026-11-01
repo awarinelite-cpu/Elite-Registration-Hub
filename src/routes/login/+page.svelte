@@ -47,8 +47,6 @@
 	</a>
 	<section class="welcome">
 		<div>
-			<div class="w-hi">Welcome,</div>
-			<div class="w-name">Applicant</div>
 			<p>Your one-stop platform for easy and seamless registration.</p>
 		</div>
 		<blockquote>“Your goals are valid. Keep going.”</blockquote>

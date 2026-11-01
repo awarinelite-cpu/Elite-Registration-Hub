@@ -192,8 +192,6 @@
 	{:else}
 		<section class="banner">
 			<div class="b-text">
-				<div class="b-hi">{greeting},</div>
-				<div class="b-name">{session.name || 'Admin'}</div>
 				<p class="b-sub">Your one-stop platform for easy and seamless registration.</p>
 			</div>
 			<div class="b-mark"><Logo size={104} /></div>
