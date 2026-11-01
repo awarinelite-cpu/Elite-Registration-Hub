@@ -5,11 +5,12 @@ export const ACCOUNT_TYPES = [{ key: 'ihs-dmo', label: 'IHS DMO' }];
 export const IHS_TYPE = 'ihs-dmo';
 
 /**
- * "Diesel Monitoring Officer Report Sheet" — the 15 items, in the order (S/N) of the Word sheet.
+ * "Diesel Monitoring Officer Report Sheet" — the 15 items of the Word sheet, preceded by "Name of Site" (S/N 1).
  * `label` is the item name shown in the form and in the saved table (the three "Phone No" rows say whose phone it is).
  */
 export const REPORT_TITLE = 'Diesel Monitoring Officer Report Sheet';
 export const REPORT_FIELDS = [
+	{ key: 'siteName', label: 'Name of Site', type: 'text', required: true, placeholder: 'e.g. Ikeja Cluster Site' },
 	{ key: 'date', label: 'DATE', type: 'date', required: true },
 	{ key: 'truckNo', label: 'Truck No', type: 'text', required: true, placeholder: 'e.g. LND-123-XY' },
 	{ key: 'volumeBrought', label: 'Volume Brought to Cluster', type: 'decimal', placeholder: 'Litres' },
@@ -57,4 +58,10 @@ export function showValue(f, v) {
 		return y && m && d ? `${d}/${m}/${y}` : String(v);
 	}
 	return String(v);
+}
+
+/** Saved time of day for a report, e.g. "6:09 pm" (from the timestamp saved with it). */
+export function showTime(ts) {
+	if (!ts) return '';
+	return new Date(ts).toLocaleTimeString('en-NG', { hour: 'numeric', minute: '2-digit' });
 }

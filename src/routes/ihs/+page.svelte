@@ -3,9 +3,9 @@
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { firestore } from '$lib/firebase.js';
 	import { ihs } from '$lib/ihsSession.svelte.js';
-	import { REPORT_TITLE, REPORT_FIELDS, showValue } from '$lib/ihs.js';
+	import { REPORT_TITLE, REPORT_FIELDS, showValue, showTime } from '$lib/ihs.js';
 
-	const dateField = REPORT_FIELDS[0];
+	const dateField = REPORT_FIELDS.find((f) => f.key === 'date');
 	let reports = $state([]);
 	let status = $state('loading'); // loading | ok | error
 
@@ -47,10 +47,8 @@
 				<a href="/ihs/{r.id}" class="card block !p-4 no-underline">
 					<div class="flex items-center justify-between gap-3">
 						<div class="min-w-0">
-							<div class="font-bold">{showValue(dateField, r.date)} · Truck {r.truckNo || '—'}</div>
-							<div class="mt-0.5 truncate text-sm text-slate-600">
-								Site {r.siteId || '—'} · Supplied {r.volumeSupplied || '—'}{r.vendor ? ` · ${r.vendor}` : ''}
-							</div>
+							<div class="truncate font-bold">{r.siteName || r.siteId || 'Unnamed site'}</div>
+							<div class="mt-0.5 text-sm text-slate-600">{showValue(dateField, r.date)}{r.createdAt ? ` · ${showTime(r.createdAt)}` : ''}</div>
 						</div>
 						<span class="text-xl text-slate-400" aria-hidden="true">›</span>
 					</div>
