@@ -12,6 +12,12 @@
 		<meta name="apple-mobile-web-app-title" content="EliteReg" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 		<script>
+			// a device signed in as an IHS DMO account only ever sees /ihs (see src/lib/ihsGuard.js)
+			try {
+				if (localStorage.getItem('elitereg_ihs') === '1' && location.pathname.indexOf('/ihs') !== 0) location.replace('/ihs');
+			} catch (e) {}
+		</script>
+		<script>
 			try {
 				var t = localStorage.getItem('elitereg_theme');
 				var c = document.documentElement.classList;

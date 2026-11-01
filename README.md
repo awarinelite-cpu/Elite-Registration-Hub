@@ -30,6 +30,7 @@ The main admin (an `admins/<uid>` doc with no `role: "sub"`) opens **Team** in t
 ## IHS DMO accounts (data-collection interface)
 - **There is no public sign-up.** Only the main admin creates accounts: **Team** → pick the **Account type** (Sub-admin or IHS DMO), enter name, email and a password, and give those details to the person.
 - IHS DMO users sign in at `/ihs` and only ever see that interface (they are not in `admins`, and signing in at `/admin` redirects them to `/ihs`).
+- **Strict isolation:** a signed-in IHS account is redirected to `/ihs` from every other page (home, login, registration forms, notes, admin, error pages). This is enforced in the root layout plus an early redirect in `src/app.html`, and in the data layer the Firestore rules give them no access to forms, applications or admin data.
 - They fill the **Diesel Monitoring Officer Report Sheet** (15 items), saved to `ihsReports`. Each saved report opens as an S/N | Item | Details table with a **copy icon on every value**, for pasting into the IHS company site.
 - Each user can read/write only their own reports (see `firestore.rules`). **Re-deploy the rules after pulling:** `firebase deploy --only firestore:rules`.
 - More account types: add an entry to `ACCOUNT_TYPES` in `src/lib/ihs.js` (the server only accepts types listed there).
