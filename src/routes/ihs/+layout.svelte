@@ -5,6 +5,7 @@
 	import { auth, firestore } from '$lib/firebase.js';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
 	import EliteHeader from '$lib/EliteHeader.svelte';
+	import { goto } from '$app/navigation';
 	import { IHS_TYPE } from '$lib/ihs.js';
 	import { ihs } from '$lib/ihsSession.svelte.js';
 
@@ -34,7 +35,13 @@
 					ihs.email = u.email || '';
 					ihs.name = snap.data().name || u.displayName || '';
 					state = 'ok';
-				} else state = 'denied';
+				} else {
+					// not an IHS account: admins / sub-admins belong in the admin area, so send them there instead of blocking them
+					try {
+						if ((await getDoc(doc(firestore, 'admins', u.uid))).exists()) return goto('/admin', { replaceState: true });
+					} catch {}
+					state = 'denied';
+				}
 			} catch (err) {
 				checkError = err?.code || err?.message || 'unknown error';
 				state = 'denied';
