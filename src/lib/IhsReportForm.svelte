@@ -1,5 +1,5 @@
 <script>
-	import { REPORT_FIELDS, blankReport, cleanReport, validateReport } from '$lib/ihs.js';
+	import { SITE_FIELD, SHEET_FIELDS, blankReport, cleanReport, validateReport } from '$lib/ihs.js';
 
 	// onsave(report) must throw to show an error; the parent navigates away on success.
 	let { initial = null, onsave, submitLabel = 'Save report' } = $props();
@@ -24,8 +24,12 @@
 
 <form class="card space-y-4" onsubmit={submit}>
 	{#if error}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</div>{/if}
+	<div>
+		<label class="label !text-base !font-bold" for="f-{SITE_FIELD.key}">{SITE_FIELD.label} <span class="text-red-600">*</span></label>
+		<input class="input !py-3 !text-lg !font-bold" id="f-{SITE_FIELD.key}" type="text" autocomplete="off" bind:value={values[SITE_FIELD.key]} placeholder={SITE_FIELD.placeholder} required />
+	</div>
 	<div class="grid gap-4 sm:grid-cols-2">
-		{#each REPORT_FIELDS as f, i (f.key)}
+		{#each SHEET_FIELDS as f, i (f.key)}
 			<div>
 				<label class="label" for="f-{f.key}"><span class="mr-1 text-slate-500">{i + 1}.</span>{f.label}{#if f.required}<span class="text-red-600"> *</span>{/if}</label>
 				{#if f.type === 'date'}

@@ -5,12 +5,12 @@ export const ACCOUNT_TYPES = [{ key: 'ihs-dmo', label: 'IHS DMO' }];
 export const IHS_TYPE = 'ihs-dmo';
 
 /**
- * "Diesel Monitoring Officer Report Sheet" — the 15 items of the Word sheet, preceded by "Name of Site" (S/N 1).
+ * "Diesel Monitoring Officer Report Sheet" — the 15 numbered items of the Word sheet (S/N 1-15), plus "Name of Site", which is shown big above the numbered list.
  * `label` is the item name shown in the form and in the saved table (the three "Phone No" rows say whose phone it is).
  */
 export const REPORT_TITLE = 'Diesel Monitoring Officer Report Sheet';
 export const REPORT_FIELDS = [
-	{ key: 'siteName', label: 'Name of Site', type: 'text', required: true, placeholder: 'e.g. Ikeja Cluster Site' },
+	{ key: 'siteName', label: 'Name of Site', type: 'text', required: true, top: true, placeholder: 'e.g. Ikeja Cluster Site' },
 	{ key: 'date', label: 'DATE', type: 'date', required: true },
 	{ key: 'truckNo', label: 'Truck No', type: 'text', required: true, placeholder: 'e.g. LND-123-XY' },
 	{ key: 'volumeBrought', label: 'Volume Brought to Cluster', type: 'decimal', placeholder: 'Litres' },
@@ -27,6 +27,10 @@ export const REPORT_FIELDS = [
 	{ key: 'sbc', label: 'SBC', type: 'text' },
 	{ key: 'clo', label: 'CLO', type: 'text' }
 ];
+
+/** Name of Site (bigger, unnumbered, above the list) and the numbered sheet items (S/N starts at 1 with DATE). */
+export const SITE_FIELD = REPORT_FIELDS.find((f) => f.top);
+export const SHEET_FIELDS = REPORT_FIELDS.filter((f) => !f.top);
 
 const todayISO = () => {
 	const d = new Date();
