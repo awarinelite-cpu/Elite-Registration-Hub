@@ -56,7 +56,7 @@
 <svelte:head><title>IHS DMO — EliteReg</title></svelte:head>
 
 {#if state === 'ok'}
-	<EliteHeader home="/ihs">
+	<EliteHeader home="/ihs" greeting="Welcome," userName={ihs.name || ihs.email.split('@')[0]}>
 		<button type="button" class="so" onclick={() => signOut(auth)} aria-label="Sign out">Sign out</button>
 		<ThemeToggle />
 	</EliteHeader>

@@ -1,7 +1,7 @@
 <script>
 	import Logo from '$lib/Logo.svelte';
 	// bell/profile = admin extras; children = anything extra on the right (e.g. theme toggle)
-	let { bell = false, bellDot = false, bellHref = '/admin/applications?status=pending', profileHref = '', onprofile = null, photo = '', home = '/', children } = $props();
+	let { bell = false, bellDot = false, bellHref = '/admin/applications?status=pending', profileHref = '', onprofile = null, photo = '', home = '/', greeting = '', userName = '', children } = $props();
 </script>
 
 <header class="eh print:hidden">
@@ -9,8 +9,13 @@
 		<a href={home} class="eh-brand" aria-label="Elite Registration Hub">
 			<Logo size={62} />
 			<span class="eh-text">
-				<span class="eh-name">Elite</span>
-				<span class="eh-sub">Registration Hub</span>
+				{#if userName}
+					<span class="eh-sub eh-hi">{greeting || 'Welcome,'}</span>
+					<span class="eh-name eh-user">{userName}</span>
+				{:else}
+					<span class="eh-name">Elite</span>
+					<span class="eh-sub">Registration Hub</span>
+				{/if}
 			</span>
 		</a>
 		<div class="eh-right">
@@ -49,6 +54,8 @@
 	.eh-text { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
 	.eh-name { font-size: 2.1rem; font-weight: 800; letter-spacing: -.01em; }
 	.eh-sub { font-size: 1.15rem; font-weight: 700; color: #e0b845; margin-top: -.1rem; }
+	.eh-hi { margin: 0; font-size: 1.05rem; }
+	.eh-user { font-size: 1.7rem; overflow-wrap: anywhere; }
 	.eh-tag { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem; font-size: .62rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; }
 	.eh-tag i { font-style: normal; } .eh-tag b { color: #c9a13b; }
 	.eh-right { display: flex; align-items: center; gap: .6rem; flex: none; }
