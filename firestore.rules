@@ -22,6 +22,23 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // IHS DMO accounts. The profile (ihsUsers/{uid}) is written only by the server at sign-up;
+    // an IHS user can read their own profile and nothing else outside their own reports.
+    function isIhsUser() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/ihsUsers/$(request.auth.uid));
+    }
+    match /ihsUsers/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /ihsReports/{id} {
+      allow read, delete: if isIhsUser() && resource.data.ownerId == request.auth.uid;
+      allow create: if isIhsUser() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isIhsUser() && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == request.auth.uid;
+    }
+
     // Students never touch Firestore directly: public form reads, submissions,
     // PIN login and edits all go through server routes (firebase-admin).
     // Main admin sees everything; a sub-admin only forms with ownerId == their uid.

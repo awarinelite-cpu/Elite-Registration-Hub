@@ -104,6 +104,10 @@
 		<button class="btn w-full" disabled={busy}>{busy ? 'Checking…' : 'Continue'}</button>
 	</form>
 
+	<p class="text-center text-sm text-slate-600">
+		IHS DMO officer? <a class="font-semibold text-teal-800 underline" href="/ihs">Sign in</a> or <a class="font-semibold text-teal-800 underline" href="/signup">create an account</a>
+	</p>
+
 	{#if forms.length}
 		<div class="card space-y-3">
 			<h2 class="font-bold">Submit another application</h2>

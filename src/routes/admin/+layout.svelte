@@ -7,6 +7,7 @@
 	import EliteHeader from '$lib/EliteHeader.svelte';
 	import { session } from '$lib/adminSession.svelte.js';
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 
 	let { children } = $props();
 	const path = $derived(page.url.pathname);
@@ -30,6 +31,10 @@
 					session.name = u.displayName || prettyName(u.email);
 					session.photo = u.photoURL || '';
 					session.role = snap.data()?.role === 'sub' ? 'sub' : 'owner';
+				} else {
+					// an IHS DMO account only ever sees its own interface
+					const ihsSnap = await getDoc(doc(firestore, 'ihsUsers', u.uid));
+					if (ihsSnap.exists()) return goto('/ihs');
 				}
 				state = snap.exists() ? 'ok' : 'denied';
 			} catch (err) {
