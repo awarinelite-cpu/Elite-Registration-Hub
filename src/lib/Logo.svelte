@@ -1,34 +1,32 @@
 <script>
-	// Elite crest: gold laurel wreath around a green shield with a graduation cap.
+	// EliteReg badge: gold ring, green disc, "E" monogram built from form-field bars,
+	// verified-check seal and a small sparkle.
 	let { size = 64 } = $props();
+	const uid = $props.id();
 </script>
 
 <svg viewBox="0 0 100 100" width={size} height={size} fill="none" aria-hidden="true">
 	<defs>
-		<linearGradient id="lg-gold" x1="0" y1="0" x2="1" y2="1">
-			<stop offset="0" stop-color="#f0d98f" />
-			<stop offset=".5" stop-color="#c9a13b" />
-			<stop offset="1" stop-color="#a47f22" />
+		<linearGradient id="{uid}-gold" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#f6e3a1" />
+			<stop offset=".5" stop-color="#d1a838" />
+			<stop offset="1" stop-color="#9c7620" />
 		</linearGradient>
-		<linearGradient id="lg-green" x1="0" y1="0" x2="0" y2="1">
-			<stop offset="0" stop-color="#1c5a37" />
-			<stop offset="1" stop-color="#0a2e1b" />
+		<linearGradient id="{uid}-green" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#21703f" />
+			<stop offset="1" stop-color="#082616" />
 		</linearGradient>
 	</defs>
-	<!-- laurel -->
-	<g fill="url(#lg-gold)">
-		{#each [0, 1, 2, 3, 4, 5, 6] as i}
-			<ellipse cx={14 + i * 1.2} cy={70 - i * 8} rx="3" ry="6" transform="rotate({-38 + i * 7} {14 + i * 1.2} {70 - i * 8})" />
-			<ellipse cx={86 - i * 1.2} cy={70 - i * 8} rx="3" ry="6" transform="rotate({38 - i * 7} {86 - i * 1.2} {70 - i * 8})" />
-		{/each}
+	<circle cx="50" cy="50" r="48.5" fill="url(#{uid}-gold)" />
+	<circle cx="50" cy="50" r="44.8" fill="url(#{uid}-green)" />
+	<circle cx="50" cy="50" r="41" stroke="#e6cd86" stroke-opacity=".55" stroke-width=".9" />
+	<g fill="url(#{uid}-gold)">
+		<rect x="27" y="25" width="9" height="44" rx="2.2" />
+		<rect x="27" y="25" width="34" height="9" rx="2.2" />
+		<rect x="27" y="42.5" width="28" height="9" rx="2.2" />
+		<rect x="27" y="60" width="34" height="9" rx="2.2" />
+		<path d="M70 23 Q71.2 29 77 30 Q71.2 31 70 37 Q68.8 31 63 30 Q68.8 29 70 23 Z" />
 	</g>
-	<!-- shield -->
-	<path d="M50 12 L77 22 V50 C77 68 64 80 50 87 C36 80 23 68 23 50 V22 Z" fill="url(#lg-green)" stroke="url(#lg-gold)" stroke-width="3" stroke-linejoin="round" />
-	<!-- cap -->
-	<g fill="url(#lg-gold)">
-		<path d="M50 32 L72 42 L50 52 L28 42 Z" />
-		<path d="M38 49 V58 C44 63 56 63 62 58 V49 L50 54.5 Z" opacity=".92" />
-		<path d="M69 44 V56" stroke="url(#lg-gold)" stroke-width="2" stroke-linecap="round" />
-		<circle cx="69" cy="58" r="2" />
-	</g>
+	<circle cx="69" cy="69" r="12.5" fill="url(#{uid}-gold)" stroke="#0a2e1b" stroke-width="2.6" />
+	<path d="M62.8 69.6 L67.2 74 L75.4 64.4" stroke="#0a2e1b" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
