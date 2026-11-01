@@ -9,6 +9,8 @@
 	import { ihs } from '$lib/ihsSession.svelte.js';
 
 	let { children } = $props();
+	const hr = new Date().getHours();
+	const greeting = hr < 12 ? 'Good Morning' : hr < 17 ? 'Good Afternoon' : 'Good Evening';
 	let state = $state('loading'); // loading | signedout | denied | ok
 	let email = $state('');
 	let password = $state('');
@@ -56,7 +58,7 @@
 <svelte:head><title>IHS DMO — EliteReg</title></svelte:head>
 
 {#if state === 'ok'}
-	<EliteHeader home="/ihs" greeting="Welcome," userName={ihs.name || ihs.email.split('@')[0]}>
+	<EliteHeader home="/ihs" {greeting} userName={ihs.name || ihs.email.split('@')[0]}>
 		<button type="button" class="so" onclick={() => signOut(auth)} aria-label="Sign out">Sign out</button>
 		<ThemeToggle />
 	</EliteHeader>

@@ -10,8 +10,8 @@
 			<Logo size={62} />
 			<span class="eh-text">
 				{#if userName}
-					<span class="eh-sub eh-hi">{greeting || 'Welcome,'}</span>
-					<span class="eh-name eh-user">{userName}</span>
+					<span class="eh-name eh-hi">{greeting || 'Welcome'}</span>
+					<span class="eh-sub eh-user">{userName}</span>
 				{:else}
 					<span class="eh-name">Elite</span>
 					<span class="eh-sub">Registration Hub</span>
@@ -54,8 +54,8 @@
 	.eh-text { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
 	.eh-name { font-size: 2.1rem; font-weight: 800; letter-spacing: -.01em; }
 	.eh-sub { font-size: 1.15rem; font-weight: 700; color: #e0b845; margin-top: -.1rem; }
-	.eh-hi { margin: 0; font-size: 1.05rem; }
-	.eh-user { font-size: 1.7rem; overflow-wrap: anywhere; }
+	.eh-hi { font-size: 2.1rem; line-height: 1.05; }
+	.eh-user { font-size: 1.15rem; margin-top: .15rem; overflow-wrap: anywhere; }
 	.eh-tag { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem; font-size: .62rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; }
 	.eh-tag i { font-style: normal; } .eh-tag b { color: #c9a13b; }
 	.eh-right { display: flex; align-items: center; gap: .6rem; flex: none; }
