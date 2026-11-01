@@ -82,18 +82,17 @@
 		</div>
 	</div>
 
-	<!-- Name of Site: bigger than everything else, not numbered, above the list -->
-	<div class="card site mb-3">
-		<div class="site-label">{SITE_FIELD.label}</div>
-		<div class="cell">
-			<span class="site-name" class:empty={!siteText}>{siteText || '—'}</span>
-			{#if siteText}{@render copyBtn(SITE_FIELD.key, SITE_FIELD.label, siteText)}{/if}
-		</div>
-	</div>
-
 	<p class="mb-2 text-sm text-slate-600">Tap the copy icon beside any value to copy it, then paste it into the IHS site.</p>
 
 	<div class="card !p-0 overflow-hidden">
+		<!-- Name of Site: part of the same sheet, centred on top, bigger than everything else, not numbered -->
+		<div class="site">
+			<div class="site-label">{SITE_FIELD.label}</div>
+			<div class="site-row">
+				<span class="site-name" class:empty={!siteText}>{siteText || '—'}</span>
+				{#if siteText}{@render copyBtn(SITE_FIELD.key, SITE_FIELD.label, siteText)}{/if}
+			</div>
+		</div>
 		<table class="sheet">
 			<thead>
 				<tr><th class="sn">S/N</th><th>Item</th><th>Details</th></tr>
@@ -118,8 +117,9 @@
 {/if}
 
 <style>
-	.site { padding: 1rem 1.1rem; border-left: 5px solid var(--gold); }
+	.site { padding: 1rem 1.1rem 1.1rem; text-align: center; background: color-mix(in srgb, var(--gold) 12%, var(--surface)); border-bottom: 3px solid var(--gold); }
 	.site-label { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); }
+	.site-row { display: flex; align-items: center; justify-content: center; gap: .6rem; margin-top: .25rem; }
 	.site-name { min-width: 0; overflow-wrap: anywhere; font-size: 1.75rem; line-height: 1.15; font-weight: 800; color: var(--ink); }
 	.site-name.empty { color: var(--sub); font-weight: 400; }
 	.sheet { width: 100%; border-collapse: collapse; font-size: .95rem; }

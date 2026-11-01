@@ -25,8 +25,8 @@
 <form class="card space-y-4" onsubmit={submit}>
 	{#if error}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</div>{/if}
 	<div>
-		<label class="label !text-base !font-bold" for="f-{SITE_FIELD.key}">{SITE_FIELD.label} <span class="text-red-600">*</span></label>
-		<input class="input !py-3 !text-lg !font-bold" id="f-{SITE_FIELD.key}" type="text" autocomplete="off" bind:value={values[SITE_FIELD.key]} placeholder={SITE_FIELD.placeholder} required />
+		<label class="label text-center !text-base !font-bold" for="f-{SITE_FIELD.key}">{SITE_FIELD.label} <span class="text-red-600">*</span></label>
+		<input class="input !py-3 text-center !text-lg !font-bold" id="f-{SITE_FIELD.key}" type="text" autocomplete="off" bind:value={values[SITE_FIELD.key]} placeholder={SITE_FIELD.placeholder} required />
 	</div>
 	<div class="grid gap-4 sm:grid-cols-2">
 		{#each SHEET_FIELDS as f, i (f.key)}
