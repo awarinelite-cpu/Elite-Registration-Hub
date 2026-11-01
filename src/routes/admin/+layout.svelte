@@ -33,8 +33,11 @@
 					session.role = snap.data()?.role === 'sub' ? 'sub' : 'owner';
 				} else {
 					// an IHS DMO account only ever sees its own interface
-					const ihsSnap = await getDoc(doc(firestore, 'ihsUsers', u.uid));
-					if (ihsSnap.exists()) return goto('/ihs');
+					// (this extra check must never break the admin gate itself, so a failure here is ignored)
+					try {
+						const ihsSnap = await getDoc(doc(firestore, 'ihsUsers', u.uid));
+						if (ihsSnap.exists()) return goto('/ihs');
+					} catch {}
 				}
 				state = snap.exists() ? 'ok' : 'denied';
 			} catch (err) {

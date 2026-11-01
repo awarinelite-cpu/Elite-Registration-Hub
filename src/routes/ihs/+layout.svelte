@@ -81,7 +81,11 @@
 			<div class="card space-y-3">
 				<h1 class="text-lg font-bold">{checkError ? 'Could not check your account' : 'Not an IHS DMO account'}</h1>
 				{#if checkError}
-					<p class="text-sm text-slate-600">This is a connection or permission error. Check your network and try again.</p>
+					{#if checkError === 'permission-denied'}
+						<p class="text-sm text-slate-600">The app's access rules are not up to date yet. Please tell the administrator (the latest Firestore rules must be deployed), then try again.</p>
+					{:else}
+						<p class="text-sm text-slate-600">This is a connection or permission error. Check your network and try again.</p>
+					{/if}
 					<code class="block break-all rounded bg-slate-100 p-2 text-xs">{checkError}</code>
 					<button class="btn" onclick={() => location.reload()}>Retry</button>
 				{:else}
