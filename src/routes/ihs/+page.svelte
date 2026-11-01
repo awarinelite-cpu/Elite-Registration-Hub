@@ -25,7 +25,6 @@
 
 <div class="mb-4 flex items-start justify-between gap-3">
 	<div>
-		<p class="text-sm text-slate-600">Welcome{ihs.name ? `, ${ihs.name}` : ''}</p>
 		<h1 class="text-xl font-extrabold">{REPORT_TITLE}</h1>
 	</div>
 	<a class="btn shrink-0" href="/ihs/new">+ New report</a>

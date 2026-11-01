@@ -11,7 +11,6 @@
 			<span class="eh-text">
 				<span class="eh-name">Elite</span>
 				<span class="eh-sub">Registration Hub</span>
-				<span class="eh-tag"><i>Register</i><b>•</b><i>Apply</i><b>•</b><i>Track</i><b>•</b><i>Succeed</i></span>
 			</span>
 		</a>
 		<div class="eh-right">
