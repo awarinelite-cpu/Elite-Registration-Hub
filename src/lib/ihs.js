@@ -1,6 +1,6 @@
-// IHS DMO — shared definitions (used by the sign-up page, the sign-up API and the report screens).
+// IHS DMO — shared definitions (used by the admin Team page, the team API and the report screens).
 
-/** Account types offered on the sign-up page. Add more here later; the server only accepts keys from this list. */
+/** Account types the admin can create (Team page). Add more here later; the server only accepts keys from this list. */
 export const ACCOUNT_TYPES = [{ key: 'ihs-dmo', label: 'IHS DMO' }];
 export const IHS_TYPE = 'ihs-dmo';
 

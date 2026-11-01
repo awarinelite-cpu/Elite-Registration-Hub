@@ -25,7 +25,7 @@
 			state = 'loading';
 			checkError = '';
 			try {
-				// the profile is written by the server at sign-up; no profile = no access to this area
+				// the profile is written by the server when the admin creates the account; no profile = no access to this area
 				const snap = await getDoc(doc(firestore, 'ihsUsers', u.uid));
 				if (snap.exists() && snap.data()?.accountType === IHS_TYPE) {
 					ihs.uid = u.uid;
@@ -74,7 +74,7 @@
 				<div><label class="label" for="ihs-pw">Password</label><input class="input" id="ihs-pw" type="password" bind:value={password} autocomplete="current-password" required /></div>
 				<button class="btn w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
 			</form>
-			<p class="text-center text-sm text-slate-600">New here? <a class="font-semibold text-teal-800 underline" href="/signup">Create an account</a></p>
+			<p class="text-center text-sm text-slate-600">Accounts are created by the administrator. Contact them if you need access.</p>
 		</main>
 	{:else}
 		<main class="mx-auto flex max-w-md flex-col justify-center px-4 py-4">

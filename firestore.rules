@@ -22,7 +22,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // IHS DMO accounts. The profile (ihsUsers/{uid}) is written only by the server at sign-up;
+    // IHS DMO accounts. The profile (ihsUsers/{uid}) is written only by the server, when the main admin creates the account;
     // an IHS user can read their own profile and nothing else outside their own reports.
     function isIhsUser() {
       return request.auth != null

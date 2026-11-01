@@ -15,7 +15,7 @@
 	const ownHeader = $derived(page.url.pathname.startsWith('/admin') || page.url.pathname.startsWith('/ihs'));
 </script>
 
-{#if staff && !ownHeader && !page.url.pathname.startsWith('/signup')}
+{#if staff && !ownHeader}
 	<div class="sticky top-0 z-40 flex items-center justify-between gap-2 bg-teal-800 px-4 py-2 text-sm text-white print:hidden">
 		<span>Admin view of the student page</span>
 		<BackButton fallback="/admin" class="!py-1" />

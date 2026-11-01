@@ -28,7 +28,7 @@ Import the repo, add the same variables in Project Settings → Environment Vari
 The main admin (an `admins/<uid>` doc with no `role: "sub"`) opens **Team** in the header to create sub-admin accounts. A sub-admin signs in at `/admin`, can create and manage only their own forms (`ownerId` = their uid) and see only those forms' applications. They cannot open Team, create accounts, or see other users' forms. Existing forms have no `ownerId`, so only the main admin sees them. **Re-deploy `firestore.rules` after updating** (`firebase deploy --only firestore:rules`).
 
 ## IHS DMO accounts (data-collection interface)
-- Public sign-up at `/signup` has an **Account type** column. Choosing **IHS DMO** creates the account on the server (`/api/signup`) together with a profile at `ihsUsers/{uid}`.
+- **There is no public sign-up.** Only the main admin creates accounts: **Team** → pick the **Account type** (Sub-admin or IHS DMO), enter name, email and a password, and give those details to the person.
 - IHS DMO users sign in at `/ihs` and only ever see that interface (they are not in `admins`, and signing in at `/admin` redirects them to `/ihs`).
 - They fill the **Diesel Monitoring Officer Report Sheet** (15 items), saved to `ihsReports`. Each saved report opens as an S/N | Item | Details table with a **copy icon on every value**, for pasting into the IHS company site.
 - Each user can read/write only their own reports (see `firestore.rules`). **Re-deploy the rules after pulling:** `firebase deploy --only firestore:rules`.
