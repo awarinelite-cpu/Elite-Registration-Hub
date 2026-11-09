@@ -20,6 +20,7 @@ function letterIdx(s) {
 }
 
 export function parseQuizText(text) {
+	if (looksLikePointsQuiz(text)) return parseFormsQuiz(text);
 	const lines = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.trim());
 	const qs = [];
 	let cur = null;
@@ -141,6 +142,86 @@ export function parseQuizText(text) {
 		};
 	});
 	return { title, slug: slugify(title || 'quiz') || 'quiz', prefix: (slugify(title || 'quiz') || 'quiz').toUpperCase().slice(0, 24), fields, dropped };
+}
+
+// ---------------------------------------------------------------- Google Forms / "N point" layout
+// Pasted from a Google Form (or a quiz export) where every question is followed by a "1 point" line and the
+// options sit right under it, often with no blank lines between questions and sometimes with no A/B/C letters:
+//   91. According to NDHS 2006, in which birth spacing, IMR is more
+//   1 point
+//   a) 3 yrs
+//   b) 2yrs
+//   ...
+//   Daily dose of thiamine for adults is:      <- next question (numbered or not)
+//   1 point
+//   1mg
+//   2mg
+// The "N point(s)" line is the anchor: the line(s) just above it are the question, everything below it up to the
+// next question is its options.
+// a numbered question start: "91. text", "75.text", "36. 8 years…" — but not a value like "2.2kg"
+const NUMQ = /^(?:q(?:uestion)?\s*)?\d{1,3}\s*[\).:\-](?:\s+(?=\S)|(?=[^\d\s]))/i;
+const POINTS = /^\(?\s*\d{1,3}(?:\.\d+)?\s*(?:points?|pts?|marks?)\s*\)?$/i;
+const FORMS_NOISE = /^(?:not shared|switch account|required|\*\s*indicates required question|your answer|clear selection|\S+@\S+\.\S+(?:\s+switch account)?)$/i;
+export const looksLikePointsQuiz = (text) => String(text || '').split('\n').filter((l) => POINTS.test(l.trim())).length >= 3;
+
+export function parseFormsQuiz(text) {
+	const raw = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/ /g, ' ').trim());
+	const anchors = [];
+	raw.forEach((l, i) => POINTS.test(l) && anchors.push(i));
+
+	// the question text for an anchor: walk up through non-blank lines, stopping at a numbered line (included),
+	// at a blank line, or at an option line; an unnumbered multi-line question keeps only its last line.
+	const questionAbove = (anchor, floor) => {
+		let end = anchor - 1;
+		while (end >= floor && !raw[end]) end--;
+		if (end < floor) return { text: '', at: anchor };
+		let st = end;
+		while (st - 1 >= floor && raw[st - 1] && !OPT.test(raw[st - 1]) && !FORMS_NOISE.test(raw[st - 1])) {
+			if (NUMQ.test(raw[st])) break;
+			st--;
+		}
+		if (!NUMQ.test(raw[st])) st = end;
+		return { text: raw.slice(st, end + 1).join(' '), at: st };
+	};
+
+	const qs = [];
+	let q = questionAbove(anchors[0], 0);
+	for (let a = 0; a < anchors.length; a++) {
+		const next = a + 1 < anchors.length ? questionAbove(anchors[a + 1], anchors[a] + 1) : { text: '', at: raw.length };
+		const body = raw.slice(anchors[a] + 1, next.at).filter((l) => l && !FORMS_NOISE.test(l));
+		qs.push({ label: q.text, body });
+		q = next;
+	}
+
+	const fields = [];
+	let dropped = 0;
+	for (const { label, body } of qs) {
+		let options = [];
+		const lettered = body.length && OPT.test(body[0]);
+		if (lettered) {
+			const nextLetter = () => String.fromCharCode(97 + options.length);
+			for (const l of body) {
+				const m = l.match(OPT);
+				const bare = l.match(/^([A-Ha-h])\s+(\S.*)$/);
+				if (m) options.push(m[2].trim());
+				else if (bare && bare[1].toLowerCase() === nextLetter()) options.push(bare[2].trim()); // "c adolescent…" (typo'd letter)
+				else options[options.length - 1] += ' ' + l; // wrapped option text
+			}
+		} else {
+			options = body.map((l) => l.replace(/^\*?\s*\(?[A-Ha-h][\).:]\s*(?=\S)/, '').trim());
+		}
+		options = options.map((o) => o.replace(/\s+/g, ' ').trim()).filter(Boolean);
+		let lab = label.replace(NUMQ, '').replace(/^\d{1,3}\s+(?=[A-Z])/, '');
+		lab = lab.replace(/\s+/g, ' ').trim();
+		if (!lab || options.length < 2) {
+			dropped++;
+			continue;
+		}
+		// the same option twice is a typo in the source; keep the first
+		options = [...new Set(options)];
+		fields.push({ id: newFieldId(), type: 'radio', label: lab, required: true, placeholder: '', options, correct: '', points: 1 });
+	}
+	return { title: '', slug: 'quiz', prefix: 'QUIZ', fields, dropped };
 }
 
 // ---------------------------------------------------------------- CSV
