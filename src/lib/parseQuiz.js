@@ -203,13 +203,22 @@ export function parseFormsQuiz(text) {
 		const lettered = body.length && OPT.test(body[0]);
 		if (lettered) {
 			const nextLetter = () => String.fromCharCode(97 + options.length);
-			for (const l of body) {
+			const letterOf = (l) => (l.match(OPT) || l.match(/^([A-Ha-h])\s+(\S.*)$/) || [])[1]?.toLowerCase();
+			body.forEach((l, i) => {
 				const m = l.match(OPT);
 				const bare = l.match(/^([A-Ha-h])\s+(\S.*)$/);
 				if (m) options.push(m[2].trim());
 				else if (bare && bare[1].toLowerCase() === nextLetter()) options.push(bare[2].trim()); // "c adolescent…" (typo'd letter)
-				else options[options.length - 1] += ' ' + l; // wrapped option text
-			}
+				else {
+					// an option whose letter was left off ("a. …", "Tuberculosis control", "c. …"): the last unlettered line
+					// right before the next lettered option, when exactly one letter is skipped, is that option
+					let j = i + 1;
+					while (j < body.length && !letterOf(body[j])) j++;
+					const skipped = j < body.length && options.length && letterOf(body[j]) === String.fromCharCode(98 + options.length) && j === i + 1;
+					if (skipped) options.push(l);
+					else options[options.length - 1] += ' ' + l; // wrapped option text
+				}
+			});
 		} else {
 			options = body.map((l) => l.replace(/^\*?\s*\(?[A-Ha-h][\).:]\s*(?=\S)/, '').trim());
 		}
