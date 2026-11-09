@@ -165,7 +165,10 @@ const FORMS_NOISE = /^(?:not shared|switch account|required|\*\s*indicates requi
 export const looksLikePointsQuiz = (text) => String(text || '').split('\n').filter((l) => POINTS.test(l.trim())).length >= 3;
 
 export function parseFormsQuiz(text) {
-	const raw = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/ /g, ' ').trim());
+	let raw = String(text || '').replace(/\r/g, '').split('\n').map((l) => l.replace(/ /g, ' ').trim());
+	// everything from Google's page footer onward ("This content is neither created nor endorsed by Google…") is not a question
+	const foot = raw.findIndex((l) => /^this content is neither created nor endorsed by google/i.test(l));
+	if (foot >= 0) raw = raw.slice(0, foot);
 	const anchors = [];
 	raw.forEach((l, i) => POINTS.test(l) && anchors.push(i));
 
